@@ -56,7 +56,15 @@ describe('TreeNode 基础构建', () => {
 
   it('保持源数据顺序（倒序显示 bug 场景）', () => {
     const data = [
-      { id: 1, label: 'one', children: [{ id: 11, label: 'x3' }, { id: 12, label: 'x2' }, { id: 13, label: 'x1' }] },
+      {
+        id: 1,
+        label: 'one',
+        children: [
+          { id: 11, label: 'x3' },
+          { id: 12, label: 'x2' },
+          { id: 13, label: 'x1' },
+        ],
+      },
     ]
     const store = createStore({ data })
     expect(store.root.childNodes[0].childNodes.map((n) => n.label)).toEqual(['x3', 'x2', 'x1'])
@@ -207,7 +215,10 @@ describe('增删改（Q3：同步修改源数据，复刻原版行为）', () =>
   it('updateChildren(key, data) 替换全部子节点', () => {
     const data = makeData()
     const store = createStore({ data })
-    store.updateChildren(1, [{ id: 20, label: 'N1' }, { id: 21, label: 'N2' }])
+    store.updateChildren(1, [
+      { id: 20, label: 'N1' },
+      { id: 21, label: 'N2' },
+    ])
     const a = store.getNode(1)!
     expect(a.childNodes.map((n) => n.label)).toEqual(['N1', 'N2'])
     expect(store.getNode(2)).toBeNull()

@@ -43,10 +43,22 @@ const assert = (cond, msg) => {
 
 assert(typeof VueOkrTree === 'object' || typeof VueOkrTree === 'function', '导出 VueOkrTree')
 assert(typeof VueOkrTreePlugin.install === 'function', '导出 VueOkrTreePlugin')
-assert(typeof TreeStore === 'function' && typeof TreeNode === 'function', '导出 TreeStore / TreeNode')
+assert(
+  typeof TreeStore === 'function' && typeof TreeNode === 'function',
+  '导出 TreeStore / TreeNode'
+)
 assert(lib.default === VueOkrTreePlugin, 'default 导出为插件')
 
-const data = [{ id: 1, label: 'R', children: [{ id: 2, label: 'C' }, { id: 3, label: 'D' }] }]
+const data = [
+  {
+    id: 1,
+    label: 'R',
+    children: [
+      { id: 2, label: 'C' },
+      { id: 3, label: 'D' },
+    ],
+  },
+]
 const leftData = [{ id: 1, label: 'R', children: [{ id: 12, label: 'L' }] }]
 
 const mountTree = (props) => {
@@ -60,28 +72,44 @@ const mountTree = (props) => {
   return { el, exposed, app }
 }
 
-const texts = (el) => [...el.querySelectorAll('.org-chart-node-label-inner')].map((e) => e.textContent.trim())
+const texts = (el) =>
+  [...el.querySelectorAll('.org-chart-node-label-inner')].map((e) => e.textContent.trim())
 
 const v = mountTree({ data })
 assert(JSON.stringify(texts(v.el)) === JSON.stringify(['R', 'C', 'D']), '垂直模式渲染')
 assert(v.el.querySelector('.org-chart-node-children').classList.contains('vertical'), 'vertical 类')
 
 const hz = mountTree({ data, direction: 'horizontal', showCollapsable: true, nodeKey: 'id' })
-assert(hz.el.querySelector('.org-chart-node-children').classList.contains('horizontal'), 'horizontal 类')
+assert(
+  hz.el.querySelector('.org-chart-node-children').classList.contains('horizontal'),
+  'horizontal 类'
+)
 assert(hz.el.querySelector('.org-chart-node-btn') !== null, '展开按钮存在')
 assert(hz.exposed.getNode(2).label === 'C', 'ref 方法 getNode 可用')
 
-const okr = mountTree({ data, leftData, onlyBothTree: true, direction: 'horizontal', nodeKey: 'id' })
+const okr = mountTree({
+  data,
+  leftData,
+  onlyBothTree: true,
+  direction: 'horizontal',
+  nodeKey: 'id',
+})
 assert(okr.el.querySelector('.org-chart-node-left-children') !== null, 'OKR 左子树渲染')
 assert(okr.el.querySelector('.org-chart-node').classList.contains('align-root'), 'align-root 类')
 assert(texts(okr.el).includes('L'), 'OKR 左节点文本')
 
 const css = readFileSync(distCss, 'utf8')
-assert(css.includes('.org-chart-container') && css.includes('.okr-zoom-in-center-enter-active'), 'style.css 含组件与动画样式')
+assert(
+  css.includes('.org-chart-container') && css.includes('.okr-zoom-in-center-enter-active'),
+  'style.css 含组件与动画样式'
+)
 assert(!/^\s*\*\s*\{/m.test(css), 'style.css 无全局 * reset')
 
 const dts = readFileSync(distDts, 'utf8')
-assert(dts.includes('export declare const VueOkrTree') && dts.includes('export declare class TreeStore'), 'index.d.ts 含导出声明')
+assert(
+  dts.includes('export declare const VueOkrTree') && dts.includes('export declare class TreeStore'),
+  'index.d.ts 含导出声明'
+)
 assert(!/from '\.\.?\//.test(dts), 'index.d.ts 无未打包的相对路径引用')
 
 console.log('[verify:dist] ALL PASSED')

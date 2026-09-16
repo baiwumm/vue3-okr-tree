@@ -21,7 +21,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['**/*.{ts,vue,js}'],
+    files: ['**/*.{ts,vue,js,mjs,cjs}'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -39,6 +39,10 @@ export default tseslint.config(
       'vue/max-attributes-per-line': 'off',
       'vue/singleline-html-element-content-newline': 'off',
       'vue/html-self-closing': 'off',
+      // 排版交给 Prettier，关闭与其冲突的 vue 排版规则
+      'vue/html-indent': 'off',
+      'vue/html-closing-bracket-newline': 'off',
+      'vue/multiline-html-element-content-newline': 'off',
       'vue/require-default-prop': 'off',
       'vue/no-v-html': 'off',
       // 移植代码中大量运行时松散类型（原 JS 实现），允许 any
@@ -48,6 +52,13 @@ export default tseslint.config(
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
       '@typescript-eslint/no-this-alias': 'off',
+    },
+  },
+  {
+    // Demo 用例内嵌的示例源码字符串需要 <\/script> 转义以避免提前闭合 SFC 的 script 块
+    files: ['playground/**/*.vue'],
+    rules: {
+      'no-useless-escape': 'off',
     },
   },
   {

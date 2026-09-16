@@ -475,8 +475,13 @@
   .org-chart-node.only-both-tree-node.align-root
   > .org-chart-node-children {
   flex: 1 1 0;
+  /* 只允许等分多余空间，不允许把内容压缩换行（CJK + break-all 的 min-content 极小） */
+  min-width: max-content;
 }
-.org-chart-container .horizontal .org-chart-node.only-both-tree-node.align-root > .org-chart-node-label {
+.org-chart-container
+  .horizontal
+  .org-chart-node.only-both-tree-node.align-root
+  > .org-chart-node-label {
   flex: 0 0 auto;
 }
 
@@ -486,4 +491,61 @@
   cursor: not-allowed;
   opacity: 0.6;
   box-shadow: 0 1px 10px rgba(31, 35, 41, 0.08);
+}
+
+/* ======================= 展开 / 收起过渡（animate 开启时） ======================= */
+/*
+ * 原版 <transition> 只包裹 v-if="childNodes.length > 0" 的容器，展开/收起仅切换 visibility/height，
+ * 因此点击 +/- 时实际没有过渡。Vue 3 版在保留该 DOM/宽度语义（隐藏子树仍占位，根节点不位移）的
+ * 前提下，用状态类 + CSS transition 补齐展开/收起动画；visibility 延迟到过渡结束再切换。
+ * 时长由 --okr-anim-duration（animate-duration prop）控制。
+ */
+.org-chart-container .org-chart-node-children.is-animated,
+.org-chart-container .org-chart-node-left-children.is-animated {
+  --okr-anim-duration: 200ms;
+  --okr-anim-easing: cubic-bezier(0.55, 0, 0.1, 1);
+  transform-origin: center center;
+  transition:
+    opacity var(--okr-anim-duration) var(--okr-anim-easing),
+    transform var(--okr-anim-duration) var(--okr-anim-easing),
+    visibility 0s;
+}
+.org-chart-container .org-chart-node-children.is-animated.is-hidden,
+.org-chart-container .org-chart-node-left-children.is-animated.is-hidden {
+  opacity: 0;
+  transition:
+    opacity var(--okr-anim-duration) var(--okr-anim-easing),
+    transform var(--okr-anim-duration) var(--okr-anim-easing),
+    visibility 0s var(--okr-anim-duration);
+}
+.org-chart-container .is-animated.okr-anim-okr-fade-in-linear {
+  --okr-anim-easing: linear;
+}
+.org-chart-container .is-animated.okr-anim-okr-zoom-in-center.is-hidden {
+  transform: scaleX(0);
+}
+.org-chart-container .is-animated.okr-anim-okr-zoom-in-top {
+  transform-origin: center top;
+}
+.org-chart-container .is-animated.okr-anim-okr-zoom-in-top.is-hidden {
+  transform: scaleY(0);
+}
+.org-chart-container .is-animated.okr-anim-okr-zoom-in-bottom {
+  transform-origin: center bottom;
+}
+.org-chart-container .is-animated.okr-anim-okr-zoom-in-bottom.is-hidden {
+  transform: scaleY(0);
+}
+.org-chart-container .is-animated.okr-anim-okr-zoom-in-left {
+  transform-origin: top left;
+}
+.org-chart-container .is-animated.okr-anim-okr-zoom-in-left.is-hidden {
+  transform: scale(0.45, 0.45);
+}
+/* 左子树容器：以右侧（靠近根节点）为形变原点 */
+.org-chart-container .org-chart-node-left-children.is-animated.okr-anim-okr-zoom-in-center {
+  transform-origin: center right;
+}
+.org-chart-container .org-chart-node-left-children.is-animated.okr-anim-okr-zoom-in-left {
+  transform-origin: top right;
 }

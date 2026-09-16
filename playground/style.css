@@ -1,0 +1,250 @@
+/* Demo 站全局样式（对应原 VueOkrTreeDeom.vue 的排版样式 + github-markdown-css 的基础字体） */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji';
+  font-size: 16px;
+  line-height: 1.5;
+  color: #24292f;
+  background: #fff;
+  -webkit-font-smoothing: antialiased;
+}
+
+.vue-okr-tree-demo {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px 16px 80px;
+}
+.vue-okr-tree-demo .tree-demo-title {
+  font-size: 28px;
+  color: #1f2f3d;
+  margin: 0 0 8px;
+}
+.vue-okr-tree-demo .tree-demo-subtitle {
+  font-size: 14px;
+  color: #909399;
+  margin-bottom: 24px;
+}
+.vue-okr-tree-demo .tree-demo-subtitle a {
+  color: #409eff;
+  text-decoration: none;
+}
+.vue-okr-tree-demo p {
+  font-size: 14px;
+  line-height: 1.5em;
+  color: #5e6d82;
+  margin: 14px 0;
+}
+.vue-okr-tree-demo .tree-demo-title-h3 {
+  font-size: 22px;
+  color: #1f2f3d;
+  margin: 55px 0 20px;
+  font-weight: 500;
+}
+.vue-okr-tree-demo .component-wrapper {
+  overflow: auto;
+  padding-left: 40px;
+}
+.vue-okr-tree-demo table {
+  width: 100%;
+  font-size: 14px;
+  border-collapse: collapse;
+}
+.vue-okr-tree-demo table th {
+  white-space: nowrap;
+  color: #909399;
+  font-weight: 400;
+  border-bottom: 1px solid #dcdfe6;
+  padding: 15px;
+  max-width: 250px;
+  text-align: left;
+}
+.vue-okr-tree-demo table td {
+  border-bottom: 1px solid #dcdfe6;
+  padding: 15px;
+  max-width: 250px;
+  text-align: left;
+  vertical-align: top;
+  color: #5e6d82;
+  line-height: 1.6;
+}
+.vue-okr-tree-demo table td:first-child,
+.vue-okr-tree-demo table th:first-child {
+  padding-left: 10px;
+}
+.vue-okr-tree-demo table td:first-child {
+  color: #1f2f3d;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.vue-okr-tree-demo code {
+  color: #5e6d82;
+  background-color: #e6effb;
+  margin: 0 4px;
+  display: inline-block;
+  padding: 1px 5px;
+  font-size: 12px;
+  border-radius: 3px;
+  line-height: 18px;
+  font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+.vue-okr-tree-demo pre code {
+  background: none;
+  padding: 0;
+  margin: 0;
+  display: block;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* 过滤输入框 / 操作按钮（原 Demo 样式） */
+.vue-okr-tree-demo .filter-wrapper {
+  position: relative;
+  font-size: 14px;
+  display: inline-block;
+  width: 100%;
+}
+.vue-okr-tree-demo .filter-wrapper input {
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: #fff;
+  background-image: none;
+  border-radius: 4px;
+  border: 1px solid #dcdfe6;
+  color: #606266;
+  display: inline-block;
+  font-size: inherit;
+  height: 40px;
+  line-height: 40px;
+  outline: none;
+  padding: 0 15px;
+  transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+  width: 100%;
+  cursor: pointer;
+}
+.vue-okr-tree-demo .filter-wrapper input:focus {
+  border-color: #409eff;
+}
+.vue-okr-tree-demo .btns-wrap {
+  margin-top: 10px;
+}
+.vue-okr-tree-demo .btns-wrap button,
+.vue-okr-tree-demo .demo-btn {
+  display: inline-block;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid #dcdfe6;
+  color: #606266;
+  -webkit-appearance: none;
+  appearance: none;
+  text-align: center;
+  outline: none;
+  margin: 0 10px 10px 0;
+  transition: 0.1s;
+  font-weight: 500;
+  user-select: none;
+  padding: 7px 15px;
+  font-size: 12px;
+  border-radius: 4px;
+}
+.vue-okr-tree-demo .btns-wrap button:hover,
+.vue-okr-tree-demo .demo-btn:hover {
+  background: #b3d8ff;
+}
+.vue-okr-tree-demo .demo-btn.is-active {
+  background: #409eff;
+  border-color: #409eff;
+  color: #fff;
+}
+.vue-okr-tree-demo .demo-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  font-size: 13px;
+  color: #606266;
+  margin-bottom: 12px;
+}
+.vue-okr-tree-demo .demo-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.vue-okr-tree-demo .demo-controls select,
+.vue-okr-tree-demo .demo-controls input[type='number'] {
+  height: 28px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  padding: 0 8px;
+  color: #606266;
+  background: #fff;
+}
+.vue-okr-tree-demo .demo-controls input[type='number'] {
+  width: 80px;
+}
+
+/* 事件日志面板 */
+.vue-okr-tree-demo .event-log {
+  margin-top: 12px;
+  border: 1px dashed #dcdfe6;
+  border-radius: 4px;
+  background: #fafafa;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #606266;
+  max-height: 160px;
+  overflow: auto;
+  text-align: left;
+}
+.vue-okr-tree-demo .event-log-title {
+  color: #909399;
+  margin-bottom: 4px;
+}
+.vue-okr-tree-demo .event-log-item {
+  font-family: Menlo, Monaco, Consolas, 'Courier New', monospace;
+  line-height: 1.7;
+}
+.vue-okr-tree-demo .event-log-item .evt {
+  color: #409eff;
+}
+.vue-okr-tree-demo .event-log-empty {
+  color: #c0c4cc;
+}
+
+/* 回顶按钮 */
+.top-wrapp {
+  position: fixed;
+  bottom: 40px;
+  right: 6%;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #409eff;
+  font-size: 20px;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+  z-index: 100;
+}
+.top-wrapp:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}

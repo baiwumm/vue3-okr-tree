@@ -157,10 +157,7 @@ export class TreeNode {
         node.level = this.level + 1
         node.updateChildren()
       } else {
-        node = createNode(
-          { data: childData, parent: this, store },
-          this.isLeftChild
-        )
+        node = createNode({ data: childData, parent: this, store }, this.isLeftChild)
         node.level = this.level + 1
         used.add(node)
       }

@@ -65,7 +65,12 @@ describe('getNode / 注册表', () => {
 
 describe('filter（Q1：全树过滤）', () => {
   it('隐藏不匹配节点，父节点有可见后代时保持可见', () => {
-    const store = new TreeStore({ key: 'id', data: makeData(), filterNodeMethod, showCollapsable: true })
+    const store = new TreeStore({
+      key: 'id',
+      data: makeData(),
+      filterNodeMethod,
+      showCollapsable: true,
+    })
     store.filter('前端')
     expect(store.getNode(3)!.visible).toBe(true)
     expect(store.getNode(4)!.visible).toBe(false)
@@ -96,7 +101,14 @@ describe('filter（Q1：全树过滤）', () => {
   it('多根 data 时第二个根的子树也被过滤', () => {
     const data = [
       ...makeData(),
-      { id: 100, label: '第二公司', children: [{ id: 101, label: '二-前端' }, { id: 102, label: '二-后端' }] },
+      {
+        id: 100,
+        label: '第二公司',
+        children: [
+          { id: 101, label: '二-前端' },
+          { id: 102, label: '二-后端' },
+        ],
+      },
     ]
     const store = new TreeStore({ key: 'id', data, filterNodeMethod })
     store.filter('前端')
@@ -129,14 +141,19 @@ describe('OKR 模式（onlyBothTree + leftData）', () => {
 
   it('缺 leftData 时抛错', () => {
     expect(
-      () => new TreeStore({ key: 'id', data: makeData(), onlyBothTree: true, direction: 'horizontal' })
+      () =>
+        new TreeStore({ key: 'id', data: makeData(), onlyBothTree: true, direction: 'horizontal' })
     ).toThrow('[Tree] leftData is required in onlyBothTree')
   })
 
   it('左子树挂到第一个根节点的 leftChildNodes，节点标记 isLeftChild', () => {
     const store = createOkr()
     const root = store.root.childNodes[0]
-    expect(root.leftChildNodes.map((n) => n.label)).toEqual(['(左)产品研发部', '(左)销售部', '(左)财务部'])
+    expect(root.leftChildNodes.map((n) => n.label)).toEqual([
+      '(左)产品研发部',
+      '(左)销售部',
+      '(左)财务部',
+    ])
     expect(root.leftChildNodes[0].isLeftChild).toBe(true)
     expect(root.leftChildNodes[0].childNodes[0].label).toBe('(左)研发-前端')
     expect(root.childNodes[0].isLeftChild).toBe(false)
@@ -195,7 +212,11 @@ describe('OKR 模式（onlyBothTree + leftData）', () => {
     store.setData([{ id: 1, label: 'Right2', children: [{ id: 300, label: 'R' }] }])
     const root = store.root.childNodes[0]
     expect(root.label).toBe('Right2')
-    expect(root.leftChildNodes.map((n) => n.label)).toEqual(['(左)产品研发部', '(左)销售部', '(左)财务部'])
+    expect(root.leftChildNodes.map((n) => n.label)).toEqual([
+      '(左)产品研发部',
+      '(左)销售部',
+      '(左)财务部',
+    ])
   })
 
   it('current-node-key 初始选中左右同时生效，setCurrentNodeKey(null) 全部清除', () => {

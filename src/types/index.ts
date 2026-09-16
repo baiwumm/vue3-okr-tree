@@ -41,7 +41,6 @@ export type NodeBtnContentFunction = (createElement: typeof h, node: TreeNode) =
 
 /** 节点 className：字符串或 Function(node) */
 export type LabelClassName =
-  | string
-  | ((node: TreeNode) => string | string[] | Record<string, boolean> | undefined)
+  string | ((node: TreeNode) => string | string[] | Record<string, boolean> | undefined)
 
 export type { TreeNode }

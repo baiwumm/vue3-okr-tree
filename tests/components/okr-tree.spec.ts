@@ -112,7 +112,9 @@ describe('渲染：三种模式', () => {
 
   it('OKR 模式缺 leftData 抛错', () => {
     expect(() =>
-      mount(VueOkrTree, { props: { data: makeData(), onlyBothTree: true, direction: 'horizontal' } })
+      mount(VueOkrTree, {
+        props: { data: makeData(), onlyBothTree: true, direction: 'horizontal' },
+      })
     ).toThrow('[Tree] leftData is required in onlyBothTree')
   })
 })
@@ -251,9 +253,9 @@ describe('选中与事件', () => {
     vm.setCurrentKey(3)
     await nextTick()
     expect(vm.getCurrentKey()).toBe(3)
-    const current = wrapper.findAll('.org-chart-node-label-inner').filter((w) =>
-      w.classes().includes('is-current')
-    )
+    const current = wrapper
+      .findAll('.org-chart-node-label-inner')
+      .filter((w) => w.classes().includes('is-current'))
     expect(current).toHaveLength(1)
     expect(current[0].text()).toBe('研发-前端')
     vm.setCurrentNode(vm.getNode(7))
@@ -312,7 +314,12 @@ describe('filter', () => {
 
   it('过滤后隐藏不匹配节点，空值恢复', async () => {
     const wrapper = mount(VueOkrTree, {
-      props: { data: makeData(), nodeKey: 'id', filterNodeMethod: filterNode, direction: 'horizontal' },
+      props: {
+        data: makeData(),
+        nodeKey: 'id',
+        filterNodeMethod: filterNode,
+        direction: 'horizontal',
+      },
     })
     const vm = wrapper.vm as any
     vm.filter('前端')
@@ -382,7 +389,9 @@ describe('自定义内容', () => {
   })
 
   it('label-width / label-height：number → px，string 原样', () => {
-    const w1 = mount(VueOkrTree, { props: { data: [{ label: 'A' }], labelWidth: 120, labelHeight: 40 } })
+    const w1 = mount(VueOkrTree, {
+      props: { data: [{ label: 'A' }], labelWidth: 120, labelHeight: 40 },
+    })
     const style1 = w1.find('.org-chart-node-label-inner').attributes('style')!
     expect(style1).toContain('width: 120px')
     expect(style1).toContain('height: 40px')
@@ -449,11 +458,18 @@ describe('数据响应', () => {
         nodeKey: 'id',
       },
     })
-    await wrapper.setProps({ leftData: [{ id: 1, label: 'L', children: [{ id: 99, label: '新左' }] }] })
+    await wrapper.setProps({
+      leftData: [{ id: 1, label: 'L', children: [{ id: 99, label: '新左' }] }],
+    })
     const leftLabels = () =>
-      wrapper.find('.org-chart-node-left-children').findAll('.org-chart-node-label-inner').map((w) => w.text())
+      wrapper
+        .find('.org-chart-node-left-children')
+        .findAll('.org-chart-node-label-inner')
+        .map((w) => w.text())
     expect(leftLabels()).toEqual(['新左'])
-    await wrapper.setProps({ data: [{ id: 1, label: 'Right2', children: [{ id: 300, label: 'R' }] }] })
+    await wrapper.setProps({
+      data: [{ id: 1, label: 'Right2', children: [{ id: 300, label: 'R' }] }],
+    })
     expect(leftLabels()).toEqual(['新左'])
     expect(labels(wrapper)).toContain('Right2')
   })

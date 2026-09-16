@@ -1,11 +1,12 @@
 <template>
-  <div v-if="node.visible" class="org-chart-node" :class="nodeClass" @contextmenu="handleContextMenu">
-    <transition :duration="animateDuration" :name="animateName">
-      <div
-        v-if="showLeftChildNode"
-        class="org-chart-node-left-children"
-        :style="leftChildrenStyle"
-      >
+  <div
+    v-if="node.visible"
+    class="org-chart-node"
+    :class="nodeClass"
+    @contextmenu="handleContextMenu"
+  >
+    <transition v-bind="transitionProps">
+      <div v-if="showLeftChildNode" class="org-chart-node-left-children" :style="leftChildrenStyle">
         <OkrTreeNode
           v-for="child in leftChildNodes"
           :key="getNodeKey(child)"
@@ -68,10 +69,11 @@
       </div>
     </div>
 
-    <transition :duration="animateDuration" :name="animateName">
+    <transition v-bind="transitionProps">
       <div
         v-if="!isLeftChildNode && node.childNodes && node.childNodes.length > 0"
         class="org-chart-node-children"
+        :class="[animClass, { 'is-hidden': !node.expanded }]"
         :style="childrenStyle"
       >
         <OkrTreeNode
@@ -97,7 +99,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, getCurrentInstance, inject, type CSSProperties, type PropType } from 'vue'
+import {
+  computed,
+  getCurrentInstance,
+  inject,
+  onBeforeUnmount,
+  ref,
+  watch,
+  type CSSProperties,
+  type PropType,
+} from 'vue'
 import { OKR_TREE_INJECTION_KEY } from './context'
 import { NodeContent, NodeBtnContent } from './node-content'
 import { getNodeKey as _getNodeKey } from './model/util'
@@ -158,16 +169,65 @@ const isLeaf = computed(() => {
   return node.value.isLeaf
 })
 
-/** 折叠态容器：与原版一致，保留在 DOM 中但隐藏且高度为 0 */
-const leftChildrenStyle = computed<CSSProperties>(() =>
-  node.value.leftExpanded ? {} : { visibility: 'hidden', height: '0' }
+/** 折叠态容器：与原版一致，保留在 DOM 中但隐藏且高度为 0；animate 开启时附带过渡时长变量 */
+const animVar = computed<CSSProperties>(() =>
+  store.animate ? ({ '--okr-anim-duration': `${store.animateDuration}ms` } as CSSProperties) : {}
 )
-const childrenStyle = computed<CSSProperties>(() =>
-  node.value.expanded ? {} : { visibility: 'hidden', height: '0' }
+/**
+ * animate 开启时，收起动作先保留容器高度让内容完成淡出/缩放过渡，
+ * 过渡结束后再置 height: 0（height auto→0 不可插值，直接切换会让下方节点先跳位）。
+ */
+const useDelayedCollapse = (isExpanded: () => boolean) => {
+  const keepHeight = ref(false)
+  let timer: ReturnType<typeof setTimeout> | null = null
+  const clear = () => {
+    if (timer) clearTimeout(timer)
+    timer = null
+  }
+  watch(isExpanded, (expanded) => {
+    clear()
+    if (!expanded && store.animate) {
+      keepHeight.value = true
+      timer = setTimeout(() => {
+        keepHeight.value = false
+        timer = null
+      }, store.animateDuration)
+    } else {
+      keepHeight.value = false
+    }
+  })
+  onBeforeUnmount(clear)
+  return keepHeight
+}
+const keepLeftHeight = useDelayedCollapse(() => node.value.leftExpanded)
+const keepRightHeight = useDelayedCollapse(() => node.value.expanded)
+
+// height: 0 后追加 overflow: hidden，避免不可见子树继续撑出滚动区域（原版存在幻影滚动条）
+const hiddenStyle = (keepHeight: boolean): CSSProperties =>
+  keepHeight ? { visibility: 'hidden' } : { visibility: 'hidden', height: '0', overflow: 'hidden' }
+
+const leftChildrenStyle = computed<CSSProperties>(() => ({
+  ...animVar.value,
+  ...(node.value.leftExpanded ? {} : hiddenStyle(keepLeftHeight.value)),
+}))
+const childrenStyle = computed<CSSProperties>(() => ({
+  ...animVar.value,
+  ...(node.value.expanded ? {} : hiddenStyle(keepRightHeight.value)),
+}))
+/** 展开/收起过渡的状态类（原版 animate 在切换时无过渡，见 requirements 第 6 节） */
+const animClass = computed(() =>
+  store.animate ? ['is-animated', `okr-anim-${store.animateName}`] : []
 )
 
-const animateName = computed(() => (store.animate ? store.animateName : ''))
-const animateDuration = computed(() => (store.animate ? store.animateDuration : 0))
+/**
+ * 子容器挂载/卸载的 <transition>：animate 关闭时传 css:false，让 enter/leave 同步完成，
+ * 不依赖 requestAnimationFrame（后台/隐藏标签页中 rAF 会被节流甚至暂停，否则卸载会被挂起）。
+ */
+const transitionProps = computed(() =>
+  store.animate
+    ? { css: true, name: store.animateName, duration: store.animateDuration }
+    : { css: false }
+)
 
 /** 是否显示（右侧）展开按钮 */
 const showNodeBtn = computed(() => {
@@ -181,8 +241,7 @@ const showNodeBtn = computed(() => {
 
 /** 是否显示左侧展开按钮（OKR 模式） */
 const showNodeLeftBtn = computed(
-  () =>
-    store.direction === 'horizontal' && props.showCollapsable && leftChildNodes.value.length > 0
+  () => store.direction === 'horizontal' && props.showCollapsable && leftChildNodes.value.length > 0
 )
 
 /** 是否显示左子树 */
@@ -208,9 +267,7 @@ const nodeClass = computed(() => ({
   'is-current': node.value.isCurrent,
   'is-left-child-node': props.isLeftChildNode,
   'is-not-child':
-    node.value.level === 1 &&
-    node.value.childNodes.length <= 0 &&
-    leftChildNodes.value.length <= 0,
+    node.value.level === 1 && node.value.childNodes.length <= 0 && leftChildNodes.value.length <= 0,
   'only-both-tree-node': isOkrRoot.value,
   'align-root': isOkrRoot.value && props.alignRoot && store.direction === 'horizontal',
 }))

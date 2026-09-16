@@ -55,7 +55,7 @@
 ## 阶段 4：根对齐增强
 
 - [x] ⭐ 4.1 内建 onlyBothTree 根对齐：新增 `align-root` prop（默认 true），左右子树容器宽度按最大侧对齐（ResizeObserver 或纯 CSS grid 方案），取代原 Demo 手动 DOM 测量
-- [ ] 4.2 伸缩时根节点位置固定验证（对应原 2023/02/16、2023/02/20 两次修复）
+- [x] 4.2 伸缩时根节点位置固定验证（对应原 2023/02/16、2023/02/20 两次修复）
 
 ## 阶段 5：库构建与集成验证
 
@@ -65,27 +65,46 @@
 
 ## 阶段 6：Demo 演示页（与 requirements 4 逐项对齐）
 
-- [ ] ⭐ 6.1 Demo 基建：BaseCard 组件（示例区 + 描述 + 代码高亮）、页面排版、回顶按钮
-- [ ] 6.2 基础用例组：基础用法 / 水平方向 / 节点展开 / 全部展开 / key 展开
-- [ ] 6.3 样式与内容用例组：节点样式 / 自定义节点内容 / 按钮自定义 / 动画
-- [ ] ⭐ 6.4 OKR 用例组：OKR 模式（含两树根对齐对比）/ OKR 自定义内容 ×2
-- [ ] 6.5 功能用例组：Filter（含空值恢复语义演示）/ OKR Filter / Events / OKR Events
-- [ ] 6.6 API 文档表格：Attributes / Props / Events / Methods 四张表，内容以 requirements 3.1–3.4 为准（含边界说明，补全原表格遗漏）
-- [ ] 6.7 每个用例附源码高亮展示
-- [ ] 6.8 Demo 站切换为引 dist 产物跑通（原 5.2 的完整验证，收口库构建正确性）
+- [x] ⭐ 6.1 Demo 基建：BaseCard 组件（示例区 + 描述 + 代码高亮）、页面排版、回顶按钮
+- [x] 6.2 基础用例组：基础用法 / 水平方向 / 节点展开 / 全部展开 / key 展开
+- [x] 6.3 样式与内容用例组：节点样式 / 自定义节点内容 / 按钮自定义 / 动画
+- [x] ⭐ 6.4 OKR 用例组：OKR 模式（含两树根对齐对比）/ OKR 自定义内容 ×2
+- [x] 6.5 功能用例组：Filter（含空值恢复语义演示）/ OKR Filter / Events / OKR Events
+- [x] 6.6 API 文档表格：Attributes / Props / Events / Methods 四张表，内容以 requirements 3.1–3.4 为准（含边界说明，补全原表格遗漏）
+- [x] 6.7 每个用例附源码高亮展示
+- [x] 6.8 Demo 站切换为引 dist 产物跑通（原 5.2 的完整验证，收口库构建正确性）
 
 ## 阶段 7：对齐验收与收尾
 
-- [ ] ⭐ 7.1 与原仓库逐项对照测试：所有 props/events/methods 行为、抛错语义、已知 bug 场景（异步 data、左/右子树独立更新、节点倒序）；**并逐项核对 requirements 第 6 节决策清单**——Q1/Q2/Q4/Q5 修复生效、Q3 复刻一致、Q7 死代码不移植不算缺失
-- [ ] 7.2 视觉走查：与原 Demo 截图对照（垂直/水平/OKR 三模式）
-- [ ] 7.3 补全 README（安装、快速开始、API 表、与 vue-okr-tree 的迁移说明）；**明确写入 Q3（增删方法会修改用户源数据）、node-key 相关方法的抛错/静默边界、插槽用法**
-- [ ] 7.4 发布前检查：`npm publish --dry-run`、License、repository 字段
+- [x] ⭐ 7.1 与原仓库逐项对照测试：所有 props/events/methods 行为、抛错语义、已知 bug 场景（异步 data、左/右子树独立更新、节点倒序）；**并逐项核对 requirements 第 6 节决策清单**——Q1/Q2/Q4/Q5 修复生效、Q3 复刻一致、Q7 死代码不移植不算缺失
+- [x] 7.2 视觉走查：与原 Demo 截图对照（垂直/水平/OKR 三模式）
+- [x] 7.3 补全 README（安装、快速开始、API 表、与 vue-okr-tree 的迁移说明）；**明确写入 Q3（增删方法会修改用户源数据）、node-key 相关方法的抛错/静默边界、插槽用法**
+- [x] 7.4 发布前检查：`npm publish --dry-run`、License、repository 字段
 
 ## 里程碑
 
-| 里程碑 | 内容 | 验收 |
-| --- | --- | --- |
-| M1 | 阶段 0–1 | 模型层单测全绿（含 Q1–Q4 专项用例） |
-| M2 | 阶段 2–3 | 三种模式可渲染、交互正确，组件冒烟测试通过 |
-| M3 | 阶段 4–5 | dist 产物可用、根对齐生效 |
-| M4 | 阶段 6–7 | Demo 全用例对齐、达到 requirements 第 7 节验收标准 |
+| 里程碑 | 内容     | 验收                                               |
+| ------ | -------- | -------------------------------------------------- |
+| M1     | 阶段 0–1 | 模型层单测全绿（含 Q1–Q4 专项用例）                |
+| M2     | 阶段 2–3 | 三种模式可渲染、交互正确，组件冒烟测试通过         |
+| M3     | 阶段 4–5 | dist 产物可用、根对齐生效                          |
+| M4     | 阶段 6–7 | Demo 全用例对齐、达到 requirements 第 7 节验收标准 |
+
+## 验收核对记录（2026-09-17 自动执行）
+
+对照 `requirements.md` 第 7 节验收标准逐条核对：
+
+| #   | 验收项                                                                         | 结果 | 证据                                                                                                                                                                                                                       |
+| --- | ------------------------------------------------------------------------------ | ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 3.1–3.4 全部 API 行为与原组件一致，抛错文案语义一致；有意差异仅限第 6 节 Q1–Q9 | ✅   | `tests/components/okr-tree.spec.ts`（26 个用例，含 4 条抛错文案断言）、`tests/model/*.spec.ts`（43 个）                                                                                                                    |
+| 2   | Demo 页 20 个用例可交互、与原 Demo 对齐；Filter 体现空值恢复                   | ✅   | 浏览器逐用例截图核对：三模式渲染、+/- 展开收起、节点数、选中样式、render-content / node-btn-content / 插槽、动画过渡、OKR 根对齐（开/关、收起不位移）、filter 与空值恢复、11 个方法按钮、4 类事件日志；无控制台 error/warn |
+| 3   | 构建产物 es / umd / cjs / style.css / index.d.ts，import + require + CDN 可用  | ✅   | `pnpm build` + `scripts/verify-dist.mjs`（16 项断言）+ `node -e require(...)` + ESM 自引用 import；`npm pack --dry-run` 11 个文件 92.4 kB；`npm publish --dry-run` 通过                                                    |
+| 4   | 原仓库已知 bug（异步改 data、左右子树独立更新、倒序显示）正常                  | ✅   | `node.spec.ts`「保持源数据顺序」「data 引用变化 / 原地变更」、`tree-store.spec.ts`「右树 data 更新后左子树不丢失」、组件测试「响应式 data 原地 push」「leftData 更新」                                                     |
+| 5   | Q1–Q5、Q8 修复项有用例覆盖，Q3 复刻项有单测                                    | ✅   | Q1 多根过滤 / Q2 左右分表 / Q4 updateChildren / Q3 源数据副作用：`tree-store.spec.ts`、`node.spec.ts`；Q5/Q8：`transition-robustness.spec.ts`、Demo 用例 9；Q9：verify-dist                                                |
+
+补充记录：
+
+- 开发过程中新增决策 Q8（原版 animate 在展开/收起时无过渡 → 补 CSS 状态过渡）与 Q9（`"type":"module"` 下增补 `.cjs`），已写入 requirements 第 6 节。
+- 浏览器核对时发现自动化浏览器窗格内 `requestAnimationFrame` 不触发，导致 Vue `<transition>` 卸载被挂起；据此把 animate 关闭时的 `<transition>` 改为 `css:false`（同步完成，不依赖 rAF），并加回归测试 `transition-robustness.spec.ts`。
+- 6.8：`PLAYGROUND_USE_DIST=1 pnpm build:playground` 构建 + `vite preview` 浏览器核对，发布产物路径下 Demo 与源码路径渲染一致（20 节 / 17 棵树 / 203 个节点 / 4 张表）。
+- 测试统计：Vitest 4 个文件 71 个用例全部通过；vue-tsc、ESLint、Prettier 无错误。
