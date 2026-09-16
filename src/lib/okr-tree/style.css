@@ -1,0 +1,489 @@
+@import './model/transition.css';
+
+/*
+ * vue3-okr-tree 组件样式
+ * 自原 OkrTree.vue <style> 全量迁移；移除了会污染宿主页面的全局 `* { margin:0; padding:0 }`，
+ * 所有规则限定在 .org-chart-container 之下。
+ */
+.org-chart-container {
+  display: block;
+  width: 100%;
+  text-align: center;
+  box-sizing: border-box;
+}
+.org-chart-container *,
+.org-chart-container *::before,
+.org-chart-container *::after {
+  box-sizing: border-box;
+}
+.org-chart-container .org-chart-node-children,
+.org-chart-container .org-chart-node-left-children,
+.org-chart-container .org-chart-node,
+.org-chart-container .org-chart-node-label,
+.org-chart-container .org-chart-node-label-inner {
+  margin: 0;
+  padding: 0;
+}
+
+/* ======================= 垂直模式 ======================= */
+.org-chart-container .vertical .org-chart-node-children {
+  position: relative;
+  padding-top: 20px;
+}
+.org-chart-container .vertical .org-chart-node {
+  float: left;
+  text-align: center;
+  list-style-type: none;
+  position: relative;
+  padding: 20px 5px 0 5px;
+}
+/* 使用 ::before 和 ::after 绘制连接器 */
+.org-chart-container .vertical .org-chart-node::before,
+.org-chart-container .vertical .org-chart-node::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 50%;
+  width: 50%;
+  border-top: 1px solid #ccc;
+  height: 20px;
+}
+.org-chart-container .vertical .org-chart-node::after {
+  right: auto;
+  left: 50%;
+  border-left: 1px solid #ccc;
+}
+/* 从没有任何兄弟元素的元素中删除左右连接器 */
+.org-chart-container .vertical.one-branch > .org-chart-node::after,
+.org-chart-container .vertical.one-branch > .org-chart-node::before {
+  display: none;
+}
+/* 从单个子节点的顶部移除空格 */
+.org-chart-container .vertical.one-branch > .org-chart-node {
+  padding-top: 0;
+}
+/* 从第一个子节点移除左连接器，从最后一个子节点移除右连接器 */
+.org-chart-container .vertical .org-chart-node:first-child::before,
+.org-chart-container .vertical .org-chart-node:last-child::after {
+  border: 0 none;
+}
+/* 将垂直连接器添加回最后的节点 */
+.org-chart-container .vertical .org-chart-node:last-child::before {
+  border-right: 1px solid #ccc;
+  border-radius: 0 5px 0 0;
+}
+.org-chart-container .vertical .org-chart-node:only-child::before {
+  border-radius: 0 0 0 0;
+  margin-right: -1px;
+}
+.org-chart-container .vertical .org-chart-node:first-child::after {
+  border-radius: 5px 0 0 0;
+}
+.org-chart-container .vertical .org-chart-node.is-leaf {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+.org-chart-container .vertical .org-chart-node.is-leaf::before {
+  content: '';
+  display: block;
+  height: 20px;
+}
+.org-chart-container .vertical .org-chart-node.is-leaf .org-chart-node-label::after {
+  display: none;
+}
+
+/* 从父节点添加向下的连接器 */
+.org-chart-container .vertical .org-chart-node-children::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  border-left: 1px solid #ccc;
+  width: 0;
+  height: 20px;
+}
+.org-chart-container .vertical .org-chart-node-label {
+  position: relative;
+  display: inline-block;
+}
+.org-chart-container .vertical .org-chart-node-label .org-chart-node-label-inner {
+  box-shadow: 0 1px 10px rgba(31, 35, 41, 0.08);
+  display: inline-block;
+  padding: 10px;
+  margin: 0;
+  font-size: 16px;
+  word-break: break-all;
+}
+.org-chart-container .vertical .org-chart-node-label .org-chart-node-label-inner:hover {
+  box-shadow: 0 1px 14px rgba(31, 35, 41, 0.12);
+  cursor: pointer;
+}
+.org-chart-container .vertical .org-chart-node-label .org-chart-node-btn {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  z-index: 10;
+  margin-left: -11px;
+  margin-top: 9px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+}
+.org-chart-container .vertical .org-chart-node-label .org-chart-node-btn:hover {
+  transform: scale(1.15);
+  cursor: pointer;
+}
+.org-chart-container .vertical .org-chart-node-label .org-chart-node-btn::before,
+.org-chart-container .vertical .org-chart-node-label .org-chart-node-btn::after {
+  content: '';
+  position: absolute;
+}
+.org-chart-container .vertical .org-chart-node-label .org-chart-node-btn::before {
+  top: 50%;
+  left: 4px;
+  right: 4px;
+  height: 0;
+  border-top: 1px solid #ccc;
+}
+.org-chart-container .vertical .org-chart-node-label .org-chart-node-btn::after {
+  top: 4px;
+  left: 50%;
+  bottom: 4px;
+  width: 0;
+  border-left: 1px solid #ccc;
+}
+.org-chart-container .vertical .org-chart-node-label .expanded.org-chart-node-btn::after {
+  display: none;
+}
+
+.org-chart-container .vertical .org-chart-node.collapsed .org-chart-node-label {
+  position: relative;
+}
+.org-chart-container .vertical .org-chart-node.collapsed .org-chart-node-label::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 50%;
+  height: 20px;
+  border-right: 1px solid #ddd;
+}
+
+/* ======================= 水平模式 ======================= */
+.org-chart-container .horizontal .org-chart-node-children,
+.org-chart-container .horizontal .org-chart-node-left-children {
+  position: relative;
+  padding-left: 20px;
+}
+.org-chart-container .horizontal .org-chart-node-left-children {
+  padding-right: 20px;
+}
+.org-chart-container .horizontal .org-chart-node:not(.is-left-child-node) {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding: 0 5px 0 20px;
+}
+.org-chart-container .horizontal .is-left-child-node {
+  display: flex;
+  position: relative;
+  justify-content: flex-end;
+  align-items: center;
+}
+.org-chart-container .horizontal .is-left-child-node {
+  padding: 0 20px 0 5px;
+}
+
+/* 使用 ::before 和 ::after 绘制连接器 */
+.org-chart-container .horizontal .org-chart-node:not(.is-left-child-node)::before,
+.org-chart-container .horizontal .org-chart-node:not(.is-left-child-node)::after {
+  content: '';
+  position: absolute;
+  border-left: 1px solid #ccc;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 50%;
+}
+.org-chart-container .horizontal .is-left-child-node::before,
+.org-chart-container .horizontal .is-left-child-node::after {
+  content: '';
+  position: absolute;
+  border-right: 1px solid #ccc;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 50%;
+}
+.org-chart-container .horizontal .org-chart-node:not(.is-left-child-node)::after {
+  top: 50%;
+  border-top: 1px solid #ccc;
+}
+.org-chart-container .horizontal .is-left-child-node::after {
+  top: 50%;
+  border-top: 1px solid #ccc;
+}
+
+/* 从没有任何兄弟元素的元素中删除左右连接器 */
+.org-chart-container .horizontal.one-branch > .org-chart-node::after,
+.org-chart-container .horizontal.one-branch > .org-chart-node::before {
+  display: none;
+}
+/* 从单个子节点的顶部移除空格 */
+.org-chart-container .horizontal.one-branch > .org-chart-node {
+  padding-left: 0;
+}
+
+/* 从第一个子节点移除左连接器，从最后一个子节点移除右连接器 */
+.org-chart-container .horizontal .org-chart-node:first-child::before,
+.org-chart-container .horizontal .org-chart-node:last-child::after {
+  border: 0 none;
+}
+/* 将垂直连接器添加回最后的节点 */
+.org-chart-container
+  .horizontal
+  .org-chart-node:not(.is-left-child-node):not(.is-not-child):last-child::before {
+  border-bottom: 1px solid #ccc;
+  border-radius: 0 0 0 5px;
+}
+.org-chart-container .horizontal .is-left-child-node:last-child::before {
+  border-bottom: 1px solid #ccc;
+  border-radius: 0 0 5px 0;
+}
+
+.org-chart-container .horizontal .org-chart-node:only-child::before {
+  border-radius: 0 0 0 0 !important;
+  border-color: #ccc;
+}
+
+.org-chart-container .horizontal .org-chart-node:not(.is-left-child-node):first-child::after {
+  border-radius: 5px 0 0 0;
+}
+.org-chart-container .horizontal .is-left-child-node:first-child::after {
+  border-radius: 0 5px 0 0;
+}
+
+.org-chart-container .horizontal .org-chart-node.is-leaf {
+  position: relative;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+.org-chart-container .horizontal .org-chart-node.is-leaf::before {
+  content: '';
+  display: block;
+}
+.org-chart-container .horizontal .org-chart-node.is-leaf .org-chart-node-label::after,
+.org-chart-container .horizontal .is-left-child-node.is-leaf .org-chart-node-label::before {
+  display: none;
+}
+
+.org-chart-container .horizontal .is-left-child-node:last-child::after {
+  border-radius: 0 0 5px 0;
+}
+.org-chart-container .horizontal .is-left-child-node:only-child::after {
+  border-radius: 0 0 0 0;
+}
+
+.org-chart-container .horizontal .is-left-child-node.is-leaf {
+  position: relative;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+.org-chart-container .horizontal .is-left-child-node.is-leaf::before {
+  content: '';
+  display: block;
+}
+.org-chart-container .horizontal .is-left-child-node .org-chart-node-label::after {
+  display: none;
+}
+
+/* 从父节点添加向右/向左的连接器 */
+.org-chart-container .horizontal .org-chart-node-children::before,
+.org-chart-container .horizontal .org-chart-node-left-children::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  border-top: 1px solid #ccc;
+  width: 12px;
+  height: 10px;
+}
+.org-chart-container .horizontal .org-chart-node-children::before {
+  width: 20px;
+}
+.org-chart-container .horizontal .org-chart-node-left-children::before {
+  left: calc(100% - 11px);
+}
+.org-chart-container .horizontal > .only-both-tree-node > .org-chart-node-left-children::before {
+  display: none;
+}
+
+.org-chart-container .horizontal .org-chart-node-label {
+  position: relative;
+  display: inline-block;
+}
+
+.org-chart-container .horizontal .org-chart-node-label .org-chart-node-label-inner {
+  box-shadow: 0 1px 10px rgba(31, 35, 41, 0.08);
+  display: inline-block;
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 16px;
+  word-break: break-all;
+}
+
+.org-chart-container .horizontal .org-chart-node-label .org-chart-node-label-inner:hover {
+  box-shadow: 0 1px 14px rgba(31, 35, 41, 0.12);
+  cursor: pointer;
+}
+.org-chart-container .horizontal .org-chart-node-label .org-chart-node-btn {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  z-index: 10;
+  margin-top: -11px;
+  margin-left: 9px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+}
+
+.org-chart-container .horizontal .org-chart-node-label .org-chart-node-btn:hover,
+.org-chart-container .horizontal .org-chart-node-label .org-chart-node-left-btn:hover {
+  transform: scale(1.15);
+}
+.org-chart-container .horizontal .org-chart-node-label .org-chart-node-btn::before,
+.org-chart-container .horizontal .org-chart-node-label .org-chart-node-btn::after,
+.org-chart-container .horizontal .org-chart-node-label .org-chart-node-left-btn::before,
+.org-chart-container .horizontal .org-chart-node-label .org-chart-node-left-btn::after {
+  content: '';
+  position: absolute;
+}
+
+.org-chart-container .horizontal .org-chart-node-label .org-chart-node-btn::before,
+.org-chart-container .horizontal .org-chart-node-label .org-chart-node-left-btn::before {
+  top: 50%;
+  left: 4px;
+  right: 3px;
+  border-top: 1px solid #ccc;
+  height: 0;
+  transform: translateY(-50%);
+}
+.org-chart-container .horizontal .org-chart-node-label .org-chart-node-btn::after,
+.org-chart-container .horizontal .org-chart-node-label .org-chart-node-left-btn::after {
+  top: 4px;
+  left: 50%;
+  bottom: 4px;
+  width: 0;
+  border-left: 1px solid #ccc;
+}
+.org-chart-container .horizontal .org-chart-node-label .expanded.org-chart-node-btn::after,
+.org-chart-container .horizontal .org-chart-node-label .expanded.org-chart-node-left-btn::after {
+  display: none;
+}
+
+.org-chart-container .horizontal .org-chart-node-label .org-chart-node-left-btn {
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  width: 20px;
+  height: 20px;
+  z-index: 10;
+  margin-top: -11px;
+  margin-right: 9px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 50%;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+}
+
+.org-chart-container .horizontal .org-chart-node.collapsed .org-chart-node-label,
+.org-chart-container .horizontal .is-left-child-node.collapsed .org-chart-node-label {
+  position: relative;
+}
+.org-chart-container .horizontal .org-chart-node.collapsed .org-chart-node-label::after,
+.org-chart-container .horizontal .is-left-child-node.collapsed .org-chart-node-label::before {
+  content: '';
+  border-bottom: 1px solid #ccc;
+  position: absolute;
+  top: 0;
+  left: 100%;
+  height: 50%;
+  width: 10px;
+}
+.org-chart-container .horizontal .org-chart-node .is-root-label.is-not-right-child::after,
+.org-chart-container .horizontal .org-chart-node .is-root-label.is-not-left-child::before {
+  display: none !important;
+}
+
+.org-chart-container .horizontal .is-left-child-node.collapsed .org-chart-node-label::before {
+  left: -10px;
+}
+.org-chart-container .horizontal .only-both-tree-node > .org-chart-node-label::before {
+  content: '';
+  border-bottom: 1px solid #ccc;
+  position: absolute;
+  top: 0;
+  right: 100%;
+  height: 50%;
+  width: 20px;
+}
+
+/* ======================= 展开按钮内的子节点数 ======================= */
+.org-chart-container .org-chart-node-children .org-chart-node-btn-text,
+.org-chart-container .org-chart-node-left-children .org-chart-node-btn-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #fff;
+  border-radius: 50%;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #909090;
+  z-index: 2;
+}
+
+/* ======================= 根对齐（align-root，Vue 3 版内建） ======================= */
+/*
+ * OKR 模式下根节点行是 [左子树容器][根节点][右子树容器] 的 flex 行。
+ * 令左右容器 flex: 1 1 0 等分剩余宽度（min-width:auto 保证不会压缩到内容宽度以下），
+ * 根节点即位于容器水平中心；多棵树并排/上下排列时各自根节点都在 50% 处，天然对齐，
+ * 且展开/收起不再改变根节点位置。替代原 Demo 的手动 DOM 测量。
+ */
+.org-chart-container .horizontal .org-chart-node.only-both-tree-node.align-root {
+  width: 100%;
+}
+.org-chart-container
+  .horizontal
+  .org-chart-node.only-both-tree-node.align-root
+  > .org-chart-node-left-children,
+.org-chart-container
+  .horizontal
+  .org-chart-node.only-both-tree-node.align-root
+  > .org-chart-node-children {
+  flex: 1 1 0;
+}
+.org-chart-container .horizontal .org-chart-node.only-both-tree-node.align-root > .org-chart-node-label {
+  flex: 0 0 auto;
+}
+
+/* ======================= 禁用节点（props.disabled，Vue 3 版实现） ======================= */
+.org-chart-container .org-chart-node-label .org-chart-node-label-inner.is-disabled,
+.org-chart-container .org-chart-node-label .org-chart-node-label-inner.is-disabled:hover {
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: 0 1px 10px rgba(31, 35, 41, 0.08);
+}

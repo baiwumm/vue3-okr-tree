@@ -297,7 +297,7 @@ export class TreeNode {
     const index = this.childNodes.indexOf(child)
 
     if (index > -1) {
-      this.store && this.store.deregisterNode(child)
+      if (this.store) this.store.deregisterNode(child)
       child.parent = null
       this.childNodes.splice(index, 1)
     }

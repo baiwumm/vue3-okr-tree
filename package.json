@@ -31,7 +31,7 @@
     "README.md",
     "LICENSE"
   ],
-  "main": "./dist/vue3-okr-tree.umd.js",
+  "main": "./dist/vue3-okr-tree.cjs",
   "module": "./dist/vue3-okr-tree.es.js",
   "types": "./dist/index.d.ts",
   "unpkg": "./dist/vue3-okr-tree.umd.js",
@@ -40,7 +40,8 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/vue3-okr-tree.es.js",
-      "require": "./dist/vue3-okr-tree.umd.js"
+      "require": "./dist/vue3-okr-tree.cjs",
+      "default": "./dist/vue3-okr-tree.es.js"
     },
     "./dist/style.css": "./dist/style.css",
     "./style.css": "./dist/style.css",
@@ -52,6 +53,8 @@
   "scripts": {
     "dev": "vite --config vite.playground.config.ts",
     "build": "vite build",
+    "verify:dist": "node scripts/verify-dist.mjs",
+    "build:check": "pnpm build && pnpm verify:dist",
     "build:playground": "vite build --config vite.playground.config.ts",
     "preview:playground": "vite preview --config vite.playground.config.ts",
     "test": "vitest run",
@@ -67,6 +70,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
+    "@microsoft/api-extractor": "^7.59.1",
     "@types/node": "^24.13.5",
     "@types/prismjs": "^1.26.6",
     "@vitejs/plugin-vue": "^6.0.9",

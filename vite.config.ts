@@ -11,10 +11,12 @@ export default defineConfig({
   plugins: [
     vue(),
     dts({
+      processor: 'vue',
       tsconfigPath: r('./tsconfig.json'),
+      entryRoot: r('./src'),
       include: ['src/lib/**/*.ts', 'src/lib/**/*.vue', 'src/types/**/*.ts', 'env.d.ts'],
       exclude: ['tests/**', 'playground/**'],
-      rollupTypes: true,
+      bundleTypes: true,
       insertTypesEntry: true,
       cleanVueFileName: true,
       copyDtsFiles: false,
@@ -29,8 +31,9 @@ export default defineConfig({
     lib: {
       entry: r('./src/lib/index.ts'),
       name: 'VueOkrTree',
-      formats: ['es', 'umd'],
-      fileName: (format) => `vue3-okr-tree.${format}.js`,
+      formats: ['es', 'umd', 'cjs'],
+      // es/umd 保持原命名；cjs 用 .cjs 扩展名以兼容 "type": "module" 下的 require()
+      fileName: (format) => (format === 'cjs' ? 'vue3-okr-tree.cjs' : `vue3-okr-tree.${format}.js`),
       cssFileName: 'style',
     },
     cssCodeSplit: false,

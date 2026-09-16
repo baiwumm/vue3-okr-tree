@@ -38,30 +38,30 @@
 
 ## 阶段 2：组件层
 
-- [ ] ⭐ 2.1 `OkrTree.vue`：全部 props（requirements 3.1，含 animate-duration 接线/Q5）、provide store、watch data（deep）/leftData/defaultExpandedKeys、defineExpose 全部 methods（requirements 3.4，含各抛错语义）、4 个事件（3.3）
-- [ ] ⭐ 2.2 `OkrTreeNode.vue`：递归渲染、左右子树容器（onlyBothTree）、展开/折叠按钮（含 show-node-num 计数、node-btn-content）、节点点击/右键、is-current/labelClassName 样式计算
-- [ ] 2.3 renderContent/nodeBtnContent 兼容层：`h` 从 vue 导入后显式传入（Vue 3 render 不再注入 h）、保持 `(h, node)` 签名（node 为 Node 实例）；开放默认作用域插槽 `#default="{ node }"`（requirements 5.3.5）
-- [ ] 2.4 过渡动画：6 组 okr-* transition（transition.css 全量迁移，含 okr-zoom-in-left/Q6）+ animate/animate-name/animate-duration props
-- [ ] 2.5 交互细节对齐：one-branch、collapsed 指示线、only-child 圆角、contextmenu 仅在外部监听时阻断默认行为、show-collapsable=false 时强制全展开
-- [ ] 2.6 Vue Test Utils 组件冒烟测试：垂直/水平/OKR 三模式渲染、展开/折叠与事件、filter()、render-content、node-click 选中态
+- [x] ⭐ 2.1 `OkrTree.vue`：全部 props（requirements 3.1，含 animate-duration 接线/Q5）、provide store、watch data（deep）/leftData/defaultExpandedKeys、defineExpose 全部 methods（requirements 3.4，含各抛错语义）、4 个事件（3.3）
+- [x] ⭐ 2.2 `OkrTreeNode.vue`：递归渲染、左右子树容器（onlyBothTree）、展开/折叠按钮（含 show-node-num 计数、node-btn-content）、节点点击/右键、is-current/labelClassName 样式计算
+- [x] 2.3 renderContent/nodeBtnContent 兼容层：`h` 从 vue 导入后显式传入（Vue 3 render 不再注入 h）、保持 `(h, node)` 签名（node 为 Node 实例）；开放默认作用域插槽 `#default="{ node }"`（requirements 5.3.5）
+- [x] 2.4 过渡动画：6 组 okr-* transition（transition.css 全量迁移，含 okr-zoom-in-left/Q6）+ animate/animate-name/animate-duration props
+- [x] 2.5 交互细节对齐：one-branch、collapsed 指示线、only-child 圆角、contextmenu 仅在外部监听时阻断默认行为、show-collapsable=false 时强制全展开
+- [x] 2.6 Vue Test Utils 组件冒烟测试：垂直/水平/OKR 三模式渲染、展开/折叠与事件、filter()、render-content、node-click 选中态
 
 ## 阶段 3：样式
 
-- [ ] ⭐ 3.1 移植垂直模式全部连接线/节点/按钮样式（OkrTree.vue 内 ~450 行 CSS）
-- [ ] ⭐ 3.2 移植水平模式样式（含左子树 is-left-child-node 全套）
-- [ ] 3.3 移除全局样式污染（去掉 `* {}` reset），样式收敛到组件前缀
-- [ ] 3.4 label-width/label-height 动态尺寸逻辑验证
+- [x] ⭐ 3.1 移植垂直模式全部连接线/节点/按钮样式（OkrTree.vue 内 ~450 行 CSS）
+- [x] ⭐ 3.2 移植水平模式样式（含左子树 is-left-child-node 全套）
+- [x] 3.3 移除全局样式污染（去掉 `* {}` reset），样式收敛到组件前缀
+- [x] 3.4 label-width/label-height 动态尺寸逻辑验证
 
 ## 阶段 4：根对齐增强
 
-- [ ] ⭐ 4.1 内建 onlyBothTree 根对齐：新增 `align-root` prop（默认 true），左右子树容器宽度按最大侧对齐（ResizeObserver 或纯 CSS grid 方案），取代原 Demo 手动 DOM 测量
+- [x] ⭐ 4.1 内建 onlyBothTree 根对齐：新增 `align-root` prop（默认 true），左右子树容器宽度按最大侧对齐（ResizeObserver 或纯 CSS grid 方案），取代原 Demo 手动 DOM 测量
 - [ ] 4.2 伸缩时根节点位置固定验证（对应原 2023/02/16、2023/02/20 两次修复）
 
 ## 阶段 5：库构建与集成验证
 
-- [ ] ⭐ 5.1 Vite 库构建跑通：es.js / umd.js / style.css / .d.ts 产物完整；`.d.ts` 用 vite-plugin-dts 生成（如遇问题再评估 vue-tsc 方案）；UMD 全局名定为 `VueOkrTree`
-- [ ] 5.2 最小 playground 先行验证 dist 产物路径：`import { VueOkrTree } from 'vue3-okr-tree'` + `import 'vue3-okr-tree/dist/style.css'` 可用（完整 Demo 站的 dist 双路径验证移至 6.8，待 Demo 页完成后执行）
-- [ ] 5.3 package.json exports/main/module/types 字段核对，模拟 `npm pack` 安装验证
+- [x] ⭐ 5.1 Vite 库构建跑通：es.js / umd.js / style.css / .d.ts 产物完整；`.d.ts` 用 vite-plugin-dts 生成（如遇问题再评估 vue-tsc 方案）；UMD 全局名定为 `VueOkrTree`
+- [x] 5.2 最小 playground 先行验证 dist 产物路径：`import { VueOkrTree } from 'vue3-okr-tree'` + `import 'vue3-okr-tree/dist/style.css'` 可用（完整 Demo 站的 dist 双路径验证移至 6.8，待 Demo 页完成后执行）
+- [x] 5.3 package.json exports/main/module/types 字段核对，模拟 `npm pack` 安装验证
 
 ## 阶段 6：Demo 演示页（与 requirements 4 逐项对齐）
 

@@ -1,0 +1,6 @@
+allowBuilds:
+  esbuild: set this to true or false
+minimumReleaseAgeExclude:
+  - '@types/node@24.13.5'
+  - '@vue/test-utils@2.5.1'
+  - prettier@3.9.7
