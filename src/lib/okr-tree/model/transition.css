@@ -1,0 +1,129 @@
+/*
+ * 过渡动画（自原 model/transition.css 全量迁移）
+ * Vue 3 中 enter 起始态类名由 `-enter` 改为 `-enter-from`，此处同时保留两者以兼容。
+ */
+
+/* ---------- okr-fade-in-linear ---------- */
+.okr-fade-in-linear-enter,
+.okr-fade-in-linear-enter-from,
+.okr-fade-in-linear-leave,
+.okr-fade-in-linear-leave-active {
+  opacity: 0;
+}
+.okr-fade-in-linear-enter-active,
+.okr-fade-in-linear-leave-active {
+  transition: opacity 0.2s linear;
+}
+
+/* ---------- fade-in-linear（无前缀版本，原文件保留） ---------- */
+.fade-in-linear-enter,
+.fade-in-linear-enter-from,
+.fade-in-linear-leave,
+.fade-in-linear-leave-active {
+  opacity: 0;
+}
+.fade-in-linear-enter-active,
+.fade-in-linear-leave-active {
+  transition: opacity 0.2s linear;
+}
+
+/* ---------- okr-fade-in ---------- */
+.okr-fade-in-enter,
+.okr-fade-in-enter-from,
+.okr-fade-in-leave-active {
+  opacity: 0;
+}
+.okr-fade-in-enter-active,
+.okr-fade-in-leave-active {
+  transition: all 0.3s cubic-bezier(0.55, 0, 0.1, 1);
+}
+
+/* ---------- okr-zoom-in-center ---------- */
+.okr-zoom-in-center-enter-active,
+.okr-zoom-in-center-leave-active {
+  transition: all 0.3s cubic-bezier(0.55, 0, 0.1, 1);
+}
+.okr-zoom-in-center-enter,
+.okr-zoom-in-center-enter-from,
+.okr-zoom-in-center-leave-active {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+/* ---------- okr-zoom-in-top ---------- */
+.okr-zoom-in-top-enter-active,
+.okr-zoom-in-top-leave-active {
+  opacity: 1;
+  transform: scaleY(1);
+  transition:
+    transform 0.3s cubic-bezier(0.23, 1, 0.32, 1),
+    opacity 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  transform-origin: center top;
+}
+.okr-zoom-in-top-enter,
+.okr-zoom-in-top-enter-from,
+.okr-zoom-in-top-leave-active {
+  opacity: 0;
+  transform: scaleY(0);
+}
+
+/* ---------- okr-zoom-in-bottom ---------- */
+.okr-zoom-in-bottom-enter-active,
+.okr-zoom-in-bottom-leave-active {
+  opacity: 1;
+  transform: scaleY(1);
+  transition:
+    transform 0.3s cubic-bezier(0.23, 1, 0.32, 1),
+    opacity 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  transform-origin: center bottom;
+}
+.okr-zoom-in-bottom-enter,
+.okr-zoom-in-bottom-enter-from,
+.okr-zoom-in-bottom-leave-active {
+  opacity: 0;
+  transform: scaleY(0);
+}
+
+/* ---------- okr-zoom-in-left（原 CSS 存在、原文档未列，一并提供） ---------- */
+.okr-zoom-in-left-enter-active,
+.okr-zoom-in-left-leave-active {
+  opacity: 1;
+  transform: scale(1, 1);
+  transition:
+    transform 0.3s cubic-bezier(0.23, 1, 0.32, 1),
+    opacity 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  transform-origin: top left;
+}
+.okr-zoom-in-left-enter,
+.okr-zoom-in-left-enter-from,
+.okr-zoom-in-left-leave-active {
+  opacity: 0;
+  transform: scale(0.45, 0.45);
+}
+
+/* ---------- 工具类（原文件保留） ---------- */
+.collapse-transition {
+  transition:
+    0.3s height ease-in-out,
+    0.3s padding-top ease-in-out,
+    0.3s padding-bottom ease-in-out;
+}
+.horizontal-collapse-transition {
+  transition:
+    0.3s width ease-in-out,
+    0.3s padding-left ease-in-out,
+    0.3s padding-right ease-in-out;
+}
+.okr-list-enter-active,
+.okr-list-leave-active {
+  transition: all 1s;
+}
+.okr-list-enter,
+.okr-list-enter-from,
+.okr-list-leave-active {
+  opacity: 0;
+  transform: translateY(-30px);
+}
+.okr-opacity-transition {
+  transition: opacity 0.3s cubic-bezier(0.55, 0, 0.1, 1);
+}

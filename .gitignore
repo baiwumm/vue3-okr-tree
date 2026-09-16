@@ -1,0 +1,33 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+playground/dist/
+*.tgz
+
+# logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# editor / os
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+Thumbs.db
+
+# test / coverage
+coverage/
+.vitest/
+
+# local env
+.env.local
+.env.*.local

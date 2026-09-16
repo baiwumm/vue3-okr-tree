@@ -1,0 +1,20 @@
+# 发布产物只包含 dist / README / LICENSE（package.json files 字段为主，此处兜底）
+src/
+playground/
+tests/
+docs/
+.workbuddy/
+node_modules/
+coverage/
+*.tgz
+*.log
+.gitignore
+.prettierrc
+.prettierignore
+eslint.config.js
+tsconfig*.json
+vite.config.ts
+vite.playground.config.ts
+env.d.ts
+pnpm-lock.yaml
+package-lock.json
