@@ -14,6 +14,13 @@ export interface OkrTreeContext {
   readonly hasContextmenuListener: boolean
   /** 树组件实例（事件回调第三个参数 nodeComponent 的"树"上下文） */
   readonly instance: ComponentPublicInstance | null
+  /** 节点展开态发生用户交互变化后调用：用于同步 v-model:expanded-keys */
+  onExpandChange: () => void
+  /** 选中节点发生用户交互变化后调用：用于同步 v-model:current-key */
+  onCurrentChange: () => void
+  /** 节点根元素登记（scrollToNode 使用） */
+  registerNodeEl: (node: TreeNode, el: HTMLElement) => void
+  unregisterNodeEl: (node: TreeNode) => void
 }
 
 export const OKR_TREE_INJECTION_KEY: InjectionKey<OkrTreeContext> = Symbol('okr-tree')

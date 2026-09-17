@@ -10,6 +10,9 @@
         'one-branch': data.length === 1,
       }"
     >
+      <div v-if="isEmpty && $slots.empty" class="org-chart-empty">
+        <slot name="empty" />
+      </div>
       <OkrTreeNode
         v-for="child in root.childNodes"
         :key="getNodeKey(child)"
@@ -26,29 +29,42 @@
         <template v-if="$slots.default" #default="scope">
           <slot v-bind="scope" />
         </template>
+        <template v-if="$slots['expand-btn']" #expand-btn="scope">
+          <slot name="expand-btn" v-bind="scope" />
+        </template>
       </OkrTreeNode>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, getCurrentInstance, provide, shallowReactive, watch, type PropType } from 'vue'
+import {
+  computed,
+  getCurrentInstance,
+  nextTick,
+  provide,
+  shallowReactive,
+  watch,
+  type PropType,
+} from 'vue'
 import OkrTreeNode from './OkrTreeNode.vue'
 import { TreeStore } from './model/tree-store'
-import { getNodeKey as _getNodeKey } from './model/util'
+import { getNodeKey as _getNodeKey, warn } from './model/util'
 import { OKR_TREE_INJECTION_KEY, type OkrTreeEventName } from './context'
 import type { TreeNode } from './model/node'
 import type {
   AnimateName,
-  TreeTheme,
+  ExpandBtnSlotScope,
   FilterNodeMethod,
   LabelClassName,
   NodeBtnContentFunction,
   RenderContentFunction,
+  ScrollToNodeOptions,
   TreeDirection,
   TreeKey,
   TreeNodeData,
   TreeOptionProps,
+  TreeTheme,
 } from '../../types'
 
 defineOptions({ name: 'OkrTree' })
@@ -83,11 +99,11 @@ const props = defineProps({
   },
   /** 是否默认展开所有节点 */
   defaultExpandAll: { type: Boolean, default: false },
-  /** 初始选中的节点 key */
+  /** 初始选中的节点 key（单向） */
   currentNodeKey: { type: [String, Number] as PropType<TreeKey>, default: undefined },
   /** 节点唯一标识字段 */
   nodeKey: { type: String, default: undefined },
-  /** 默认展开的节点 key 数组 */
+  /** 默认展开的节点 key 数组（单向） */
   defaultExpandedKeys: { type: Array as PropType<TreeKey[]>, default: undefined },
   /** 过滤方法 */
   filterNodeMethod: { type: Function as PropType<FilterNodeMethod>, default: undefined },
@@ -113,6 +129,16 @@ const props = defineProps({
    * 或自定义名字（自行编写 .okr-theme-{name} { --okr-*: ... }）。实现为在根容器加 okr-theme-{name} 类。
    */
   theme: { type: String as PropType<TreeTheme>, default: 'default' },
+  /**
+   * 受控展开态（v-model:expanded-keys，需 node-key）：传入后列表内节点展开、其余收起；
+   * 用户点击 +/- 或调用展开/收起方法后触发 update:expandedKeys。未传时为非受控（原版行为）。
+   */
+  expandedKeys: { type: Array as PropType<TreeKey[]>, default: undefined },
+  /**
+   * 受控选中态（v-model:current-key，需 node-key）：null 表示无选中；
+   * 用户点击节点或调用 setCurrentKey / setCurrentNode 后触发 update:currentKey。
+   */
+  currentKey: { type: [String, Number, null] as PropType<TreeKey | null>, default: undefined },
 })
 
 const emit = defineEmits<{
@@ -126,10 +152,17 @@ const emit = defineEmits<{
     node: TreeNode,
     nodeComponent: any
   ): void
+  (e: 'update:expandedKeys', keys: TreeKey[]): void
+  (e: 'update:currentKey', key: TreeKey | null): void
 }>()
 
 defineSlots<{
+  /** 节点内容（替代 render-content） */
   default?: (scope: { node: TreeNode; data: TreeNodeData }) => any
+  /** 展开按钮内容（替代 node-btn-content；show-node-num 优先） */
+  'expand-btn'?: (scope: ExpandBtnSlotScope) => any
+  /** data 为空时渲染 */
+  empty?: () => any
 }>()
 
 const instance = getCurrentInstance()
@@ -137,6 +170,24 @@ const instance = getCurrentInstance()
 const themeClass = computed(() =>
   props.theme && props.theme !== 'default' ? `okr-theme-${props.theme}` : ''
 )
+
+// ---- 开发期配置校验 ----
+if (props.onlyBothTree && props.direction !== 'horizontal') {
+  warn(
+    'onlyBothTree 仅在 direction="horizontal" 时有效，当前 direction 为 "' + props.direction + '"。'
+  )
+}
+if (props.leftData && !props.onlyBothTree) {
+  warn('传入了 leftData 但未开启 onlyBothTree，leftData 会被忽略。')
+}
+if (!props.nodeKey) {
+  if (props.defaultExpandedKeys) warn('default-expanded-keys 需要同时设置 node-key，否则不会生效。')
+  if (props.expandedKeys !== undefined)
+    warn('expanded-keys（v-model）需要同时设置 node-key，否则不会生效。')
+  if (props.currentKey !== undefined || props.currentNodeKey !== undefined) {
+    warn('current-key / current-node-key 需要同时设置 node-key，否则不会生效。')
+  }
+}
 
 const rawStore = new TreeStore({
   key: props.nodeKey,
@@ -160,6 +211,35 @@ const rawStore = new TreeStore({
 const store = shallowReactive(rawStore) as TreeStore
 const root = store.root
 
+const isEmpty = computed(() => root.childNodes.length === 0)
+
+// 受控初始态：expanded-keys / current-key 优先于 default-expanded-keys / current-node-key
+if (props.nodeKey) {
+  if (props.expandedKeys !== undefined) store.setExpandedKeys(props.expandedKeys)
+  if (props.currentKey !== undefined) store.setCurrentNodeKey(props.currentKey)
+}
+
+// ---- v-model 同步 ----
+const isExpandedControlled = () => props.expandedKeys !== undefined
+const isCurrentControlled = () => props.currentKey !== undefined
+
+function currentKeyValue(): TreeKey | null {
+  const node = store.getCurrentNode()
+  const key = node?.key
+  return key === undefined ? null : (key as TreeKey)
+}
+
+function syncExpandedKeys() {
+  if (isExpandedControlled() && props.nodeKey) emit('update:expandedKeys', store.getExpandedKeys())
+}
+
+function syncCurrentKey() {
+  if (isCurrentControlled() && props.nodeKey) emit('update:currentKey', currentKeyValue())
+}
+
+// ---- 节点根元素登记（scrollToNode 用） ----
+const nodeEls = new WeakMap<TreeNode, HTMLElement>()
+
 provide(OKR_TREE_INJECTION_KEY, {
   store,
   root,
@@ -171,6 +251,10 @@ provide(OKR_TREE_INJECTION_KEY, {
   get instance() {
     return instance?.proxy ?? null
   },
+  onExpandChange: syncExpandedKeys,
+  onCurrentChange: syncCurrentKey,
+  registerNodeEl: (node, el) => nodeEls.set(node, el),
+  unregisterNodeEl: (node) => nodeEls.delete(node),
 })
 
 // ---- 配置同步：运行时变更的 prop 写回 store（原版为创建时快照） ----
@@ -205,6 +289,11 @@ watch(
   () => props.data,
   (newVal) => {
     store.setData(newVal)
+    // 重建后按受控值恢复展开/选中态
+    if (props.nodeKey) {
+      if (isExpandedControlled()) store.setExpandedKeys(props.expandedKeys)
+      if (isCurrentControlled()) store.setCurrentNodeKey(props.currentKey)
+    }
   },
   { deep: true }
 )
@@ -227,6 +316,19 @@ watch(
     if (props.nodeKey) store.setCurrentNodeKey(newVal)
   }
 )
+watch(
+  () => props.expandedKeys,
+  (newVal) => {
+    if (props.nodeKey && newVal !== undefined) store.setExpandedKeys(newVal)
+  },
+  { deep: true }
+)
+watch(
+  () => props.currentKey,
+  (newVal) => {
+    if (props.nodeKey && newVal !== undefined) store.setCurrentNodeKey(newVal)
+  }
+)
 
 // ---- 对外方法 ----
 function filter(value: any) {
@@ -235,6 +337,7 @@ function filter(value: any) {
   if (props.onlyBothTree) {
     store.filter(value, 'leftChildNodes')
   }
+  syncExpandedKeys()
 }
 
 function getNodeKey(node: TreeNode) {
@@ -245,6 +348,7 @@ function getNodeKey(node: TreeNode) {
 function setCurrentNode(node: TreeNode) {
   if (!props.nodeKey) throw new Error('[Tree] nodeKey is required in setCurrentNode')
   store.setUserCurrentNode(node)
+  syncCurrentKey()
 }
 
 /** 根据 data 或者 key 拿到 Tree 组件中的 node */
@@ -256,10 +360,13 @@ function getNode(data: TreeNode | TreeKey | TreeNodeData) {
 function setCurrentKey(key: TreeKey | null | undefined) {
   if (!props.nodeKey) throw new Error('[Tree] nodeKey is required in setCurrentKey')
   store.setCurrentNodeKey(key)
+  syncCurrentKey()
 }
 
 function remove(data: TreeNode | TreeKey | TreeNodeData) {
+  const before = store.getCurrentNode()
   store.remove(data)
+  if (before && store.getCurrentNode() !== before) syncCurrentKey()
 }
 
 /** 获取当前被选中节点的 data */
@@ -291,6 +398,64 @@ function updateKeyChildren(key: TreeKey, data: TreeNodeData[]) {
   store.updateChildren(key, data)
 }
 
+/** 展开全部节点（左右两树） */
+function expandAll() {
+  store.expandAll()
+  syncExpandedKeys()
+}
+
+/** 收起全部节点（左右两树） */
+function collapseAll() {
+  store.collapseAll()
+  syncExpandedKeys()
+}
+
+/** 展开指定节点（key / data / Node），默认连同祖先一起展开 */
+function expandNode(data: TreeNode | TreeKey | TreeNodeData, expandParent = true) {
+  const node = store.expandNode(data, expandParent)
+  if (node) syncExpandedKeys()
+  return node
+}
+
+/** 收起指定节点（key / data / Node） */
+function collapseNode(data: TreeNode | TreeKey | TreeNodeData) {
+  const node = store.collapseNode(data)
+  if (node) syncExpandedKeys()
+  return node
+}
+
+/**
+ * 滚动到指定节点：默认先展开其全部祖先使其可见，再 scrollIntoView（居中、平滑）。
+ * 返回是否找到节点并完成滚动。
+ */
+async function scrollToNode(
+  data: TreeNode | TreeKey | TreeNodeData,
+  options: ScrollToNodeOptions = {}
+): Promise<boolean> {
+  const node = store.getNode(data)
+  if (!node) return false
+  const { expand = true, ...scrollOptions } = options
+  if (expand) {
+    let parent = node.parent
+    while (parent && parent.level > 0) {
+      if (parent.isLeftChild) parent.leftExpanded = true
+      else parent.expanded = true
+      parent = parent.parent
+    }
+    // 左树节点还受右树根节点的 leftExpanded 控制
+    if (node.isLeftChild && store.onlyBothTree) {
+      const okrRoot = root.childNodes[0]
+      if (okrRoot) okrRoot.leftExpanded = true
+    }
+    syncExpandedKeys()
+  }
+  await nextTick()
+  const el = nodeEls.get(node)
+  if (!el || typeof el.scrollIntoView !== 'function') return false
+  el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center', ...scrollOptions })
+  return true
+}
+
 defineExpose({
   store,
   root,
@@ -306,6 +471,11 @@ defineExpose({
   insertBefore,
   insertAfter,
   updateKeyChildren,
+  expandAll,
+  collapseAll,
+  expandNode,
+  collapseNode,
+  scrollToNode,
 })
 </script>
 

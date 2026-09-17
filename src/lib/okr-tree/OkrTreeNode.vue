@@ -1,6 +1,7 @@
 <template>
   <div
     v-if="node.visible"
+    ref="rootEl"
     class="org-chart-node"
     :class="nodeClass"
     :data-level="node.level"
@@ -25,6 +26,9 @@
           <template v-if="$slots.default" #default="scope">
             <slot v-bind="scope" />
           </template>
+          <template v-if="$slots['expand-btn']" #expand-btn="scope">
+            <slot name="expand-btn" v-bind="scope" />
+          </template>
         </OkrTreeNode>
       </div>
     </transition>
@@ -39,6 +43,14 @@
         <template v-if="showNodeNum">
           <span v-if="!node.leftExpanded" class="org-chart-node-btn-text">{{ leftBtnCount }}</span>
         </template>
+        <slot
+          v-else-if="$slots['expand-btn']"
+          name="expand-btn"
+          :node="node"
+          :data="node.data"
+          :expanded="node.leftExpanded"
+          side="left"
+        />
         <NodeBtnContent v-else :node="node" :node-btn-content="nodeBtnContent" />
       </div>
 
@@ -66,6 +78,14 @@
             node.childNodes.length
           }}</span>
         </template>
+        <slot
+          v-else-if="$slots['expand-btn']"
+          name="expand-btn"
+          :node="node"
+          :data="node.data"
+          :expanded="node.expanded"
+          side="right"
+        />
         <NodeBtnContent v-else :node="node" :node-btn-content="nodeBtnContent" />
       </div>
     </div>
@@ -93,6 +113,9 @@
           <template v-if="$slots.default" #default="scope">
             <slot v-bind="scope" />
           </template>
+          <template v-if="$slots['expand-btn']" #expand-btn="scope">
+            <slot name="expand-btn" v-bind="scope" />
+          </template>
         </OkrTreeNode>
       </div>
     </transition>
@@ -105,6 +128,7 @@ import {
   getCurrentInstance,
   inject,
   onBeforeUnmount,
+  onMounted,
   ref,
   watch,
   type CSSProperties,
@@ -114,7 +138,7 @@ import { OKR_TREE_INJECTION_KEY } from './context'
 import { NodeContent, NodeBtnContent } from './node-content'
 import { getNodeKey as _getNodeKey } from './model/util'
 import type { TreeNode } from './model/node'
-import type { NodeBtnContentFunction, RenderContentFunction } from '../../types'
+import type { ExpandBtnSlotScope, NodeBtnContentFunction, RenderContentFunction } from '../../types'
 
 defineOptions({ name: 'OkrTreeNode' })
 
@@ -142,6 +166,7 @@ const props = defineProps({
 
 defineSlots<{
   default?: (scope: { node: TreeNode; data: Record<string, any> }) => any
+  'expand-btn'?: (scope: ExpandBtnSlotScope) => any
 }>()
 
 const tree = inject(OKR_TREE_INJECTION_KEY)
@@ -152,6 +177,21 @@ const store = tree.store
 const instance = getCurrentInstance()
 
 const node = computed(() => props.node)
+
+// 登记根元素供 scrollToNode 查找；node prop 变化（key 复用）时重新登记
+const rootEl = ref<HTMLElement | null>(null)
+watch(
+  [rootEl, node],
+  ([el, current], [, prev]) => {
+    if (prev && prev !== current) tree!.unregisterNodeEl(prev)
+    if (el && current) tree!.registerNodeEl(current, el)
+  },
+  { flush: 'post' }
+)
+onMounted(() => {
+  if (rootEl.value) tree!.registerNodeEl(node.value, rootEl.value)
+})
+onBeforeUnmount(() => tree!.unregisterNodeEl(node.value))
 
 const leftChildNodes = computed<TreeNode[]>(() => {
   if (store.onlyBothTree) {
@@ -327,6 +367,7 @@ function getNodeKey(child: TreeNode) {
 function handleNodeClick() {
   if (node.value.disabled) return
   store.setCurrentNode(node.value)
+  tree!.onCurrentChange()
   tree!.emit('node-click', node.value.data, node.value, instance?.proxy)
 }
 
@@ -337,18 +378,22 @@ function handleBtnClick(side: 'left' | 'right') {
   if (store.onlyBothTree && isLeft) {
     if (current.leftExpanded) {
       current.leftExpanded = false
+      tree!.onExpandChange()
       tree!.emit('node-collapse', current.data, current, instance?.proxy)
     } else {
       current.leftExpanded = true
+      tree!.onExpandChange()
       tree!.emit('node-expand', current.data, current, instance?.proxy)
     }
     return
   }
   if (current.expanded) {
     current.collapse()
+    tree!.onExpandChange()
     tree!.emit('node-collapse', current.data, current, instance?.proxy)
   } else {
     current.expand()
+    tree!.onExpandChange()
     tree!.emit('node-expand', current.data, current, instance?.proxy)
   }
 }

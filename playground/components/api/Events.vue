@@ -17,5 +17,15 @@ const rows: string[][] = [
     '当某一节点被鼠标右键点击时会触发该事件。仅当外部绑定了该事件时才阻止浏览器默认右键菜单',
     '(event, data, node, nodeComponent)',
   ],
+  [
+    'update:expandedKeys',
+    '<strong>Vue 3 版新增。</strong>受控展开态变化时触发（仅传入 expanded-keys 时）',
+    '(keys: TreeKey[])',
+  ],
+  [
+    'update:currentKey',
+    '<strong>Vue 3 版新增。</strong>受控选中态变化时触发（仅传入 current-key 时）',
+    '(key: TreeKey | null)',
+  ],
 ]
 </script>

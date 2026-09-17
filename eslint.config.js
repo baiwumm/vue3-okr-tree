@@ -68,5 +68,9 @@ export default tseslint.config(
         ...globals.vitest,
       },
     },
+    rules: {
+      // 测试里常用 defineComponent 内联多个父组件
+      'vue/one-component-per-file': 'off',
+    },
   }
 )

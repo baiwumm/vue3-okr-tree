@@ -60,5 +60,22 @@ const rows: string[][] = [
     '为 Tree 的一个节点的后面增加一个节点。会同步写入源数据',
     '(data, refNode) 1. 要增加的节点的 data 2. 参考节点的 data、key 或 Node 实例',
   ],
+  ['expandAll', '<strong>Vue 3 版新增。</strong>展开全部节点（OKR 模式含左右两树）', '—'],
+  ['collapseAll', '<strong>Vue 3 版新增。</strong>收起全部节点', '—'],
+  [
+    'expandNode',
+    '<strong>Vue 3 版新增。</strong>展开指定节点，默认连同祖先一起展开；OKR 根节点会同时展开左右两侧。返回 Node 或 null',
+    '(data, expandParent = true) data 为 key、data 对象或 Node 实例',
+  ],
+  [
+    'collapseNode',
+    '<strong>Vue 3 版新增。</strong>收起指定节点；OKR 根节点会同时收起左右两侧',
+    '(data)',
+  ],
+  [
+    'scrollToNode',
+    '<strong>Vue 3 版新增。</strong>滚动到指定节点：默认先展开其全部祖先使其可见，再 <code>scrollIntoView</code>（居中、平滑）。返回 Promise&lt;boolean&gt;',
+    '(data, options?) options 为 ScrollIntoViewOptions，另含 <code>expand</code>（默认 true）',
+  ],
 ]
 </script>

@@ -7,10 +7,12 @@ export type { TreeStoreOptions } from './okr-tree/model/tree-store'
 export { NODE_KEY, getNodeKey, markNodeData } from './okr-tree/model/util'
 export type {
   AnimateName,
+  ExpandBtnSlotScope,
   FilterNodeMethod,
   LabelClassName,
   NodeBtnContentFunction,
   RenderContentFunction,
+  ScrollToNodeOptions,
   TreeDirection,
   TreeKey,
   TreeNodeData,

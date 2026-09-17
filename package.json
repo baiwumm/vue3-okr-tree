@@ -1,6 +1,6 @@
 {
   "name": "vue3-okr-tree",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Vue 3 组织架构树 / OKR 树组件，支持根节点左右双向展开（vue-okr-tree 的 Vue 3 版本）",
   "type": "module",
   "license": "MIT",
@@ -29,7 +29,8 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "main": "./dist/vue3-okr-tree.cjs",
   "module": "./dist/vue3-okr-tree.es.js",

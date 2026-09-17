@@ -47,4 +47,19 @@ export type NodeBtnContentFunction = (createElement: typeof h, node: TreeNode) =
 export type LabelClassName =
   string | ((node: TreeNode) => string | string[] | Record<string, boolean> | undefined)
 
+/** #expand-btn 插槽参数 */
+export interface ExpandBtnSlotScope {
+  node: TreeNode
+  data: TreeNodeData
+  /** 该按钮控制的一侧当前是否展开 */
+  expanded: boolean
+  /** 按钮所在侧：right 为常规/右子树按钮，left 为 OKR 模式左子树按钮 */
+  side: 'left' | 'right'
+}
+
+/** scrollToNode 选项：ScrollIntoViewOptions + 是否先展开祖先（默认 true） */
+export interface ScrollToNodeOptions extends ScrollIntoViewOptions {
+  expand?: boolean
+}
+
 export type { TreeNode }

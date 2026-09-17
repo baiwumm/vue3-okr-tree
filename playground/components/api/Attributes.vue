@@ -116,5 +116,19 @@ const rows: string[][] = [
     'default / feishu / dark / auto / minimal / colorful',
     'default',
   ],
+  [
+    'expanded-keys',
+    '<strong>Vue 3 版新增。</strong>受控展开态（支持 <code>v-model:expanded-keys</code>，需 node-key）：传入后列表内节点展开、其余收起；用户点击 +/- 或调用展开/收起方法后触发 <code>update:expandedKeys</code>。未传时为非受控（原版行为）',
+    'array',
+    '—',
+    '—',
+  ],
+  [
+    'current-key',
+    '<strong>Vue 3 版新增。</strong>受控选中态（支持 <code>v-model:current-key</code>，需 node-key）：<code>null</code> 表示无选中；点击节点或调用 setCurrentKey / setCurrentNode 后触发 <code>update:currentKey</code>',
+    'string / number / null',
+    '—',
+    '—',
+  ],
 ]
 </script>

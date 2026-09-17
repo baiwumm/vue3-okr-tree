@@ -1,5 +1,5 @@
 import { TreeNode, createNode, createChildNodes } from './node'
-import { getNodeKey } from './util'
+import { getNodeKey, warn } from './util'
 import type {
   FilterNodeMethod,
   LabelClassName,
@@ -151,8 +151,15 @@ export class TreeStore {
 
     const nodeKey = node.key
     if (nodeKey !== undefined) {
-      if (node.isLeftChild) this.leftNodesMap[nodeKey as string] = node
-      else this.nodesMap[nodeKey as string] = node
+      const map = node.isLeftChild ? this.leftNodesMap : this.nodesMap
+      const existing = map[nodeKey as string]
+      if (existing && existing !== node && existing.parent) {
+        warn(
+          `检测到重复的 node-key "${String(nodeKey)}"（${node.isLeftChild ? '左树' : '右树'}），` +
+            '后注册的节点会覆盖先注册的节点，getNode / setCurrentKey 等按 key 查找的方法可能返回错误节点。'
+        )
+      }
+      map[nodeKey as string] = node
     }
   }
 
@@ -250,6 +257,90 @@ export class TreeStore {
       this.currentNode = currentNode
     }
     currentNode.isCurrent = true
+  }
+
+  /** 遍历右树与左树的全部节点（不含两个虚拟根） */
+  forEachNode(callback: (node: TreeNode) => void) {
+    const walk = (parent: TreeNode) => {
+      parent.childNodes.forEach((child) => {
+        callback(child)
+        walk(child)
+      })
+    }
+    walk(this.root)
+    if (this.isLeftChilds) walk(this.isLeftChilds)
+  }
+
+  /** 展开全部节点（左右两树） */
+  expandAll() {
+    this.forEachNode((node) => {
+      node.expanded = true
+      node.leftExpanded = true
+    })
+  }
+
+  /** 收起全部节点（左右两树） */
+  collapseAll() {
+    this.forEachNode((node) => {
+      node.expanded = false
+      node.leftExpanded = false
+    })
+  }
+
+  /**
+   * 展开指定节点；expandParent 为 true 时连同祖先一起展开。
+   * OKR 模式下对根节点调用会同时展开左右两侧。
+   */
+  expandNode(data: TreeNode | TreeKey | TreeNodeData, expandParent = true): TreeNode | null {
+    const node = this.getNode(data)
+    if (!node) return null
+    node.expand(null, expandParent)
+    if (this.onlyBothTree && node.level === 1 && !node.isLeftChild) node.leftExpanded = true
+    return node
+  }
+
+  /** 收起指定节点。OKR 模式下对根节点调用会同时收起左右两侧 */
+  collapseNode(data: TreeNode | TreeKey | TreeNodeData): TreeNode | null {
+    const node = this.getNode(data)
+    if (!node) return null
+    if (node.isLeftChild) node.leftExpanded = false
+    else node.expanded = false
+    if (this.onlyBothTree && node.level === 1 && !node.isLeftChild) node.leftExpanded = false
+    return node
+  }
+
+  /** 当前处于展开态的节点 key 列表（需 node-key；左右两树去重） */
+  getExpandedKeys(): TreeKey[] {
+    if (!this.key) return []
+    const keys: TreeKey[] = []
+    const seen = new Set<string>()
+    this.forEachNode((node) => {
+      const key = node.key
+      if (key === undefined || key === null) return
+      const expanded = node.isLeftChild ? node.leftExpanded : node.expanded
+      if (!expanded) return
+      const sig = String(key)
+      if (seen.has(sig)) return
+      seen.add(sig)
+      keys.push(key)
+    })
+    return keys
+  }
+
+  /**
+   * 以 key 列表整体设置展开态：列表内的节点展开、其余节点收起（受控模式）。
+   * OKR 模式下根节点的左右两侧跟随根节点 key。
+   */
+  setExpandedKeys(keys: TreeKey[] | null | undefined) {
+    const set = new Set((keys || []).map((k) => String(k)))
+    this.forEachNode((node) => {
+      const key = node.key
+      if (key === undefined || key === null) return
+      const on = set.has(String(key))
+      if (node.isLeftChild) node.leftExpanded = on
+      else node.expanded = on
+      if (this.onlyBothTree && node.level === 1 && !node.isLeftChild) node.leftExpanded = on
+    })
   }
 
   /** 通过 node 设置选中（按其所在树的注册表取规范实例） */

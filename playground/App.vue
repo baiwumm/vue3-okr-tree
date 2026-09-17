@@ -58,11 +58,14 @@
     <BaseEvents />
     <!-- 16 OKR Events -->
     <BaseEventsOkr />
+    <!-- 17 受控状态与方法（1.2.0 新增） -->
+    <Base09 />
     <!-- 17-20 API 文档表格 -->
     <Attributes />
     <Props />
     <Events />
     <Methods />
+    <Slots />
 
     <div class="top-wrapp" title="回到顶部" @click="goTop">↑</div>
   </div>
@@ -86,10 +89,12 @@ import BaseFilter from './components/demos/BaseFilter.vue'
 import BaseFilterOkr from './components/demos/BaseFilterOkr.vue'
 import BaseEvents from './components/demos/BaseEvents.vue'
 import BaseEventsOkr from './components/demos/BaseEventsOkr.vue'
+import Base09 from './components/demos/Base09.vue'
 import Attributes from './components/api/Attributes.vue'
 import Props from './components/api/Props.vue'
 import Events from './components/api/Events.vue'
 import Methods from './components/api/Methods.vue'
+import Slots from './components/api/Slots.vue'
 
 type ThemeName = 'default' | 'feishu' | 'dark' | 'auto' | 'minimal' | 'colorful'
 const themes: { name: ThemeName; desc: string }[] = [
@@ -121,10 +126,12 @@ const nav = [
   { id: 'demo-14', text: 'OKR Filter' },
   { id: 'demo-15', text: 'Events' },
   { id: 'demo-16', text: 'OKR Events' },
+  { id: 'demo-17', text: '受控状态与方法' },
   { id: 'api-attributes', text: 'Attributes' },
   { id: 'api-props', text: 'Props' },
   { id: 'api-events', text: 'Events API' },
   { id: 'api-methods', text: 'Methods' },
+  { id: 'api-slots', text: 'Slots' },
 ]
 
 function goTop() {

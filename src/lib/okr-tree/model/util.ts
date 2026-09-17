@@ -38,3 +38,27 @@ export function objectAssign<T extends object>(target: T, ...sources: any[]): T 
   }
   return target
 }
+
+/**
+ * 是否处于开发环境：由使用方的打包器替换 process.env.NODE_ENV；
+ * 浏览器直接引用 UMD 时 process 不存在 → 视为生产环境，不输出警告。
+ */
+export const isDev = (): boolean =>
+  typeof process !== 'undefined' && !!process.env && process.env.NODE_ENV !== 'production'
+
+const warned = new Set<string>()
+
+/** 开发期警告（同一条默认只输出一次） */
+export function warn(message: string, once = true) {
+  if (!isDev()) return
+  if (once) {
+    if (warned.has(message)) return
+    warned.add(message)
+  }
+  console.warn(`[vue3-okr-tree] ${message}`)
+}
+
+/** 测试用：清空去重记录 */
+export function resetWarnings() {
+  warned.clear()
+}
