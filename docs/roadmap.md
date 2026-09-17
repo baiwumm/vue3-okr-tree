@@ -15,7 +15,8 @@
 | 1.3.0 | OkrTreeGroup 根对齐、键盘可访问性、node-component、类型化 | ✅              |
 | 1.4.0 | 懒加载 + 画布组件                                         | ⬜ 待开始       |
 | 1.5.0 | 文档站 + 发布流程                                         | ⬜ 待开始       |
-| 2.x   | 拖拽、SVG 连接线、更多布局                                | ⬜ 视需求       |
+| 1.6.0 | 健壮性与运行时行为补齐                                    | ⬜ 待开始       |
+| 2.x   | 拖拽、SVG 连接线、复选框、虚拟滚动、更多布局              | ⬜ 视需求       |
 
 ---
 
@@ -77,13 +78,42 @@
 - [ ] 用 2000 节点数据做 benchmark（首渲染、展开/收起、`filter`、原地 `push`）；记录到 `docs/perf.md`
 - [ ] 评估 `data` deep watch 成本，提供 `deep-watch: false` 开关（只响应引用变化，回到原版行为）
 - [ ] `computeLabelClass` 等每节点 computed 的开销核对
+- [ ] `updateChildren` 增量重建目前按 key diff 全树递归，大数据量原地变更时引入脏标记、只重建受影响路径
 - **验收**：2000 节点首渲染 < 300ms（开发机），提供可复现脚本。
+
+### 7. 工程化补齐（S）
+
+- [ ] 测试覆盖率：`@vitest/coverage-v8`，CI 输出覆盖率并设初始阈值（如 statements 80%），README 加 badge
+- [ ] dist 体积预算：`size-limit`（按当前 gzip 体积 +10% 设阈值），超限 CI 失败，防止无意膨胀
+- [ ] 包发布体检：`publint` + `@arethetypeswrong/cli` 并入 `verify:dist` 或 CI，校验 exports 与类型解析
+- [ ] 依赖自动更新：Renovate（或 Dependabot）配置，minor/patch 分组自动合并
+- **验收**：CI 在 lint/test/build 之外额外输出覆盖率与体积检查，publint/attw 零错误。
+
+---
+
+## 1.6.0 — 健壮性与运行时行为补齐
+
+### 8. 边界数据兼容（M）
+
+- [ ] 冻结/只读源数据（`Object.freeze`、外部 store 的 readonly 数据）：`markNodeData` 的 `Object.defineProperty` 与 `getChildren(true)` 的 `data[children] = …` 回写在冻结对象上会抛 TypeError → 降级为内部 id 走 WeakMap 兜底 + 开发期警告
+- [ ] 「不回写源数据」语义文档化：append / remove / insertBefore 等会同步修改用户 `children` 数组，只读数据下不可用，需在 README 标注并在开发期给出明确报错提示
+- [ ] 测试：`Object.freeze` 的 data 可正常渲染与展开收起（不可增删），不抛异常
+- **验收**：传入冻结数据不抛错、可渲染可展开；调用需要回写源数据的方法时收到开发期警告而非静默失败。
+
+### 9. 运行时 props 同步策略（S）
+
+- [ ] 现状盘点：`filterNodeMethod` / `labelClassName` / `animate*` 已 watch 同步；`showCollapsable` / `props`（字段映射）/ `onlyBothTree` / `direction` / `nodeKey` / `defaultExpandAll` 仍是创建期快照，运行时变更静默失效
+- [ ] 低成本补同步：`showCollapsable`（只影响按钮显隐）等可直接 watch 的 prop
+- [ ] 不支持同步的 prop（`nodeKey` / `direction` / `onlyBothTree`）：运行时变更输出开发期警告「需换 :key 重建实例」，README 标注
+- [ ] OKR 左树受控态：`leftData` 变更重建左树后按 `expanded-keys` / `current-key` 恢复左树状态（当前 `watch(data)` 只恢复右树）
+- [ ] 测试：以上同步与警告行为各一条
+- **验收**：运行时改 prop 要么生效、要么有警告，不存在静默失效。
 
 ---
 
 ## 2.x — 大功能（视需求排期）
 
-### 7. 拖拽调整层级（L）
+### 10. 拖拽调整层级（L）
 
 - [ ] `draggable` prop；HTML5 DnD，节点可拖到目标节点的「前 / 后 / 内」
 - [ ] `allow-drag(node)` / `allow-drop(dragNode, dropNode, type)` 规则钩子
@@ -92,20 +122,20 @@
 - [ ] store 增加 `moveNode(node, target, type)`，同步修改源数据
 - **验收**：拖拽后 `data` 与视图一致，`v-model:expanded-keys` 正确回写。
 
-### 8. SVG 连接线模式（L）
+### 11. SVG 连接线模式（L）
 
 - [ ] `connector: 'css' | 'svg'`，默认 `css`（现状）
 - [ ] `svg` 模式：测量节点位置，用一个覆盖层 `<svg>` 绘制路径；支持 `curve` / `orthogonal` / `straight`
 - [ ] 线宽/颜色继续走 `--okr-line-*` 变量；随展开/收起、尺寸变化重绘（ResizeObserver）
 - **验收**：曲线模式下拖动/展开无残影，性能与 CSS 模式同量级（≤ 500 节点）。
 
-### 9. 更多布局（M–L）
+### 12. 更多布局（M–L）
 
 - [ ] `direction: 'vertical-reverse'`（自下而上）、`'horizontal-reverse'`（从右向左，RTL 页面）
 - [ ] 垂直方向的上下双向 OKR（`only-both-tree` + `vertical`）：需要 `topData` 或复用 `leftData` 语义并改模板结构
 - **验收**：四个方向连接线与按钮位置正确，主题变量通用。
 
-### 10. 其他小项（S，随手可做）
+### 13. 其他小项（S，随手可做）
 
 - [ ] `expand-on-click-node`：点击节点内容也切换展开（默认 false，保持原版）
 - [ ] `accordion`：同级只允许一个展开
@@ -113,6 +143,36 @@
 - [ ] `getVisibleNodes()` / `getNodePath(key)` 辅助方法
 - [ ] `node-key` 缺失时的默认 key 策略文档化（`$treeNodeId`）
 - [ ] SSR/Nuxt 冒烟（当前 setup 不访问 window，理论兼容；补一个 `renderToString` 测试）
+- [ ] `prefers-reduced-motion: reduce` 时禁用展开/收起过渡动画（`transition.css` 加媒体查询，动画关、状态直切）
+- [ ] `aria-setsize` / `aria-posinset` 补全 treeitem 语义
+- [ ] 过滤后 `show-node-num` 的计数应只统计可见子节点（当前 `node.childNodes.length` 包含被过滤隐藏的节点，左右按钮同）
+- [ ] 死代码清理：`util.objectAssign`、`TreeNode.hasLeftChild()` 无调用方；`TreeNode.expand(callback)` 的回调为同步即时调用，评估移除参数
+- [ ] `@media print` 打印样式（隐藏展开按钮与滚动阴影）或在文档站给出导出图片的替代方案
+- [ ] 未知 `theme` 值的开发期警告（不在内置六套列表时，提示需自行编写 `.okr-theme-{name}` 变量）
+
+### 14. 复选框选择模式（M–L）
+
+- [ ] `show-checkbox` / `check-strictly`（父子不联动）/ `default-checked-keys`；节点前渲染复选框，父子联动半选态
+- [ ] 方法：`getCheckedKeys` / `setCheckedKeys` / `getHalfCheckedKeys` / `isChecked`
+- [ ] 事件：`check`（点击本身）/ `check-change`（状态变化）
+- [ ] 样式走 `--okr-*` 变量与六套主题；OKR 模式左右两树同 key 节点的选中语义文档化
+- [ ] 测试：联动/不联动、半选传播、受控用法；Demo 新增用例
+- **验收**：交互与 el-tree 习惯一致，受控/非受控均可用。
+
+### 15. 虚拟滚动（L）
+
+- [ ] 与 `<OkrTreeViewport>` 互补：不缩放，仅对展开后的可见 treeitem 做窗口化渲染（单节点上千直属子节点的平铺场景）
+- [ ] 技术预研先行：CSS 伪元素连接线依赖兄弟节点 DOM 相邻，虚拟化后需验证绝对布局 / spacer 行高两种方案哪个能保持连接线与 Group 对齐不破
+- [ ] 与展开动画、`scrollToNode`、键盘漫游 tabindex、`filter` 的兼容性逐项验证
+- [ ] prop：`virtual: boolean`（或独立包裹组件，预研后定）
+- **验收**：10000 平铺子节点首帧 < 300ms，滚动流畅，连接线无错位、键盘导航不跳焦。
+
+### 16. 开发体验（S）
+
+- [ ] Vue Devtools 插件（dev only）：面板查看节点注册表、展开/选中状态
+- [ ] 双语 README（README.en 与中文主文档互链，API 表以一份为准）
+- [ ] peerDependencies 实测：`defineSlots` 等编译宏需要 vue ≥ 3.3，当前声明 `>=3.0.0` 偏宽 → CI 用 pnpm overrides 在 vue@3.3 / 3.4 / 3.5 矩阵跑单测，按结果收紧 peer 范围
+- **验收**：Vue Devtools 可见树状态；英文用户可读文档；peer 范围与实测一致。
 
 ---
 
