@@ -15,6 +15,7 @@ export type {
   TreeKey,
   TreeNodeData,
   TreeOptionProps,
+  TreeTheme,
 } from '../types'
 
 /** 组件本体（与原 vue-okr-tree 同名导出） */

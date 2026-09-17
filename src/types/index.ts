@@ -20,6 +20,10 @@ export type AnimateName =
   | 'okr-zoom-in-left'
   | (string & {})
 
+/** 内置主题名（也允许自定义字符串，需自行编写 .okr-theme-{name} 变量） */
+export type TreeTheme =
+  'default' | 'feishu' | 'dark' | 'auto' | 'minimal' | 'colorful' | (string & {})
+
 /** props 字段映射配置 */
 export interface TreeOptionProps {
   /** 节点文本字段，支持 string 或 function(data, node) */

@@ -3,6 +3,7 @@
     v-if="node.visible"
     class="org-chart-node"
     :class="nodeClass"
+    :data-level="node.level"
     @contextmenu="handleContextMenu"
   >
     <transition v-bind="transitionProps">

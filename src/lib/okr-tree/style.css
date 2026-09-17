@@ -4,7 +4,44 @@
  * vue3-okr-tree 组件样式
  * 自原 OkrTree.vue <style> 全量迁移；移除了会污染宿主页面的全局 `* { margin:0; padding:0 }`，
  * 所有规则限定在 .org-chart-container 之下。
+ *
+ * ============================ 主题变量 ============================
+ * 全部可定制取值通过 `var(--okr-*, 默认值)` 内联在规则中（默认值不声明在容器上），
+ * 因此主题/覆盖既可以放在组件根容器（theme prop 会加 okr-theme-{name} 类），
+ * 也可以放在任意祖先元素上。可用变量一览：
+ *
+ * 连接线
+ *   --okr-line-color      连接线颜色          默认 #ccc
+ *   --okr-line-width      连接线宽度          默认 1px
+ *   --okr-line-radius     兄弟连线拐角圆角    默认 5px
+ *   --okr-gap-level       层级间距 / 连接线长度  默认 20px
+ *   --okr-gap-sibling     兄弟节点水平间距    默认 5px
+ *   --okr-gap-node-y      水平模式下节点纵向间距 默认 10px
+ * 节点卡片
+ *   --okr-node-bg         节点背景            默认 transparent
+ *   --okr-node-color      节点文字颜色        默认 inherit
+ *   --okr-node-border     节点边框            默认 none
+ *   --okr-node-radius     节点圆角            默认 0
+ *   --okr-node-padding    节点内边距          默认 10px
+ *   --okr-node-font-size  节点字号            默认 16px
+ *   --okr-node-shadow     节点阴影            默认 0 1px 10px rgba(31,35,41,.08)
+ *   --okr-node-shadow-hover    hover 阴影     默认 0 1px 14px rgba(31,35,41,.12)
+ * 展开按钮
+ *   --okr-btn-size        按钮直径            默认 20px
+ *   --okr-btn-bg          按钮背景            默认 #fff
+ *   --okr-btn-shadow      按钮阴影            默认 0 0 2px rgba(0,0,0,.15)
+ *   --okr-btn-sign-color  按钮内 +/- 颜色     默认取 --okr-line-color
+ *   --okr-btn-text-color  按钮内数字颜色      默认 #909090
+ * 选中态（仅主题提供内置样式，默认主题保持原版行为：用 current-lable-class-name 自定义）
+ *   --okr-current-bg      选中背景            默认 #3370ff
+ *   --okr-current-color   选中文字            默认 #fff
+ * 禁用态
+ *   --okr-disabled-opacity 禁用节点透明度     默认 0.6
+ *
+ * 内置主题：default（不加类，与 vue-okr-tree 一致）/ feishu / dark / auto / minimal / colorful
+ * 也可以使用任意自定义名字并自行编写 .okr-theme-{name} { --okr-*: ... }。
  */
+
 .org-chart-container {
   display: block;
   width: 100%;
@@ -25,17 +62,29 @@
   padding: 0;
 }
 
+/*
+ * 节点卡片外观（背景 / 文字色 / 边框 / 圆角）用 :where 声明为零优先级：
+ * 主题通过变量控制它们，而用户经 label-class-name / current-lable-class-name 传入的
+ * 单类样式（如 .my-current { background: ... }）仍能直接覆盖，与原版行为一致。
+ */
+:where(.org-chart-container .org-chart-node-label-inner) {
+  background: var(--okr-node-bg, transparent);
+  color: var(--okr-node-color, inherit);
+  border: var(--okr-node-border, none);
+  border-radius: var(--okr-node-radius, 0);
+}
+
 /* ======================= 垂直模式 ======================= */
 .org-chart-container .vertical .org-chart-node-children {
   position: relative;
-  padding-top: 20px;
+  padding-top: var(--okr-gap-level, 20px);
 }
 .org-chart-container .vertical .org-chart-node {
   float: left;
   text-align: center;
   list-style-type: none;
   position: relative;
-  padding: 20px 5px 0 5px;
+  padding: var(--okr-gap-level, 20px) var(--okr-gap-sibling, 5px) 0;
 }
 /* 使用 ::before 和 ::after 绘制连接器 */
 .org-chart-container .vertical .org-chart-node::before,
@@ -45,13 +94,13 @@
   top: 0;
   right: 50%;
   width: 50%;
-  border-top: 1px solid #ccc;
-  height: 20px;
+  border-top: var(--okr-line-width, 1px) solid var(--okr-line-color, #ccc);
+  height: var(--okr-gap-level, 20px);
 }
 .org-chart-container .vertical .org-chart-node::after {
   right: auto;
   left: 50%;
-  border-left: 1px solid #ccc;
+  border-left: var(--okr-line-width, 1px) solid var(--okr-line-color, #ccc);
 }
 /* 从没有任何兄弟元素的元素中删除左右连接器 */
 .org-chart-container .vertical.one-branch > .org-chart-node::after,
@@ -69,24 +118,24 @@
 }
 /* 将垂直连接器添加回最后的节点 */
 .org-chart-container .vertical .org-chart-node:last-child::before {
-  border-right: 1px solid #ccc;
-  border-radius: 0 5px 0 0;
+  border-right: var(--okr-line-width, 1px) solid var(--okr-line-color, #ccc);
+  border-radius: 0 var(--okr-line-radius, 5px) 0 0;
 }
 .org-chart-container .vertical .org-chart-node:only-child::before {
   border-radius: 0 0 0 0;
   margin-right: -1px;
 }
 .org-chart-container .vertical .org-chart-node:first-child::after {
-  border-radius: 5px 0 0 0;
+  border-radius: var(--okr-line-radius, 5px) 0 0 0;
 }
 .org-chart-container .vertical .org-chart-node.is-leaf {
-  padding-top: 20px;
-  padding-bottom: 20px;
+  padding-top: var(--okr-gap-level, 20px);
+  padding-bottom: var(--okr-gap-level, 20px);
 }
 .org-chart-container .vertical .org-chart-node.is-leaf::before {
   content: '';
   display: block;
-  height: 20px;
+  height: var(--okr-gap-level, 20px);
 }
 .org-chart-container .vertical .org-chart-node.is-leaf .org-chart-node-label::after {
   display: none;
@@ -98,39 +147,39 @@
   position: absolute;
   top: 0;
   left: 50%;
-  border-left: 1px solid #ccc;
+  border-left: var(--okr-line-width, 1px) solid var(--okr-line-color, #ccc);
   width: 0;
-  height: 20px;
+  height: var(--okr-gap-level, 20px);
 }
 .org-chart-container .vertical .org-chart-node-label {
   position: relative;
   display: inline-block;
 }
 .org-chart-container .vertical .org-chart-node-label .org-chart-node-label-inner {
-  box-shadow: 0 1px 10px rgba(31, 35, 41, 0.08);
+  box-shadow: var(--okr-node-shadow, 0 1px 10px rgba(31, 35, 41, 0.08));
   display: inline-block;
-  padding: 10px;
+  padding: var(--okr-node-padding, 10px);
   margin: 0;
-  font-size: 16px;
+  font-size: var(--okr-node-font-size, 16px);
   word-break: break-all;
 }
 .org-chart-container .vertical .org-chart-node-label .org-chart-node-label-inner:hover {
-  box-shadow: 0 1px 14px rgba(31, 35, 41, 0.12);
+  box-shadow: var(--okr-node-shadow-hover, 0 1px 14px rgba(31, 35, 41, 0.12));
   cursor: pointer;
 }
 .org-chart-container .vertical .org-chart-node-label .org-chart-node-btn {
   position: absolute;
   top: 100%;
   left: 50%;
-  width: 20px;
-  height: 20px;
+  width: var(--okr-btn-size, 20px);
+  height: var(--okr-btn-size, 20px);
   z-index: 10;
-  margin-left: -11px;
-  margin-top: 9px;
-  background-color: #fff;
-  border: 1px solid #ccc;
+  margin-left: calc(var(--okr-btn-size, 20px) / -2 - 1px);
+  margin-top: calc(var(--okr-btn-size, 20px) / 2 - 1px);
+  background-color: var(--okr-btn-bg, #fff);
+  border: var(--okr-line-width, 1px) solid var(--okr-line-color, #ccc);
   border-radius: 50%;
-  box-shadow: 0 0 2px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--okr-btn-shadow, 0 0 2px rgba(0, 0, 0, 0.15));
   cursor: pointer;
 }
 .org-chart-container .vertical .org-chart-node-label .org-chart-node-btn:hover {
@@ -147,14 +196,16 @@
   left: 4px;
   right: 4px;
   height: 0;
-  border-top: 1px solid #ccc;
+  border-top: var(--okr-line-width, 1px) solid
+    var(--okr-btn-sign-color, var(--okr-line-color, #ccc));
 }
 .org-chart-container .vertical .org-chart-node-label .org-chart-node-btn::after {
   top: 4px;
   left: 50%;
   bottom: 4px;
   width: 0;
-  border-left: 1px solid #ccc;
+  border-left: var(--okr-line-width, 1px) solid
+    var(--okr-btn-sign-color, var(--okr-line-color, #ccc));
 }
 .org-chart-container .vertical .org-chart-node-label .expanded.org-chart-node-btn::after {
   display: none;
@@ -169,24 +220,24 @@
   top: 100%;
   left: 0;
   width: 50%;
-  height: 20px;
-  border-right: 1px solid #ddd;
+  height: var(--okr-gap-level, 20px);
+  border-right: var(--okr-line-width, 1px) solid var(--okr-line-color, #ccc);
 }
 
 /* ======================= 水平模式 ======================= */
 .org-chart-container .horizontal .org-chart-node-children,
 .org-chart-container .horizontal .org-chart-node-left-children {
   position: relative;
-  padding-left: 20px;
+  padding-left: var(--okr-gap-level, 20px);
 }
 .org-chart-container .horizontal .org-chart-node-left-children {
-  padding-right: 20px;
+  padding-right: var(--okr-gap-level, 20px);
 }
 .org-chart-container .horizontal .org-chart-node:not(.is-left-child-node) {
   display: flex;
   align-items: center;
   position: relative;
-  padding: 0 5px 0 20px;
+  padding: 0 var(--okr-gap-sibling, 5px) 0 var(--okr-gap-level, 20px);
 }
 .org-chart-container .horizontal .is-left-child-node {
   display: flex;
@@ -195,7 +246,7 @@
   align-items: center;
 }
 .org-chart-container .horizontal .is-left-child-node {
-  padding: 0 20px 0 5px;
+  padding: 0 var(--okr-gap-level, 20px) 0 var(--okr-gap-sibling, 5px);
 }
 
 /* 使用 ::before 和 ::after 绘制连接器 */
@@ -203,29 +254,29 @@
 .org-chart-container .horizontal .org-chart-node:not(.is-left-child-node)::after {
   content: '';
   position: absolute;
-  border-left: 1px solid #ccc;
+  border-left: var(--okr-line-width, 1px) solid var(--okr-line-color, #ccc);
   top: 0;
   left: 0;
-  width: 20px;
+  width: var(--okr-gap-level, 20px);
   height: 50%;
 }
 .org-chart-container .horizontal .is-left-child-node::before,
 .org-chart-container .horizontal .is-left-child-node::after {
   content: '';
   position: absolute;
-  border-right: 1px solid #ccc;
+  border-right: var(--okr-line-width, 1px) solid var(--okr-line-color, #ccc);
   top: 0;
   right: 0;
-  width: 20px;
+  width: var(--okr-gap-level, 20px);
   height: 50%;
 }
 .org-chart-container .horizontal .org-chart-node:not(.is-left-child-node)::after {
   top: 50%;
-  border-top: 1px solid #ccc;
+  border-top: var(--okr-line-width, 1px) solid var(--okr-line-color, #ccc);
 }
 .org-chart-container .horizontal .is-left-child-node::after {
   top: 50%;
-  border-top: 1px solid #ccc;
+  border-top: var(--okr-line-width, 1px) solid var(--okr-line-color, #ccc);
 }
 
 /* 从没有任何兄弟元素的元素中删除左右连接器 */
@@ -247,30 +298,30 @@
 .org-chart-container
   .horizontal
   .org-chart-node:not(.is-left-child-node):not(.is-not-child):last-child::before {
-  border-bottom: 1px solid #ccc;
-  border-radius: 0 0 0 5px;
+  border-bottom: var(--okr-line-width, 1px) solid var(--okr-line-color, #ccc);
+  border-radius: 0 0 0 var(--okr-line-radius, 5px);
 }
 .org-chart-container .horizontal .is-left-child-node:last-child::before {
-  border-bottom: 1px solid #ccc;
-  border-radius: 0 0 5px 0;
+  border-bottom: var(--okr-line-width, 1px) solid var(--okr-line-color, #ccc);
+  border-radius: 0 0 var(--okr-line-radius, 5px) 0;
 }
 
 .org-chart-container .horizontal .org-chart-node:only-child::before {
   border-radius: 0 0 0 0 !important;
-  border-color: #ccc;
+  border-color: var(--okr-line-color, #ccc);
 }
 
 .org-chart-container .horizontal .org-chart-node:not(.is-left-child-node):first-child::after {
-  border-radius: 5px 0 0 0;
+  border-radius: var(--okr-line-radius, 5px) 0 0 0;
 }
 .org-chart-container .horizontal .is-left-child-node:first-child::after {
-  border-radius: 0 5px 0 0;
+  border-radius: 0 var(--okr-line-radius, 5px) 0 0;
 }
 
 .org-chart-container .horizontal .org-chart-node.is-leaf {
   position: relative;
-  padding-left: 20px;
-  padding-right: 20px;
+  padding-left: var(--okr-gap-level, 20px);
+  padding-right: var(--okr-gap-level, 20px);
 }
 .org-chart-container .horizontal .org-chart-node.is-leaf::before {
   content: '';
@@ -282,7 +333,7 @@
 }
 
 .org-chart-container .horizontal .is-left-child-node:last-child::after {
-  border-radius: 0 0 5px 0;
+  border-radius: 0 0 var(--okr-line-radius, 5px) 0;
 }
 .org-chart-container .horizontal .is-left-child-node:only-child::after {
   border-radius: 0 0 0 0;
@@ -290,8 +341,8 @@
 
 .org-chart-container .horizontal .is-left-child-node.is-leaf {
   position: relative;
-  padding-left: 20px;
-  padding-right: 20px;
+  padding-left: var(--okr-gap-level, 20px);
+  padding-right: var(--okr-gap-level, 20px);
 }
 .org-chart-container .horizontal .is-left-child-node.is-leaf::before {
   content: '';
@@ -308,13 +359,14 @@
   position: absolute;
   left: 0;
   top: 50%;
-  border-top: 1px solid #ccc;
+  border-top: var(--okr-line-width, 1px) solid var(--okr-line-color, #ccc);
   width: 12px;
   height: 10px;
 }
 .org-chart-container .horizontal .org-chart-node-children::before {
-  width: 20px;
+  width: var(--okr-gap-level, 20px);
 }
+/* 12px / -11px / 10px 三个值相互耦合构成左子树连接线短头，保持硬编码 */
 .org-chart-container .horizontal .org-chart-node-left-children::before {
   left: calc(100% - 11px);
 }
@@ -328,31 +380,31 @@
 }
 
 .org-chart-container .horizontal .org-chart-node-label .org-chart-node-label-inner {
-  box-shadow: 0 1px 10px rgba(31, 35, 41, 0.08);
+  box-shadow: var(--okr-node-shadow, 0 1px 10px rgba(31, 35, 41, 0.08));
   display: inline-block;
-  padding: 10px;
-  margin: 10px 0;
-  font-size: 16px;
+  padding: var(--okr-node-padding, 10px);
+  margin: var(--okr-gap-node-y, 10px) 0;
+  font-size: var(--okr-node-font-size, 16px);
   word-break: break-all;
 }
 
 .org-chart-container .horizontal .org-chart-node-label .org-chart-node-label-inner:hover {
-  box-shadow: 0 1px 14px rgba(31, 35, 41, 0.12);
+  box-shadow: var(--okr-node-shadow-hover, 0 1px 14px rgba(31, 35, 41, 0.12));
   cursor: pointer;
 }
 .org-chart-container .horizontal .org-chart-node-label .org-chart-node-btn {
   position: absolute;
   left: 100%;
   top: 50%;
-  width: 20px;
-  height: 20px;
+  width: var(--okr-btn-size, 20px);
+  height: var(--okr-btn-size, 20px);
   z-index: 10;
-  margin-top: -11px;
-  margin-left: 9px;
-  background-color: #fff;
-  border: 1px solid #ccc;
+  margin-top: calc(var(--okr-btn-size, 20px) / -2 - 1px);
+  margin-left: calc(var(--okr-btn-size, 20px) / 2 - 1px);
+  background-color: var(--okr-btn-bg, #fff);
+  border: var(--okr-line-width, 1px) solid var(--okr-line-color, #ccc);
   border-radius: 50%;
-  box-shadow: 0 0 2px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--okr-btn-shadow, 0 0 2px rgba(0, 0, 0, 0.15));
   cursor: pointer;
 }
 
@@ -373,7 +425,8 @@
   top: 50%;
   left: 4px;
   right: 3px;
-  border-top: 1px solid #ccc;
+  border-top: var(--okr-line-width, 1px) solid
+    var(--okr-btn-sign-color, var(--okr-line-color, #ccc));
   height: 0;
   transform: translateY(-50%);
 }
@@ -383,7 +436,8 @@
   left: 50%;
   bottom: 4px;
   width: 0;
-  border-left: 1px solid #ccc;
+  border-left: var(--okr-line-width, 1px) solid
+    var(--okr-btn-sign-color, var(--okr-line-color, #ccc));
 }
 .org-chart-container .horizontal .org-chart-node-label .expanded.org-chart-node-btn::after,
 .org-chart-container .horizontal .org-chart-node-label .expanded.org-chart-node-left-btn::after {
@@ -394,15 +448,15 @@
   position: absolute;
   right: 100%;
   top: 50%;
-  width: 20px;
-  height: 20px;
+  width: var(--okr-btn-size, 20px);
+  height: var(--okr-btn-size, 20px);
   z-index: 10;
-  margin-top: -11px;
-  margin-right: 9px;
-  background-color: #fff;
-  border: 1px solid #ccc;
+  margin-top: calc(var(--okr-btn-size, 20px) / -2 - 1px);
+  margin-right: calc(var(--okr-btn-size, 20px) / 2 - 1px);
+  background-color: var(--okr-btn-bg, #fff);
+  border: var(--okr-line-width, 1px) solid var(--okr-line-color, #ccc);
   border-radius: 50%;
-  box-shadow: 0 0 2px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--okr-btn-shadow, 0 0 2px rgba(0, 0, 0, 0.15));
   cursor: pointer;
 }
 
@@ -413,7 +467,7 @@
 .org-chart-container .horizontal .org-chart-node.collapsed .org-chart-node-label::after,
 .org-chart-container .horizontal .is-left-child-node.collapsed .org-chart-node-label::before {
   content: '';
-  border-bottom: 1px solid #ccc;
+  border-bottom: var(--okr-line-width, 1px) solid var(--okr-line-color, #ccc);
   position: absolute;
   top: 0;
   left: 100%;
@@ -430,12 +484,12 @@
 }
 .org-chart-container .horizontal .only-both-tree-node > .org-chart-node-label::before {
   content: '';
-  border-bottom: 1px solid #ccc;
+  border-bottom: var(--okr-line-width, 1px) solid var(--okr-line-color, #ccc);
   position: absolute;
   top: 0;
   right: 100%;
   height: 50%;
-  width: 20px;
+  width: var(--okr-gap-level, 20px);
 }
 
 /* ======================= 展开按钮内的子节点数 ======================= */
@@ -446,20 +500,20 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: #fff;
+  background: var(--okr-btn-bg, #fff);
   border-radius: 50%;
   font-size: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #909090;
+  color: var(--okr-btn-text-color, #909090);
   z-index: 2;
 }
 
 /* ======================= 根对齐（align-root，Vue 3 版内建） ======================= */
 /*
  * OKR 模式下根节点行是 [左子树容器][根节点][右子树容器] 的 flex 行。
- * 令左右容器 flex: 1 1 0 等分剩余宽度（min-width:auto 保证不会压缩到内容宽度以下），
+ * 令左右容器 flex: 1 1 0 等分剩余宽度（min-width:max-content 保证不压缩换行），
  * 根节点即位于容器水平中心；多棵树并排/上下排列时各自根节点都在 50% 处，天然对齐，
  * 且展开/收起不再改变根节点位置。替代原 Demo 的手动 DOM 测量。
  */
@@ -489,8 +543,8 @@
 .org-chart-container .org-chart-node-label .org-chart-node-label-inner.is-disabled,
 .org-chart-container .org-chart-node-label .org-chart-node-label-inner.is-disabled:hover {
   cursor: not-allowed;
-  opacity: 0.6;
-  box-shadow: 0 1px 10px rgba(31, 35, 41, 0.08);
+  opacity: var(--okr-disabled-opacity, 0.6);
+  box-shadow: var(--okr-node-shadow, 0 1px 10px rgba(31, 35, 41, 0.08));
 }
 
 /* ======================= 展开 / 收起过渡（animate 开启时） ======================= */
@@ -548,4 +602,108 @@
 }
 .org-chart-container .org-chart-node-left-children.is-animated.okr-anim-okr-zoom-in-left {
   transform-origin: top right;
+}
+
+/* ======================= 内置主题 ======================= */
+/*
+ * theme prop 会在组件根容器（或任意祖先元素）加 okr-theme-{name} 类。
+ * default 不加类：保持与 vue-okr-tree 一致的外观（含选中态由 current-lable-class-name 自定义）。
+ * 其他主题声明一组 --okr-* 变量；主题内的选中态样式用 :where 降低优先级，
+ * 保证用户通过 current-lable-class-name 提供的类仍可覆盖。
+ */
+.okr-theme-feishu {
+  --okr-line-color: #dee0e3;
+  --okr-node-radius: 8px;
+  --okr-node-shadow: 0 2px 8px rgba(31, 35, 41, 0.1);
+  --okr-node-shadow-hover: 0 4px 12px rgba(31, 35, 41, 0.16);
+  --okr-current-bg: #3370ff;
+  --okr-current-color: #fff;
+}
+.okr-theme-feishu :where(.org-chart-node-label-inner.is-current) {
+  --okr-node-bg: var(--okr-current-bg, #3370ff);
+  --okr-node-color: var(--okr-current-color, #fff);
+}
+
+.okr-theme-dark,
+.okr-theme-auto {
+  --okr-current-bg: #3370ff;
+  --okr-current-color: #fff;
+}
+.okr-theme-dark :where(.org-chart-node-label-inner.is-current),
+.okr-theme-auto :where(.org-chart-node-label-inner.is-current) {
+  --okr-node-bg: var(--okr-current-bg, #3370ff);
+  --okr-node-color: var(--okr-current-color, #fff);
+}
+.okr-theme-dark {
+  --okr-line-color: #4c4d4f;
+  --okr-node-bg: #1d1e1f;
+  --okr-node-color: #cfd3dc;
+  --okr-node-border: 1px solid #414243;
+  --okr-node-shadow: 0 1px 10px rgba(0, 0, 0, 0.35);
+  --okr-node-shadow-hover: 0 1px 14px rgba(0, 0, 0, 0.5);
+  --okr-btn-bg: #1d1e1f;
+  --okr-btn-sign-color: #a3a6ad;
+  --okr-btn-text-color: #a3a6ad;
+}
+/* auto：亮色下与 default 一致（全部走变量默认值），暗色系统时切换为 dark 取值 */
+@media (prefers-color-scheme: dark) {
+  .okr-theme-auto {
+    --okr-line-color: #4c4d4f;
+    --okr-node-bg: #1d1e1f;
+    --okr-node-color: #cfd3dc;
+    --okr-node-border: 1px solid #414243;
+    --okr-node-shadow: 0 1px 10px rgba(0, 0, 0, 0.35);
+    --okr-node-shadow-hover: 0 1px 14px rgba(0, 0, 0, 0.5);
+    --okr-btn-bg: #1d1e1f;
+    --okr-btn-sign-color: #a3a6ad;
+    --okr-btn-text-color: #a3a6ad;
+  }
+}
+
+.okr-theme-minimal {
+  --okr-node-shadow: none;
+  --okr-node-shadow-hover: 0 1px 10px rgba(31, 35, 41, 0.08);
+  --okr-node-border: 1px solid #dcdfe6;
+  --okr-node-radius: 4px;
+  --okr-current-bg: #ecf5ff;
+  --okr-current-color: #409eff;
+}
+.okr-theme-minimal :where(.org-chart-node-label-inner.is-current) {
+  --okr-node-bg: var(--okr-current-bg, #ecf5ff);
+  --okr-node-color: var(--okr-current-color, #409eff);
+  --okr-node-border: 1px solid var(--okr-current-color, #409eff);
+}
+
+/* colorful：按层级着色（配合节点上的 data-level 属性），1–5 级后回退透明 */
+.okr-theme-colorful {
+  --okr-line-color: #dee0e3;
+  --okr-node-radius: 8px;
+  --okr-node-shadow: 0 2px 8px rgba(31, 35, 41, 0.1);
+  --okr-current-bg: #1f2329;
+  --okr-current-color: #fff;
+}
+.okr-theme-colorful .org-chart-node[data-level='1'] .org-chart-node-label-inner {
+  --okr-node-bg: #3370ff;
+  --okr-node-color: #fff;
+}
+.okr-theme-colorful .org-chart-node[data-level='2'] .org-chart-node-label-inner {
+  --okr-node-bg: #538cff;
+  --okr-node-color: #fff;
+}
+.okr-theme-colorful .org-chart-node[data-level='3'] .org-chart-node-label-inner {
+  --okr-node-bg: #acbcff;
+  --okr-node-color: #1f2329;
+}
+.okr-theme-colorful .org-chart-node[data-level='4'] .org-chart-node-label-inner {
+  --okr-node-bg: #dbe5ff;
+  --okr-node-color: #1f2329;
+}
+.okr-theme-colorful .org-chart-node[data-level='5'] .org-chart-node-label-inner {
+  --okr-node-bg: #eef3ff;
+  --okr-node-color: #1f2329;
+}
+/* colorful 选中态：需高于层级着色规则，放在其后且优先级相同 */
+.okr-theme-colorful .org-chart-node .org-chart-node-label-inner.is-current {
+  --okr-node-bg: var(--okr-current-bg, #1f2329);
+  --okr-node-color: var(--okr-current-color, #fff);
 }

@@ -104,6 +104,28 @@ assert(
   'style.css 含组件与动画样式'
 )
 assert(!/^\s*\*\s*\{/m.test(css), 'style.css 无全局 * reset')
+assert(
+  css.includes('.okr-theme-feishu') &&
+    css.includes('.okr-theme-dark') &&
+    css.includes('.okr-theme-minimal') &&
+    css.includes('.okr-theme-colorful'),
+  'style.css 含内置主题预设'
+)
+assert(
+  /prefers-color-scheme:\s*dark/.test(css) && css.includes('.okr-theme-auto'),
+  'auto 主题跟随系统暗色'
+)
+assert(
+  css.includes('var(--okr-line-color') && css.includes('var(--okr-node-shadow'),
+  '样式已变量化'
+)
+assert(!css.includes('1px solid #ccc'), '连接线颜色无残留硬编码')
+
+const themed = mountTree({ data, theme: 'feishu' })
+assert(
+  themed.el.querySelector('.org-chart-container').classList.contains('okr-theme-feishu'),
+  'theme prop 加类'
+)
 
 const dts = readFileSync(distDts, 'utf8')
 assert(

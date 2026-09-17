@@ -109,5 +109,12 @@ const rows: string[][] = [
     '—',
     'true',
   ],
+  [
+    'theme',
+    '<strong>Vue 3 版新增。</strong>内置主题：default / feishu / dark / auto / minimal / colorful，或自定义名字（自行编写 <code>.okr-theme-{name}</code> 变量）。全部外观取值可通过 <code>--okr-*</code> CSS 变量覆盖，页面顶部可切换预览',
+    'string',
+    'default / feishu / dark / auto / minimal / colorful',
+    'default',
+  ],
 ]
 </script>

@@ -182,6 +182,7 @@ src/lib/vue-okr-tree/
 4. **修复原仓库遗留问题**：`props.disabled` 声明了但从未使用——实现真实的禁用节点行为（可选增强，默认不影响对齐）。
 5. **插槽支持真正开放**：原版 OkrTreeNode 内部存在默认插槽透传代码，但 OkrTree 未将外部插槽传入节点，实际不可用；Vue 3 版开放默认作用域插槽 `#default="{ node }"` 作为 render-content 的替代写法（新增能力，不影响对齐）。
 6. **animate-duration 接线**：修复原版未生效问题（第 6 节 Q5）。
+7. **CSS 变量主题化与内置主题（1.1.0 新增）**：`style.css` 全部外观取值改为 `var(--okr-*, 默认值)`（默认值内联在使用点、不声明在容器上，因此主题类可放在根容器或任意祖先）；新增 `theme` prop（在根容器加 `okr-theme-{name}` 类），内置 `default / feishu / dark / auto / minimal / colorful` 六套预设，`colorful` 依赖节点上的 `data-level` 属性按层级着色。节点背景/文字色/边框/圆角用 `:where()` 零优先级声明，主题选中态只设变量，保证用户通过 `current-lable-class-name` 传入的单类样式仍可覆盖（与原版行为一致）。`default` 不加类，外观与原版完全一致。
 
 ## 6. 原版行为怪癖与兼容性决策（复刻 vs 修复）
 

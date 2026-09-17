@@ -248,3 +248,71 @@ body {
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
+
+/* dark 主题演示：页面本身切换为深色底 */
+.vue-okr-tree-demo.is-dark-page {
+  background: #141414;
+  color: #cfd3dc;
+  margin: 0;
+  max-width: none;
+  padding-left: calc((100% - 1000px) / 2 + 16px);
+  padding-right: calc((100% - 1000px) / 2 + 16px);
+  min-height: 100vh;
+}
+.vue-okr-tree-demo.is-dark-page .tree-demo-title,
+.vue-okr-tree-demo.is-dark-page .tree-demo-title-h3,
+.vue-okr-tree-demo.is-dark-page table td:first-child {
+  color: #e5eaf3;
+}
+.vue-okr-tree-demo.is-dark-page p,
+.vue-okr-tree-demo.is-dark-page table td {
+  color: #a3a6ad;
+}
+.vue-okr-tree-demo.is-dark-page table th,
+.vue-okr-tree-demo.is-dark-page table td {
+  border-bottom-color: #363637;
+}
+.vue-okr-tree-demo.is-dark-page code {
+  background: #2b2b2c;
+  color: #cfd3dc;
+}
+.vue-okr-tree-demo.is-dark-page .demo-btn,
+.vue-okr-tree-demo.is-dark-page .btns-wrap button,
+.vue-okr-tree-demo.is-dark-page .filter-wrapper input,
+.vue-okr-tree-demo.is-dark-page .demo-controls select,
+.vue-okr-tree-demo.is-dark-page .demo-controls input[type='number'] {
+  background: #1d1e1f;
+  border-color: #414243;
+  color: #cfd3dc;
+}
+.vue-okr-tree-demo.is-dark-page .demo-btn.is-active {
+  background: #3370ff;
+  border-color: #3370ff;
+  color: #fff;
+}
+.vue-okr-tree-demo.is-dark-page .event-log {
+  background: #1d1e1f;
+  border-color: #414243;
+  color: #a3a6ad;
+}
+.vue-okr-tree-demo.is-dark-page .base-card-wrapper,
+.vue-okr-tree-demo.is-dark-page .demo-nav,
+.vue-okr-tree-demo.is-dark-page .demo-theme-bar {
+  border-color: #363637 !important;
+  background: #1d1e1f;
+}
+.vue-okr-tree-demo.is-dark-page .base-card-wrapper .base-card-control,
+.vue-okr-tree-demo.is-dark-page .base-card-wrapper .card-body-meta {
+  background: #1d1e1f !important;
+  border-color: #363637 !important;
+  color: #a3a6ad;
+}
+.vue-okr-tree-demo.is-dark-page .base-card-wrapper .description {
+  background: #141414 !important;
+  border-color: #363637 !important;
+  color: #a3a6ad;
+}
+.vue-okr-tree-demo.is-dark-page .top-wrapp {
+  background: #1d1e1f;
+  color: #3370ff;
+}

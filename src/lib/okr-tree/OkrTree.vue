@@ -1,5 +1,5 @@
 <template>
-  <div class="org-chart-container">
+  <div class="org-chart-container" :class="themeClass">
     <div
       ref="orgChartRoot"
       class="org-chart-node-children"
@@ -32,7 +32,7 @@
 </template>
 
 <script setup lang="ts">
-import { getCurrentInstance, provide, shallowReactive, watch, type PropType } from 'vue'
+import { computed, getCurrentInstance, provide, shallowReactive, watch, type PropType } from 'vue'
 import OkrTreeNode from './OkrTreeNode.vue'
 import { TreeStore } from './model/tree-store'
 import { getNodeKey as _getNodeKey } from './model/util'
@@ -40,6 +40,7 @@ import { OKR_TREE_INJECTION_KEY, type OkrTreeEventName } from './context'
 import type { TreeNode } from './model/node'
 import type {
   AnimateName,
+  TreeTheme,
   FilterNodeMethod,
   LabelClassName,
   NodeBtnContentFunction,
@@ -107,6 +108,11 @@ const props = defineProps({
   animateDuration: { type: Number, default: 200 },
   /** OKR 模式下自动根对齐（Vue 3 版新增，默认开启） */
   alignRoot: { type: Boolean, default: true },
+  /**
+   * 主题（Vue 3 版新增）：default（与原版一致）/ feishu / dark / auto / minimal / colorful，
+   * 或自定义名字（自行编写 .okr-theme-{name} { --okr-*: ... }）。实现为在根容器加 okr-theme-{name} 类。
+   */
+  theme: { type: String as PropType<TreeTheme>, default: 'default' },
 })
 
 const emit = defineEmits<{
@@ -127,6 +133,10 @@ defineSlots<{
 }>()
 
 const instance = getCurrentInstance()
+
+const themeClass = computed(() =>
+  props.theme && props.theme !== 'default' ? `okr-theme-${props.theme}` : ''
+)
 
 const rawStore = new TreeStore({
   key: props.nodeKey,

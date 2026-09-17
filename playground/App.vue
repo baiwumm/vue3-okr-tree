@@ -1,5 +1,5 @@
 <template>
-  <div class="vue-okr-tree-demo">
+  <div class="vue-okr-tree-demo" :class="[themeClass, { 'is-dark-page': theme === 'dark' }]">
     <h2 class="tree-demo-title">Tree 树形控件（vue3-okr-tree）</h2>
     <p class="tree-demo-subtitle">
       用清晰的层级结构展示信息，可展开或折叠；支持类似飞书 OKR 的根节点左右双向展开。
@@ -10,6 +10,21 @@
     <nav class="demo-nav">
       <a v-for="item in nav" :key="item.id" :href="`#${item.id}`">{{ item.text }}</a>
     </nav>
+
+    <div class="demo-theme-bar">
+      <span class="demo-theme-label">主题（<code>theme</code> prop）：</span>
+      <button
+        v-for="t in themes"
+        :key="t.name"
+        class="demo-btn"
+        :class="{ 'is-active': theme === t.name }"
+        :title="t.desc"
+        @click="theme = t.name"
+      >
+        {{ t.name }}
+      </button>
+      <span class="demo-theme-desc">{{ currentThemeDesc }}</span>
+    </div>
 
     <!-- 1 基础用法 -->
     <Base01 />
@@ -54,6 +69,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed, ref } from 'vue'
 import Base01 from './components/demos/Base01.vue'
 import Base02 from './components/demos/Base02.vue'
 import Base03 from './components/demos/Base03.vue'
@@ -74,6 +90,19 @@ import Attributes from './components/api/Attributes.vue'
 import Props from './components/api/Props.vue'
 import Events from './components/api/Events.vue'
 import Methods from './components/api/Methods.vue'
+
+type ThemeName = 'default' | 'feishu' | 'dark' | 'auto' | 'minimal' | 'colorful'
+const themes: { name: ThemeName; desc: string }[] = [
+  { name: 'default', desc: '与 vue-okr-tree 原版一致：灰线、白卡、直角、轻阴影' },
+  { name: 'feishu', desc: '飞书 OKR 观感：圆角 8px、浅灰线、主色 #3370ff 选中态' },
+  { name: 'dark', desc: '暗色页面：深底、浅灰线、选中态亮色填充' },
+  { name: 'auto', desc: '跟随系统：浅色时同 default，系统暗色时同 dark' },
+  { name: 'minimal', desc: '演示 / 打印：无阴影、细边框、小圆角' },
+  { name: 'colorful', desc: '按层级着色（data-level），适合组织架构展示' },
+]
+const theme = ref<ThemeName>('default')
+const themeClass = computed(() => (theme.value === 'default' ? '' : `okr-theme-${theme.value}`))
+const currentThemeDesc = computed(() => themes.find((t) => t.name === theme.value)?.desc ?? '')
 
 const nav = [
   { id: 'demo-1', text: '基础用法' },
@@ -104,6 +133,29 @@ function goTop() {
 </script>
 
 <style scoped>
+.demo-theme-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 12px 0 0;
+  padding: 10px 16px;
+  border: 1px dashed #dcdfe6;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #606266;
+}
+.demo-theme-bar .demo-theme-label {
+  margin-right: 4px;
+}
+.demo-theme-bar .demo-btn {
+  margin: 0;
+}
+.demo-theme-bar .demo-theme-desc {
+  flex-basis: 100%;
+  color: #909399;
+  font-size: 12px;
+}
 .demo-nav {
   display: flex;
   flex-wrap: wrap;
