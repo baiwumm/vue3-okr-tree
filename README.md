@@ -409,6 +409,8 @@ API 名称与语义完全对齐，直接把 `import { VueOkrTree } from 'vue-okr
 
 ## 开发
 
+后续优化计划见 [docs/roadmap.md](./docs/roadmap.md)（可勾选清单），需求与决策见 [docs/requirements.md](./docs/requirements.md)。
+
 ```bash
 pnpm install
 pnpm dev              # Demo 站（引用源码）
