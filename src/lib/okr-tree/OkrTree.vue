@@ -3,6 +3,7 @@
     <div
       ref="orgChartRoot"
       class="org-chart-node-children"
+      role="tree"
       :class="{
         vertical: direction === 'vertical',
         horizontal: direction === 'horizontal',
@@ -21,6 +22,7 @@
         :label-width="labelWidth"
         :label-height="labelHeight"
         :render-content="renderContent"
+        :node-component="nodeComponent"
         :node-btn-content="nodeBtnContent"
         :node-key="nodeKey"
         :show-node-num="showNodeNum"
@@ -41,16 +43,26 @@
 import {
   computed,
   getCurrentInstance,
+  inject,
   nextTick,
+  onBeforeUnmount,
+  onMounted,
+  onUpdated,
   provide,
   shallowReactive,
+  shallowRef,
   watch,
+  type Component,
   type PropType,
 } from 'vue'
 import OkrTreeNode from './OkrTreeNode.vue'
 import { TreeStore } from './model/tree-store'
 import { getNodeKey as _getNodeKey, warn } from './model/util'
-import { OKR_TREE_INJECTION_KEY, type OkrTreeEventName } from './context'
+import {
+  OKR_TREE_GROUP_INJECTION_KEY,
+  OKR_TREE_INJECTION_KEY,
+  type OkrTreeEventName,
+} from './context'
 import type { TreeNode } from './model/node'
 import type {
   AnimateName,
@@ -84,6 +96,11 @@ const props = defineProps({
   renderContent: { type: Function as PropType<RenderContentFunction>, default: undefined },
   /** 展开节点的内容渲染 Function (h, node) */
   nodeBtnContent: { type: Function as PropType<NodeBtnContentFunction>, default: undefined },
+  /**
+   * 节点内容组件（Vue 3 版新增）：以 { node, data } 为 props 渲染。
+   * 优先级：#default 插槽 > node-component > render-content > 默认文本。
+   */
+  nodeComponent: { type: [Object, Function] as PropType<Component>, default: undefined },
   /** 折叠时显示子节点数 */
   showNodeNum: { type: Boolean, default: false },
   /** 树节点区域的宽度 */
@@ -237,8 +254,63 @@ function syncCurrentKey() {
   if (isCurrentControlled() && props.nodeKey) emit('update:currentKey', currentKeyValue())
 }
 
-// ---- 节点根元素登记（scrollToNode 用） ----
+// ---- 节点根元素登记（scrollToNode / 键盘导航用） ----
 const nodeEls = new WeakMap<TreeNode, HTMLElement>()
+const elNodes = new WeakMap<HTMLElement, TreeNode>()
+const orgChartRoot = shallowRef<HTMLElement | null>(null)
+
+// ---- 键盘可访问性：漫游 tabindex 与焦点移动 ----
+const focusedNode = shallowRef<TreeNode | null>(null)
+
+function setFocusedNode(node: TreeNode | null) {
+  focusedNode.value = node
+}
+
+function focusElement(el: HTMLElement) {
+  const node = elNodes.get(el)
+  if (node) focusedNode.value = node
+  el.focus()
+}
+
+function focusNode(node: TreeNode) {
+  const el = nodeEls.get(node)
+  if (el) focusElement(el)
+}
+
+/** 当前可见的 treeitem（文档顺序），排除处于收起容器中的节点 */
+function visibleTreeItems(): HTMLElement[] {
+  const container = orgChartRoot.value
+  if (!container) return []
+  return Array.from(
+    container.querySelectorAll<HTMLElement>('.org-chart-node[role="treeitem"]')
+  ).filter(
+    (el) =>
+      !el.closest('.org-chart-node-children.is-hidden, .org-chart-node-left-children.is-hidden')
+  )
+}
+
+function moveFocus(from: HTMLElement | null, step: 1 | -1 | 'first' | 'last') {
+  const items = visibleTreeItems()
+  if (!items.length) return
+  let target: HTMLElement | undefined
+  if (step === 'first') target = items[0]
+  else if (step === 'last') target = items[items.length - 1]
+  else {
+    const index = from ? items.indexOf(from) : -1
+    const next = index + step
+    if (next < 0 || next >= items.length) return
+    target = items[next]
+  }
+  if (target) focusElement(target)
+}
+
+function focusParent(node: TreeNode, isLeftChildNode: boolean) {
+  let parent = node.parent
+  // 左树顶层节点的 parent 是未渲染的临时根，视觉上的父节点是 OKR 根节点
+  if (isLeftChildNode && (!parent || parent.level <= 1)) parent = root.childNodes[0] ?? null
+  if (!parent || parent.level < 1) return
+  focusNode(parent)
+}
 
 provide(OKR_TREE_INJECTION_KEY, {
   store,
@@ -253,9 +325,31 @@ provide(OKR_TREE_INJECTION_KEY, {
   },
   onExpandChange: syncExpandedKeys,
   onCurrentChange: syncCurrentKey,
-  registerNodeEl: (node, el) => nodeEls.set(node, el),
-  unregisterNodeEl: (node) => nodeEls.delete(node),
+  registerNodeEl: (node, el) => {
+    nodeEls.set(node, el)
+    elNodes.set(el, node)
+  },
+  unregisterNodeEl: (node) => {
+    const el = nodeEls.get(node)
+    if (el) elNodes.delete(el)
+    nodeEls.delete(node)
+    if (focusedNode.value === node) focusedNode.value = null
+  },
+  focusedNode,
+  setFocusedNode,
+  focusElement,
+  focusNode,
+  moveFocus,
+  focusParent,
 })
+
+// ---- OkrTreeGroup：成员变化时请求重新测量 ----
+const group = inject(OKR_TREE_GROUP_INJECTION_KEY, null)
+if (group) {
+  onMounted(group.requestMeasure)
+  onUpdated(group.requestMeasure)
+  onBeforeUnmount(group.requestMeasure)
+}
 
 // ---- 配置同步：运行时变更的 prop 写回 store（原版为创建时快照） ----
 watch(

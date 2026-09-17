@@ -5,10 +5,24 @@
     class="org-chart-node"
     :class="nodeClass"
     :data-level="node.level"
+    role="treeitem"
+    :tabindex="tabIndex"
+    :aria-level="node.level"
+    :aria-selected="node.isCurrent ? 'true' : 'false'"
+    :aria-expanded="ariaExpanded"
+    :aria-disabled="node.disabled ? 'true' : undefined"
     @contextmenu="handleContextMenu"
+    @focus="handleFocus"
+    @keydown="handleKeydown"
   >
     <transition v-bind="transitionProps">
-      <div v-if="showLeftChildNode" class="org-chart-node-left-children" :style="leftChildrenStyle">
+      <div
+        v-if="showLeftChildNode"
+        class="org-chart-node-left-children"
+        :class="[animClass, { 'is-hidden': !node.leftExpanded }]"
+        :style="leftChildrenStyle"
+        role="group"
+      >
         <OkrTreeNode
           v-for="child in leftChildNodes"
           :key="getNodeKey(child)"
@@ -17,6 +31,7 @@
           :label-width="labelWidth"
           :label-height="labelHeight"
           :render-content="renderContent"
+          :node-component="nodeComponent"
           :node-btn-content="nodeBtnContent"
           :node-key="nodeKey"
           :show-node-num="showNodeNum"
@@ -38,6 +53,7 @@
         v-if="showNodeLeftBtn && leftChildNodes.length > 0"
         class="org-chart-node-left-btn"
         :class="{ expanded: node.leftExpanded }"
+        aria-hidden="true"
         @click="handleBtnClick('left')"
       >
         <template v-if="showNodeNum">
@@ -60,7 +76,12 @@
         :style="computeLabelStyle"
         @click="handleNodeClick"
       >
-        <NodeContent :node="node" :render-content="renderContent">
+        <NodeContent
+          :node="node"
+          :has-user-slot="!!$slots.default"
+          :node-component="nodeComponent"
+          :render-content="renderContent"
+        >
           <template #default="scope">
             <slot v-bind="scope">{{ node.label }}</slot>
           </template>
@@ -71,6 +92,7 @@
         v-if="showNodeBtn && !isLeftChildNode"
         class="org-chart-node-btn"
         :class="{ expanded: node.expanded }"
+        aria-hidden="true"
         @click="handleBtnClick('right')"
       >
         <template v-if="showNodeNum">
@@ -96,6 +118,7 @@
         class="org-chart-node-children"
         :class="[animClass, { 'is-hidden': !node.expanded }]"
         :style="childrenStyle"
+        role="group"
       >
         <OkrTreeNode
           v-for="child in node.childNodes"
@@ -105,6 +128,7 @@
           :label-width="labelWidth"
           :label-height="labelHeight"
           :render-content="renderContent"
+          :node-component="nodeComponent"
           :node-btn-content="nodeBtnContent"
           :node-key="nodeKey"
           :show-node-num="showNodeNum"
@@ -131,6 +155,7 @@ import {
   onMounted,
   ref,
   watch,
+  type Component,
   type CSSProperties,
   type PropType,
 } from 'vue'
@@ -150,6 +175,8 @@ const props = defineProps({
   isLeftChildNode: { type: Boolean, default: false },
   /** 树节点的内容区的渲染 Function */
   renderContent: { type: Function as PropType<RenderContentFunction>, default: undefined },
+  /** 节点内容组件（props: { node, data }） */
+  nodeComponent: { type: [Object, Function] as PropType<Component>, default: undefined },
   /** 展开节点的内容渲染 Function */
   nodeBtnContent: { type: Function as PropType<NodeBtnContentFunction>, default: undefined },
   /** 折叠时显示子节点数 */
@@ -362,6 +389,101 @@ const computeLabelClass = computed(() => {
 
 function getNodeKey(child: TreeNode) {
   return _getNodeKey(props.nodeKey, child.data)
+}
+
+// ---- 可访问性：漫游 tabindex + 键盘导航 ----
+const hasRightChildren = computed(() => node.value.childNodes.length > 0)
+const hasLeftChildren = computed(() => leftChildNodes.value.length > 0)
+
+/** 该 treeitem 控制的子树是否展开（无子节点时不输出 aria-expanded） */
+const ariaExpanded = computed(() => {
+  if (props.isLeftChildNode) {
+    return hasLeftChildren.value ? (node.value.leftExpanded ? 'true' : 'false') : undefined
+  }
+  if (!hasRightChildren.value && !hasLeftChildren.value) return undefined
+  const rightOpen = hasRightChildren.value ? node.value.expanded : true
+  const leftOpen = hasLeftChildren.value ? node.value.leftExpanded : true
+  return rightOpen && leftOpen ? 'true' : 'false'
+})
+
+const tabIndex = computed(() => {
+  const focused = tree!.focusedNode.value
+  if (focused) return focused === node.value ? 0 : -1
+  // 尚无焦点节点：第一个根节点可 Tab 进入
+  return node.value === tree!.root.childNodes[0] && !props.isLeftChildNode ? 0 : -1
+})
+
+function handleFocus() {
+  tree!.setFocusedNode(node.value)
+}
+
+/** 展开（或进入）该节点某一侧的子树 */
+function expandOrEnter(side: 'left' | 'right') {
+  const current = node.value
+  const isOpen = side === 'left' ? current.leftExpanded : current.expanded
+  const hasKids = side === 'left' ? hasLeftChildren.value : hasRightChildren.value
+  if (!hasKids) return
+  if (!isOpen) {
+    if (props.showCollapsable) handleBtnClick(side)
+    return
+  }
+  const kids = side === 'left' ? leftChildNodes.value : current.childNodes
+  const first = kids.find((child) => child.visible)
+  if (first) tree!.focusNode(first)
+}
+
+/** 收起该节点某一侧的子树，已收起则回到父节点 */
+function collapseOrLeave(side: 'left' | 'right') {
+  const current = node.value
+  const isOpen = side === 'left' ? current.leftExpanded : current.expanded
+  const hasKids = side === 'left' ? hasLeftChildren.value : hasRightChildren.value
+  if (hasKids && isOpen && props.showCollapsable) {
+    handleBtnClick(side)
+    return
+  }
+  tree!.focusParent(current, props.isLeftChildNode)
+}
+
+function handleKeydown(event: KeyboardEvent) {
+  // 只处理焦点落在 treeitem 本身的情况，避免干扰节点内的输入控件
+  if (event.target !== rootEl.value) return
+  switch (event.key) {
+    case 'Enter':
+    case ' ':
+      event.preventDefault()
+      handleNodeClick()
+      break
+    case 'ArrowDown':
+      event.preventDefault()
+      tree!.moveFocus(rootEl.value, 1)
+      break
+    case 'ArrowUp':
+      event.preventDefault()
+      tree!.moveFocus(rootEl.value, -1)
+      break
+    case 'Home':
+      event.preventDefault()
+      tree!.moveFocus(rootEl.value, 'first')
+      break
+    case 'End':
+      event.preventDefault()
+      tree!.moveFocus(rootEl.value, 'last')
+      break
+    case 'ArrowRight':
+      event.preventDefault()
+      // 左树节点的子树在视觉左侧：→ 表示离开 / 收起；其余节点 → 表示展开 / 进入右侧子树
+      if (props.isLeftChildNode) collapseOrLeave('left')
+      else expandOrEnter('right')
+      break
+    case 'ArrowLeft':
+      event.preventDefault()
+      if (props.isLeftChildNode) expandOrEnter('left')
+      else if (isOkrRoot.value && hasLeftChildren.value) expandOrEnter('left')
+      else collapseOrLeave('right')
+      break
+    default:
+      return
+  }
 }
 
 function handleNodeClick() {

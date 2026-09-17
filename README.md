@@ -8,6 +8,7 @@
 - 内建 `align-root` 根对齐，OKR 模式下展开/收起不再位移，无需手动测量 DOM
 - 全部外观取值通过 `--okr-*` CSS 变量暴露，内置 `default / feishu / dark / auto / minimal / colorful` 六套主题（`theme` prop），也可自定义
 - 受控状态 `v-model:expanded-keys` / `v-model:current-key`，`expandAll` / `collapseAll` / `expandNode` / `collapseNode` / `scrollToNode` 方法，`#expand-btn` / `#empty` 插槽
+- `<OkrTreeGroup>` 跨实例根对齐、WAI-ARIA 键盘导航、`node-component` prop、`createTypedOkrTree<T>()` 类型化辅助
 - 修复了原版的多根过滤、左右树同 key 覆盖、`animate` / `animate-duration` 无效等问题（见下文「与 vue-okr-tree 的差异」）
 
 ## 安装
@@ -97,7 +98,13 @@ function renderContent(h, node) {
 }
 ```
 
-也可以使用作用域插槽（Vue 3 版新增，原版插槽实际不可用）：
+也可以传一个组件（`node-component`，Vue 3 版新增），它会以 `{ node, data }` 为 props 渲染：
+
+```vue
+<vue-okr-tree :data="data" :node-component="DeptCard" />
+```
+
+或使用作用域插槽（Vue 3 版新增，原版插槽实际不可用）。三者优先级：`#default` 插槽 > `node-component` > `render-content`。
 
 ```vue
 <vue-okr-tree :data="data">
@@ -165,6 +172,60 @@ const tree = ref<VueOkrTreeInstance | null>(null)
 const expandedKeys = ref<TreeKey[]>([1]) // 只展开 id 为 1 的节点
 const currentKey = ref<TreeKey | null>(null) // null 表示无选中
 </script>
+```
+
+## 多棵树根对齐：OkrTreeGroup
+
+`align-root` 让每棵树的根节点在自身容器内居中。多棵 OKR 树并排对比、且宽度不足以容纳最深的一侧时，各树"各自居中"的位置会不同——这正是原版 README 里需要"结合业务层手动测量 DOM"的场景。用 `<OkrTreeGroup>` 包裹即可：它测量组内所有左子树容器的最大自然宽度并统一设置，使各树根节点水平坐标完全一致，并自动响应成员的挂载 / 更新 / 尺寸变化。
+
+```vue
+<okr-tree-group>
+  <vue-okr-tree :data="a" :left-data="leftA" only-both-tree direction="horizontal" node-key="id" />
+  <vue-okr-tree :data="b" :left-data="leftB" only-both-tree direction="horizontal" node-key="id" />
+</okr-tree-group>
+```
+
+| 名称        | 说明                                                       |
+| ----------- | ---------------------------------------------------------- |
+| `align`     | prop，boolean，默认 `true`；`false` 时各树独立排布         |
+| `refresh()` | 方法，手动重新测量（字体加载完成、外部样式变化等特殊场景） |
+
+## 键盘导航与可访问性
+
+树容器为 `role="tree"`，节点为 `role="treeitem"`，带 `aria-level` / `aria-expanded` / `aria-selected` / `aria-disabled`，子容器为 `role="group"`；采用漫游 tabindex（同一时刻只有一个节点可 Tab 进入）。
+
+| 按键              | 行为                                           |
+| ----------------- | ---------------------------------------------- |
+| `Tab`             | 进入 / 离开树                                  |
+| `↑` / `↓`         | 在可见节点间移动焦点（文档顺序，跳过收起子树） |
+| `→`               | 展开当前节点；已展开则进入第一个子节点         |
+| `←`               | 收起当前节点；已收起则回到父节点               |
+| `Enter` / `Space` | 选中节点（触发 `node-click`）                  |
+| `Home` / `End`    | 移到第一个 / 最后一个可见节点                  |
+
+OKR 模式下：根节点 `←` 作用于左子树（展开或进入），左树节点的 `←` / `→` 镜像（`←` 展开/进入、`→` 收起/返回根节点）。焦点在节点内部的输入控件时不拦截按键。焦点环通过 `--okr-focus-color`（默认 `#409eff`）/ `--okr-focus-width`（默认 `2px`）定制。
+
+## 类型化：createTypedOkrTree<T>
+
+运行时返回的就是 `VueOkrTree`，仅做类型收窄，让 `data` / `leftData` 与插槽作用域中的 `data` 带上你的数据类型：
+
+```ts
+import { createTypedOkrTree } from 'vue3-okr-tree'
+
+interface Dept {
+  id: number
+  label: string
+  leader?: string
+}
+const DeptTree = createTypedOkrTree<Dept>()
+```
+
+```vue
+<DeptTree :data="depts" node-key="id">
+  <template #default="{ data }">
+    {{ data.label }} — {{ data.leader }}   <!-- data: Dept，有类型提示 -->
+  </template>
+</DeptTree>
 ```
 
 ## 主题与样式定制
@@ -259,6 +320,7 @@ const currentKey = ref<TreeKey | null>(null) // null 表示无选中
 | `default-expand-all`       | 默认展开全部（仅 `show-collapsable` 为 true 时有意义）                                                                                                        | boolean                | `false`              |
 | `render-content`           | 节点内容渲染函数 `(h, node)`                                                                                                                                  | Function               | —                    |
 | `node-btn-content`         | 展开按钮内容渲染函数 `(h, node)`                                                                                                                              | Function               | —                    |
+| `node-component`           | **新增。** 节点内容组件，以 `{ node, data }` 为 props 渲染。优先级：`#default` 插槽 > `node-component` > `render-content`                                     | Component              | —                    |
 | `props`                    | 字段映射，见下表                                                                                                                                              | object                 | —                    |
 | `node-key`                 | 节点唯一标识字段名                                                                                                                                            | string                 | —                    |
 | `default-expanded-keys`    | 默认展开的 key 数组（需 `node-key`）；OKR 模式下对左右两树同时生效                                                                                            | array                  | —                    |
@@ -326,6 +388,7 @@ const currentKey = ref<TreeKey | null>(null) // null 表示无选中
 - 依赖 `node-key` 的方法：`setCurrentNode` / `setCurrentKey` / `getCurrentKey` / `updateKeyChildren` 缺少 `node-key` 时抛出 `[Tree] nodeKey is required in xxx`；`remove` / `append(key)` 等按 key 查找的方法在未设置 `node-key` 时查不到节点、静默无效。传 data 对象时可依赖内部隐藏标记 `$treeNodeId` 查找。
 - `data` 为响应式对象时，原地 `push` / `splice` 会被侦听并增量更新视图（保留已展开状态）；替换引用则整棵重建。
 - 组件导出了 `TreeStore` / `TreeNode` / `createNode` 与全部类型，方便扩展。
+- 组件导出 `OkrTreeGroup`、`createTypedOkrTree`，插件方式注册时会同时注册 `<okr-tree-group>`。
 - 开发环境（`process.env.NODE_ENV !== "production"`）下会对常见配置错误输出一次性 `console.warn`：重复 `node-key`、`onlyBothTree` 但 `direction` 非 `horizontal`、传了 `leftData` 未开 `onlyBothTree`、受控 prop 缺 `node-key`。通过 CDN 直接引用 UMD 时不输出。
 
 ## 与 vue-okr-tree 的差异（迁移说明）

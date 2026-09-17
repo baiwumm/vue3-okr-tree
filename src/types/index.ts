@@ -63,3 +63,10 @@ export interface ScrollToNodeOptions extends ScrollIntoViewOptions {
 }
 
 export type { TreeNode }
+
+/** createTypedOkrTree<T> 返回组件的插槽类型：作用域中的 data 为 T */
+export interface TypedOkrTreeSlots<T> {
+  default?: (scope: { node: TreeNode; data: T }) => any
+  'expand-btn'?: (scope: ExpandBtnSlotScope & { data: T }) => any
+  empty?: () => any
+}

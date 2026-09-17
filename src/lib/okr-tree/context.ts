@@ -1,4 +1,4 @@
-import type { ComponentPublicInstance, InjectionKey } from 'vue'
+import type { ComponentPublicInstance, InjectionKey, ShallowRef } from 'vue'
 import type { TreeStore } from './model/tree-store'
 import type { TreeNode } from './model/node'
 
@@ -18,9 +18,29 @@ export interface OkrTreeContext {
   onExpandChange: () => void
   /** 选中节点发生用户交互变化后调用：用于同步 v-model:current-key */
   onCurrentChange: () => void
-  /** 节点根元素登记（scrollToNode 使用） */
+  /** 节点根元素登记（scrollToNode / 键盘导航使用） */
   registerNodeEl: (node: TreeNode, el: HTMLElement) => void
   unregisterNodeEl: (node: TreeNode) => void
+  /** 当前持有漫游 tabindex=0 的节点 */
+  focusedNode: ShallowRef<TreeNode | null>
+  setFocusedNode: (node: TreeNode | null) => void
+  /** 聚焦某个 treeitem 元素并更新 focusedNode */
+  focusElement: (el: HTMLElement) => void
+  /** 聚焦某个节点对应的 treeitem（未渲染/不可见时忽略） */
+  focusNode: (node: TreeNode) => void
+  /** 沿可见 treeitem 的文档顺序移动焦点 */
+  moveFocus: (from: HTMLElement | null, step: 1 | -1 | 'first' | 'last') => void
+  /** 聚焦父节点（左树顶层节点的父节点为 OKR 根节点） */
+  focusParent: (node: TreeNode, isLeftChildNode: boolean) => void
 }
 
 export const OKR_TREE_INJECTION_KEY: InjectionKey<OkrTreeContext> = Symbol('okr-tree')
+
+/** OkrTreeGroup 提供给组内 OkrTree 的上下文 */
+export interface OkrTreeGroupContext {
+  /** 成员挂载/更新/卸载后请求重新测量（内部按 tick 去重） */
+  requestMeasure: () => void
+}
+
+export const OKR_TREE_GROUP_INJECTION_KEY: InjectionKey<OkrTreeGroupContext> =
+  Symbol('okr-tree-group')

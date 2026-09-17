@@ -10,7 +10,9 @@
       </template>
       <template #description>
         通过 <code>show-collapsable</code> 设置节点可被展开；此时节点默认折叠，点击圆形 +/-
-        按钮展开或收起。
+        按钮展开或收起。<strong>键盘操作</strong>（Vue 3 版新增，符合 WAI-ARIA tree 模式）：Tab
+        进入树后，↑/↓ 在可见节点间移动，→ 展开或进入子节点，← 收起或回到父节点，Enter/Space
+        选中，Home/End 到首尾；OKR 模式下根节点 ← 进入左子树，左树节点方向键镜像。
       </template>
       <CodeBlock :code="code" />
     </BaseCard>

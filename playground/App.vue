@@ -66,6 +66,7 @@
     <Events />
     <Methods />
     <Slots />
+    <Group />
 
     <div class="top-wrapp" title="回到顶部" @click="goTop">↑</div>
   </div>
@@ -95,6 +96,7 @@ import Props from './components/api/Props.vue'
 import Events from './components/api/Events.vue'
 import Methods from './components/api/Methods.vue'
 import Slots from './components/api/Slots.vue'
+import Group from './components/api/Group.vue'
 
 type ThemeName = 'default' | 'feishu' | 'dark' | 'auto' | 'minimal' | 'colorful'
 const themes: { name: ThemeName; desc: string }[] = [
@@ -132,6 +134,7 @@ const nav = [
   { id: 'api-events', text: 'Events API' },
   { id: 'api-methods', text: 'Methods' },
   { id: 'api-slots', text: 'Slots' },
+  { id: 'api-group', text: 'OkrTreeGroup' },
 ]
 
 function goTop() {

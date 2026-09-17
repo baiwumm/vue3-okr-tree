@@ -14,40 +14,45 @@
               :class="{ 'is-active': alignRoot }"
               @click="alignRoot = !alignRoot"
             >
-              align-root（内建根对齐）：{{ alignRoot ? '开启' : '关闭' }}
+              align-root + OkrTreeGroup：{{ alignRoot ? '开启' : '关闭' }}
             </button>
             <span style="color: #909399; font-size: 12px">
-              第二棵树的左侧层级更深，开启后两棵树的根节点自动对齐；关闭可对比原始行为
+              第二棵树的左侧层级更深；OkrTreeGroup
+              测量组内最大左子树宽度并统一，两棵树的根节点严格对齐。关闭可对比原始行为
             </span>
           </div>
-          <VueOkrTree
-            :data="testData"
-            :left-data="testLeftData"
-            only-both-tree
-            direction="horizontal"
-            show-collapsable
-            node-key="id"
-            :align-root="alignRoot"
-            default-expand-all
-          />
-          <VueOkrTree
-            :data="testData"
-            :left-data="testLeftData2"
-            only-both-tree
-            direction="horizontal"
-            show-collapsable
-            node-key="id"
-            :align-root="alignRoot"
-            default-expand-all
-          />
+          <OkrTreeGroup :align="alignRoot">
+            <VueOkrTree
+              :data="testData"
+              :left-data="testLeftData"
+              only-both-tree
+              direction="horizontal"
+              show-collapsable
+              node-key="id"
+              :align-root="alignRoot"
+              default-expand-all
+            />
+            <VueOkrTree
+              :data="testData"
+              :left-data="testLeftData2"
+              only-both-tree
+              direction="horizontal"
+              show-collapsable
+              node-key="id"
+              :align-root="alignRoot"
+              default-expand-all
+            />
+          </OkrTreeGroup>
         </div>
       </template>
       <template #description>
         该模式必须设置 <code>onlyBothTree</code>，以及通过
-        <code>leftData</code> 表示左子树的结构。Vue 3 版内建
-        <code>align-root</code> 根对齐（默认开启，纯 CSS
-        实现），展开/收起不会改变根节点位置，不再需要原版 Demo 中手动测量 DOM 宽度的代码；设为
-        <code>false</code> 可回到手动控制。
+        <code>leftData</code> 表示左子树的结构。Vue 3 版内建 <code>align-root</code>（默认开启，纯
+        CSS）让每棵树的根节点在自身容器内居中，展开/收起不会位移。 多棵树并排且宽度不足时，用
+        <code>&lt;OkrTreeGroup&gt;</code>
+        包裹：它会测量组内所有左子树容器的最大自然宽度并统一设置，使各树根节点水平坐标完全一致——即原版
+        README 里"结合业务层手动测量 DOM 实现对齐"的正规替代。组件自动响应成员的挂载 / 更新 /
+        尺寸变化，也可通过 <code>ref.refresh()</code> 手动触发。
       </template>
       <CodeBlock :code="code" />
     </BaseCard>
@@ -56,7 +61,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { VueOkrTree } from 'vue3-okr-tree'
+import { VueOkrTree, OkrTreeGroup } from 'vue3-okr-tree'
 import BaseCard from '../BaseCard.vue'
 import CodeBlock from '../CodeBlock.vue'
 import { keyedData, keyedDataSnippet, leftData, leftData2, leftDataSnippet } from '../../data'
@@ -68,20 +73,16 @@ const testLeftData2 = ref(leftData2())
 
 const code = `
 <template>
-  <vue-okr-tree
-    :data="testData"
-    :left-data="testLeftData"
-    only-both-tree
-    direction="horizontal"
-    show-collapsable
-    node-key="id"
-    default-expand-all
-  />
+  <!-- 多棵树并排对比时用 OkrTreeGroup 包裹，组内根节点严格对齐 -->
+  <okr-tree-group>
+    <vue-okr-tree :data="testData" :left-data="testLeftData" only-both-tree direction="horizontal" show-collapsable node-key="id" default-expand-all />
+    <vue-okr-tree :data="testData" :left-data="testLeftData2" only-both-tree direction="horizontal" show-collapsable node-key="id" default-expand-all />
+  </okr-tree-group>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import { VueOkrTree } from 'vue3-okr-tree'
+import { VueOkrTree, OkrTreeGroup } from 'vue3-okr-tree'
 
 const testData = ref(${keyedDataSnippet.replace('testData: ', '')})
 
@@ -112,18 +113,5 @@ const testLeftData2 = ref([
 <style>
 .okr-align-demo {
   padding-left: 0;
-}
-/*
- * 演示：两棵树并排对比根对齐。align-root 让每棵树的根节点在容器内居中，
- * 因此两棵树的根节点天然对齐（即原 Demo 手动测量想要达到的效果）。
- * 本例内容总宽超出卡片宽度，与原 Demo 一样会出现横向滚动；这里仿照原 Demo
- * 手动测量的语义，给两棵树的左子树容器统一 min-width，保证两侧根节点坐标一致
- * （!important 仅用于覆盖组件内 align-root 的 min-width: max-content）。
- */
-.okr-align-demo
-  .org-chart-container
-  .org-chart-node.only-both-tree-node.align-root
-  > .org-chart-node-left-children {
-  min-width: 562px !important;
 }
 </style>

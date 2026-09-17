@@ -604,6 +604,18 @@
   transform-origin: top right;
 }
 
+/* ======================= 键盘焦点样式 ======================= */
+.org-chart-container .org-chart-node:focus {
+  outline: none;
+}
+.org-chart-container
+  .org-chart-node:focus-visible
+  > .org-chart-node-label
+  > .org-chart-node-label-inner {
+  outline: var(--okr-focus-width, 2px) solid var(--okr-focus-color, #409eff);
+  outline-offset: 2px;
+}
+
 /* ======================= 内置主题 ======================= */
 /*
  * theme prop 会在组件根容器（或任意祖先元素）加 okr-theme-{name} 类。
@@ -706,4 +718,30 @@
 .okr-theme-colorful .org-chart-node .org-chart-node-label-inner.is-current {
   --okr-node-bg: var(--okr-current-bg, #1f2329);
   --okr-node-color: var(--okr-current-color, #fff);
+}
+
+/* ======================= OkrTreeGroup：跨实例根对齐 ======================= */
+/*
+ * 组内所有 OKR 树（需 align-root 开启）的左子树容器统一为组内最大自然宽度：
+ * 测量阶段（is-measuring）左容器按 max-content 排布读取自然宽度；
+ * 测量完成（is-measured）统一 width: var(--okr-group-left-width)，flex 不再伸展，
+ * 使各成员的根节点水平坐标一致（覆盖 align-root 的"各自居中"行为）。
+ */
+.okr-tree-group.is-measuring
+  .org-chart-container
+  .horizontal
+  .org-chart-node.only-both-tree-node.align-root
+  > .org-chart-node-left-children {
+  flex: 0 0 auto;
+  width: max-content;
+  min-width: 0;
+}
+.okr-tree-group.is-measured
+  .org-chart-container
+  .horizontal
+  .org-chart-node.only-both-tree-node.align-root
+  > .org-chart-node-left-children {
+  flex: 0 0 auto;
+  width: var(--okr-group-left-width);
+  min-width: 0;
 }

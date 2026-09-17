@@ -70,6 +70,13 @@ const rows: string[][] = [
     '—',
   ],
   ['node-btn-content', '展开按钮内容渲染函数，参数约定同上', 'Function(h, node)', '—', '—'],
+  [
+    'node-component',
+    '<strong>Vue 3 版新增。</strong>节点内容组件，以 <code>{ node, data }</code> 为 props 渲染。优先级：<code>#default</code> 插槽 &gt; node-component &gt; render-content',
+    'Component',
+    '—',
+    '—',
+  ],
   ['props', '配置选项，具体看下表', 'object', '—', '—'],
   ['node-key', '每个树节点用来作为唯一标识的属性，整棵树应该是唯一的', 'string', '—', '—'],
   [
