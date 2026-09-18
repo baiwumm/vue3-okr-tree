@@ -61,15 +61,24 @@ export interface ExportImageOptions {
 }
 
 /**
+ * html-to-image 为可选依赖：不进入 npm 依赖，也不应被打包进库产物。
+ * 说明符经变量传递（打包器无法静态分析），否则构建工具会把仓库内的可选依赖
+ * 解析并内联成额外 chunk，随包发布。
+ */
+const HTML_TO_IMAGE = 'html-to-image'
+const dynamicImport = (specifier: string): Promise<any> => import(/* @vite-ignore */ specifier)
+
+/**
  * 动态加载 html-to-image；未安装 / 不可解析时抛出带修复指引的错误。
- * 通过 @vite-ignore 标记避免库构建时因可选依赖解析失败。
+ * Node / SSR 环境原生可解析 node_modules；纯浏览器（打包器应用）中裸说明符不可运行时解析，
+ * 请通过 exportImage({ toPng / toSvg }) 直接传入渲染函数。
  */
 export async function loadHtmlToImage(): Promise<{
   toPng: (el: HTMLElement, options?: Record<string, any>) => Promise<string>
   toSvg: (el: HTMLElement, options?: Record<string, any>) => Promise<string>
 }> {
   try {
-    return await import(/* @vite-ignore */ 'html-to-image')
+    return await dynamicImport(HTML_TO_IMAGE)
   } catch {
     throw new Error(
       '[vue3-okr-tree] exportImage 需要依赖 html-to-image：请先安装（npm i html-to-image），' +
