@@ -1,11 +1,23 @@
 import type { App, Plugin } from 'vue'
 import OkrTree from './okr-tree/OkrTree.vue'
 import OkrTreeGroup from './okr-tree/OkrTreeGroup.vue'
+import OkrTreeViewport from './okr-tree/OkrTreeViewport.vue'
 
 export { TreeNode, createNode } from './okr-tree/model/node'
 export { TreeStore } from './okr-tree/model/tree-store'
 export type { TreeStoreOptions } from './okr-tree/model/tree-store'
 export { NODE_KEY, getNodeKey, markNodeData } from './okr-tree/model/util'
+export {
+  clampZoom,
+  computeFit,
+  renderToDataUrl,
+  loadHtmlToImage,
+} from './okr-tree/viewport'
+export type {
+  ExportImageOptions,
+  ViewportOffset,
+  ViewportWheelBehavior,
+} from './okr-tree/viewport'
 export type {
   AnimateName,
   ExpandBtnSlotScope,
@@ -29,10 +41,12 @@ import type {
 
 /** 组件本体（与原 vue-okr-tree 同名导出） */
 export const VueOkrTree = OkrTree
-export { OkrTree, OkrTreeGroup }
+export { OkrTree, OkrTreeGroup, OkrTreeViewport }
 
 /** OkrTreeGroup 实例类型（refresh()） */
 export type OkrTreeGroupInstance = InstanceType<typeof OkrTreeGroup>
+/** OkrTreeViewport 实例类型（zoomIn / reset / fitToScreen / centerNode / exportImage） */
+export type OkrTreeViewportInstance = InstanceType<typeof OkrTreeViewport>
 
 type OkrTreeInstanceType = InstanceType<typeof OkrTree>
 
@@ -59,12 +73,13 @@ export function createTypedOkrTree<T extends _TreeNodeData>() {
 /** 组件实例类型（用于 ref<VueOkrTreeInstance>() 调用 filter/getNode 等方法） */
 export type VueOkrTreeInstance = InstanceType<typeof OkrTree>
 
-/** Vue 插件形式：app.use(VueOkrTreePlugin) 全局注册 <vue-okr-tree> / <okr-tree> */
+/** Vue 插件形式：app.use(VueOkrTreePlugin) 全局注册 <vue-okr-tree> / <okr-tree> 等 */
 export const VueOkrTreePlugin: Plugin = {
   install(app: App) {
     app.component('VueOkrTree', OkrTree)
     app.component('OkrTree', OkrTree)
     app.component('OkrTreeGroup', OkrTreeGroup)
+    app.component('OkrTreeViewport', OkrTreeViewport)
   },
 }
 

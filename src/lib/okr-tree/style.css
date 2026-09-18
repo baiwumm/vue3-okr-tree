@@ -781,3 +781,60 @@
   width: var(--okr-group-left-width);
   min-width: 0;
 }
+
+/* ======================= OkrTreeViewport 画布（1.4.0 新增） ======================= */
+.okr-viewport {
+  position: relative;
+  overflow: hidden;
+  height: var(--okr-viewport-height, 420px);
+  background: var(--okr-viewport-bg, transparent);
+  border: var(--okr-viewport-border, none);
+  border-radius: var(--okr-viewport-radius, 4px);
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.okr-viewport.is-panning {
+  cursor: grabbing;
+}
+.okr-viewport-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+.okr-viewport-toolbar {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 8px;
+  background: var(--okr-viewport-toolbar-bg, rgba(255, 255, 255, 0.94));
+  border: 1px solid var(--okr-line-color, #e0e0e0);
+  border-radius: 6px;
+  box-shadow: var(--okr-viewport-toolbar-shadow, 0 2px 8px rgba(0, 0, 0, 0.08));
+}
+.okr-viewport-toolbar .okr-viewport-toolbar-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.4;
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: var(--okr-node-color, #333);
+}
+.okr-viewport-toolbar .okr-viewport-toolbar-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+.okr-viewport-toolbar .okr-viewport-toolbar-zoom {
+  min-width: 44px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--okr-btn-text-color, #909090);
+}

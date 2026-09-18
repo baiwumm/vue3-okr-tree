@@ -1,6 +1,7 @@
 import type { ComponentPublicInstance, InjectionKey, ShallowRef } from 'vue'
 import type { TreeStore } from './model/tree-store'
 import type { TreeNode } from './model/node'
+import type { ViewportTreeApi } from './viewport'
 
 export type OkrTreeEventName = 'node-click' | 'node-expand' | 'node-collapse' | 'node-contextmenu'
 
@@ -44,3 +45,15 @@ export interface OkrTreeGroupContext {
 
 export const OKR_TREE_GROUP_INJECTION_KEY: InjectionKey<OkrTreeGroupContext> =
   Symbol('okr-tree-group')
+
+/** OkrTree 向所在 OkrTreeViewport 登记的定位能力（复用 ViewportTreeApi） */
+export type { ViewportTreeApi as OkrTreeViewportTreeApi } from './viewport'
+
+/** OkrTreeViewport 提供给内部 OkrTree 的上下文（登记以便 centerNode 定位） */
+export interface OkrTreeViewportContext {
+  registerTree: (api: ViewportTreeApi) => void
+  unregisterTree: (api: ViewportTreeApi) => void
+}
+
+export const OKR_TREE_VIEWPORT_INJECTION_KEY: InjectionKey<OkrTreeViewportContext> =
+  Symbol('okr-tree-viewport')

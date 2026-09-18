@@ -62,6 +62,8 @@
     <Base09 />
     <!-- 18 懒加载子节点（1.4.0 新增） -->
     <Base10 />
+    <!-- 19 画布组件（1.4.0 新增） -->
+    <Base11 />
     <!-- 17-20 API 文档表格 -->
     <Attributes />
     <Props />
@@ -94,6 +96,7 @@ import BaseEvents from './components/demos/BaseEvents.vue'
 import BaseEventsOkr from './components/demos/BaseEventsOkr.vue'
 import Base09 from './components/demos/Base09.vue'
 import Base10 from './components/demos/Base10.vue'
+import Base11 from './components/demos/Base11.vue'
 import Attributes from './components/api/Attributes.vue'
 import Props from './components/api/Props.vue'
 import Events from './components/api/Events.vue'
@@ -133,6 +136,7 @@ const nav = [
   { id: 'demo-16', text: 'OKR Events' },
   { id: 'demo-17', text: '受控状态与方法' },
   { id: 'demo-18', text: '懒加载' },
+  { id: 'demo-19', text: '画布缩放' },
   { id: 'api-attributes', text: 'Attributes' },
   { id: 'api-props', text: 'Props' },
   { id: 'api-events', text: 'Events API' },

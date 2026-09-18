@@ -58,9 +58,11 @@ import {
 import OkrTreeNode from './OkrTreeNode.vue'
 import { TreeStore } from './model/tree-store'
 import { getNodeKey as _getNodeKey, warn } from './model/util'
+import type { ViewportTreeApi } from './viewport'
 import {
   OKR_TREE_GROUP_INJECTION_KEY,
   OKR_TREE_INJECTION_KEY,
+  OKR_TREE_VIEWPORT_INJECTION_KEY,
   type OkrTreeEventName,
 } from './context'
 import type { TreeNode } from './model/node'
@@ -374,6 +376,17 @@ if (group) {
   onBeforeUnmount(group.requestMeasure)
 }
 
+// ---- OkrTreeViewport：登记定位能力（centerNode 用） ----
+const viewport = inject(OKR_TREE_VIEWPORT_INJECTION_KEY, null)
+if (viewport) {
+  const viewportApi: ViewportTreeApi = {
+    getNodeEl: (data) => getNodeEl(data),
+    expandNode: (data, expandParent) => expandNode(data, expandParent),
+  }
+  onMounted(() => viewport.registerTree(viewportApi))
+  onBeforeUnmount(() => viewport.unregisterTree(viewportApi))
+}
+
 // ---- 配置同步：运行时变更的 prop 写回 store（原版为创建时快照） ----
 watch(
   () => props.filterNodeMethod,
@@ -459,6 +472,12 @@ function filter(value: any) {
 
 function getNodeKey(node: TreeNode) {
   return _getNodeKey(props.nodeKey, node.data)
+}
+
+/** 获取节点对应的 DOM 元素（Node / key / data）；未渲染或不可见时为 null */
+function getNodeEl(data: TreeNode | TreeKey | TreeNodeData): HTMLElement | null {
+  const node = store.getNode(data)
+  return node ? (nodeEls.get(node) ?? null) : null
 }
 
 /** 通过 node 设置某个节点的当前选中状态 */
@@ -589,6 +608,7 @@ defineExpose({
   getNodeKey,
   setCurrentNode,
   getNode,
+  getNodeEl,
   setCurrentKey,
   remove,
   getCurrentNode,

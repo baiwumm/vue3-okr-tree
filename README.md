@@ -8,7 +8,7 @@
 - 内建 `align-root` 根对齐，OKR 模式下展开/收起不再位移，无需手动测量 DOM
 - 全部外观取值通过 `--okr-*` CSS 变量暴露，内置 `default / feishu / dark / auto / minimal / colorful` 六套主题（`theme` prop），也可自定义
 - 受控状态 `v-model:expanded-keys` / `v-model:current-key`，`expandAll` / `collapseAll` / `expandNode` / `collapseNode` / `scrollToNode` 方法，`#expand-btn` / `#empty` 插槽
-- `lazy` + `load` 懒加载子节点（大数据量只加载展开路径），`<OkrTreeGroup>` 跨实例根对齐、WAI-ARIA 键盘导航、`node-component` prop、`createTypedOkrTree<T>()` 类型化辅助
+- `lazy` + `load` 懒加载子节点（大数据量只加载展开路径）、`<OkrTreeViewport>` 画布缩放平移与 PNG/SVG 导出，`<OkrTreeGroup>` 跨实例根对齐、WAI-ARIA 键盘导航、`node-component` prop、`createTypedOkrTree<T>()` 类型化辅助
 - 修复了原版的多根过滤、左右树同 key 覆盖、`animate` / `animate-duration` 无效等问题（见下文「与 vue-okr-tree 的差异」）
 
 ## 安装
@@ -213,6 +213,48 @@ function loadNode(node: TreeNodeData & { level: number }, resolve: (children: Tr
 - **加载中状态**：按钮带 `is-loading` 类（内置旋转指示），`#expand-btn` 插槽作用域新增 `loading: boolean`；`show-node-num` 在未加载时不显示数字。
 - **过滤**：`filter` 不会触发未加载节点的 `load`（未加载子树内容未知）。
 
+## 画布组件：OkrTreeViewport
+
+大树（几十个部门、数百节点的组织架构图）在固定视口里放不下时，用 `<OkrTreeViewport>` 包裹树即可获得缩放与平移能力——它只做外层变换，不侵入树本体，也不改变树的任何 API：
+
+```vue
+<template>
+  <okr-tree-viewport ref="vp" toolbar :min-zoom="0.2" :max-zoom="4">
+    <vue-okr-tree :data="orgData" node-key="id" direction="horizontal" show-collapsable />
+    <template #toolbar="{ zoom, zoomIn, zoomOut, reset, fit }">
+      <button @click="zoomOut()">−</button>
+      <span>{{ Math.round(zoom * 100) }}%</span>
+      <button @click="zoomIn()">＋</button>
+      <button @click="reset()">重置</button>
+      <button @click="fit()">适应窗口</button>
+    </template>
+  </okr-tree-viewport>
+</template>
+```
+
+| prop             | 说明                                                                                                   | 默认值      |
+| ---------------- | ------------------------------------------------------------------------------------------------------ | ----------- |
+| `min-zoom` / `max-zoom` | 缩放范围                                                                                          | `0.2` / `4` |
+| `zoom-step`      | 每次 zoomIn / zoomOut / 滚轮一格的缩放系数（乘除）                                                      | `1.2`       |
+| `zoom`           | 受控缩放（`v-model:zoom`），未传时内部维护                                                             | —           |
+| `offset`         | 受控平移偏移 `{ x, y }`（`v-model:offset`），未传时内部维护                                            | —           |
+| `wheel-behavior` | 滚轮行为：`ctrl-zoom`（默认，按住 Ctrl/⌘ 才缩放，不劫持页面滚动）/ `zoom`（始终缩放）/ `scroll`（从不缩放） | `ctrl-zoom` |
+| `toolbar`        | 是否显示默认工具栏；传入 `#toolbar` 插槽时无需开启                                                     | `false`     |
+
+交互：滚轮缩放以指针为中心；按住拖拽平移（位移超过 3px 才算平移，不影响节点点击）；双击复位；触控双指捏合缩放。
+
+| 方法（通过 ref 调用）              | 说明                                                                                     |
+| ---------------------------------- | ---------------------------------------------------------------------------------------- |
+| `zoomIn()` / `zoomOut()`           | 以视口中心为锚放大 / 缩小（受 min/max 钳制）                                             |
+| `reset()`                          | 复位到缩放 1、偏移 0（双击画布同样触发）                                                 |
+| `fitToScreen(padding?)`            | 适应窗口：内容完整可见并居中，默认四周留 20px                                            |
+| `centerNode(key)`                  | 先展开目标节点的祖先，再把视口中心对准该节点（key / data / Node）                        |
+| `exportImage(options?)`            | 导出画布内容为 PNG / SVG 并触发下载，返回 dataURL                                        |
+
+`exportImage` 基于 [html-to-image](https://github.com/bubkoo/html-to-image)：默认按需 `import('html-to-image')`（未安装时抛出带安装指引的错误）；在打包器下动态导入裸包名不可靠时，可通过 `options.toPng / toSvg` 直接传入渲染函数（签名与 html-to-image 一致）。选项：`type`（`'png' | 'svg'`，默认 png）、`scale`（像素密度，默认 2）、`background`（背景色，如 `'#ffffff'`）。
+
+`OkrTreeGroup` 可以放在 Viewport 内组合使用；配合树的新方法 `getNodeEl(key)` 可获取节点 DOM 元素。
+
 ## 多棵树根对齐：OkrTreeGroup
 
 `align-root` 让每棵树的根节点在自身容器内居中。多棵 OKR 树并排对比、且宽度不足以容纳最深的一侧时，各树"各自居中"的位置会不同——这正是原版 README 里需要"结合业务层手动测量 DOM"的场景。用 `<OkrTreeGroup>` 包裹即可：它测量组内所有左子树容器的最大自然宽度并统一设置，使各树根节点水平坐标完全一致，并自动响应成员的挂载 / 更新 / 尺寸变化。
@@ -415,6 +457,7 @@ const DeptTree = createTypedOkrTree<Dept>()
 | `expandNode(data, expandParent = true)` | **新增。** 展开指定节点（key / data / Node），默认连同祖先展开；OKR 根节点同时展开左右两侧；`lazy` 下先加载再展开。返回 Node 或 null                   |
 | `collapseNode(data)`                    | **新增。** 收起指定节点；OKR 根节点同时收起左右两侧                                                                                                    |
 | `scrollToNode(data, options?)`          | **新增。** 先展开祖先使其可见，再 `scrollIntoView`（居中、平滑）。`options` 为 `ScrollIntoViewOptions & { expand?: boolean }`，返回 `Promise<boolean>`；`lazy` 下等待路径上的节点加载完成后再滚动 |
+| `getNodeEl(data)`                       | **新增（1.4.0）。** 按 Node / key / data 获取节点对应的 DOM 元素（`OkrTreeViewport` 的 centerNode 也基于它定位） |
 
 ### Slots
 
