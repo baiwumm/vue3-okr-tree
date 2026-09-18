@@ -153,6 +153,12 @@ const props = defineProps({
    * node.isLeftChild 可区分 OKR 左树节点。
    */
   load: { type: Function as PropType<TreeLoadFunction>, default: undefined },
+  /**
+   * data 深度侦听开关（Vue 3 版 1.5.0 新增，创建期生效）：默认 true——原地变更（push/splice 等）
+   * 触发增量更新；设为 false 只响应 data 引用变化（回到原版行为），超大树且不依赖原地变更时
+   * 可显著降低 watch 开销。
+   */
+  deepWatch: { type: Boolean, default: true },
   /** OKR 模式下自动根对齐（Vue 3 版新增，默认开启） */
   alignRoot: { type: Boolean, default: true },
   /**
@@ -414,7 +420,8 @@ watch(
 )
 
 // ---- 数据变更 ----
-// deep watch：引用变化 → 重建；原地变更（用户 data 为响应式时）→ Node.updateChildren 增量更新（Q4）
+// deep watch：引用变化 → 重建；原地变更（用户 data 为响应式时）→ Node.updateChildren 增量更新（Q4）。
+// deep-watch: false 时只响应引用变化（1.5.0 性能开关，创建期生效）。
 watch(
   () => props.data,
   (newVal) => {
@@ -425,14 +432,14 @@ watch(
       if (isCurrentControlled()) store.setCurrentNodeKey(props.currentKey)
     }
   },
-  { deep: true }
+  { deep: props.deepWatch }
 )
 watch(
   () => props.leftData,
   (newVal) => {
     if (props.onlyBothTree) store.setLeftData(newVal)
   },
-  { deep: true }
+  { deep: props.deepWatch }
 )
 watch(
   () => props.defaultExpandedKeys,

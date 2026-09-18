@@ -140,6 +140,18 @@ export class TreeNode {
       newData = (this.data && this.data[childrenKey]) || []
     }
 
+    // 脏检查（Q4 增量语义 + 1.5.0 性能）：源 children 与现有 childNodes 逐项同引用且数量一致时，
+    // 本层结构未变——跳过本层重建（不做 Map 匹配、不 splice 触发无谓重渲染），仅向下做廉价检查。
+    // 深层结构变更（如孙子层 push）会在对应层级各自命中脏检查后重建。
+    const currentNodes = this.childNodes
+    if (
+      currentNodes.length === newData.length &&
+      currentNodes.every((n, i) => n.data === newData[i])
+    ) {
+      currentNodes.forEach((child) => child.updateChildren())
+      return
+    }
+
     const oldNodes = this.childNodes.slice()
     const byData = new Map<any, TreeNode>()
     oldNodes.forEach((n) => byData.set(n.data, n))

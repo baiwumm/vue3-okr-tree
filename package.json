@@ -64,7 +64,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "bench": "node scripts/benchmark.mjs"
   },
   "peerDependencies": {
     "vue": ">=3.0.0"
