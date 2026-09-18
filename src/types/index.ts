@@ -20,9 +20,11 @@ export type AnimateName =
   | 'okr-zoom-in-left'
   | (string & {})
 
+/** 内置主题名清单（theme prop 的默认支持集） */
+export const BUILT_IN_THEMES = ['default', 'feishu', 'dark', 'auto', 'minimal', 'colorful'] as const
+
 /** 内置主题名（也允许自定义字符串，需自行编写 .okr-theme-{name} 变量） */
-export type TreeTheme =
-  'default' | 'feishu' | 'dark' | 'auto' | 'minimal' | 'colorful' | (string & {})
+export type TreeTheme = (typeof BUILT_IN_THEMES)[number] | (string & {})
 
 /** props 字段映射配置 */
 export interface TreeOptionProps {

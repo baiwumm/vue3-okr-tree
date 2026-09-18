@@ -628,6 +628,17 @@
   transform-origin: top right;
 }
 
+/*
+ * 系统要求减少动效时关掉展开/收起过渡。隐藏与撑高由行内 style 负责（组件在 JS 侧同样把
+ * animate 视为关闭，见 use-reduced-motion.ts），这里只需要保证没有中间态。
+ */
+@media (prefers-reduced-motion: reduce) {
+  .org-chart-container .is-animated,
+  .org-chart-container .is-animated.is-hidden {
+    transition: none !important;
+  }
+}
+
 /* ======================= 键盘焦点样式 ======================= */
 .org-chart-container .org-chart-node:focus {
   outline: none;

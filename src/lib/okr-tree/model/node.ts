@@ -98,7 +98,7 @@ export class TreeNode {
     const defaultExpandedKeys = store.defaultExpandedKeys
     const key = store.key
     if (key && defaultExpandedKeys && defaultExpandedKeys.indexOf(this.key as TreeKey) !== -1) {
-      this.expand(null, true)
+      this.expand(true)
     }
     // current-node-key 初始选中由 TreeStore 构造末尾统一处理（Q2：左右两树同时生效、无残留高亮）
     this.updateLeafState()
@@ -215,12 +215,6 @@ export class TreeNode {
     return !!getPropertyFromData(this, 'disabled')
   }
 
-  /** 是否是 OKR 飞书模式 */
-  hasLeftChild() {
-    const store = this.store
-    return store.onlyBothTree && store.direction === 'horizontal'
-  }
-
   insertChild(
     child: TreeNodeOptions | TreeNode,
     index?: number | null,
@@ -315,19 +309,18 @@ export class TreeNode {
    * 懒加载模式下展开未加载节点会先触发 load，resolve 后写入源数据 children、构建子节点，再展开；
    * reject / load 抛错时保持折叠态（可重试）。
    */
-  expand(callback?: (() => void) | null, expandParent?: boolean) {
+  expand(expandParent = false) {
     const store = this.store
     const doExpand = () => {
       if (expandParent) {
         let parent = this.parent
         while (parent && parent.level > 0) {
-          parent.expand(null, false)
+          parent.expand(false)
           parent = parent.parent
         }
       }
       if (this.isLeftChild) this.leftExpanded = true
       else this.expanded = true
-      if (callback) callback()
     }
     if (store.lazy && store.load && !this.loaded && !this.isLeaf && this.level > 0) {
       this.loadData((success) => {

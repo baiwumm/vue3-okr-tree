@@ -346,6 +346,26 @@ describe('filter', () => {
     await nextTick()
     expect(labels(wrapper)).toEqual(['(左)销售部', 'xxx科技有限公司', '销售部', '销售一部'])
   })
+
+  it('show-node-num 只统计过滤后可见的子节点', async () => {
+    const wrapper = mount(VueOkrTree, {
+      props: {
+        data: makeData(),
+        nodeKey: 'id',
+        showCollapsable: true,
+        showNodeNum: true,
+        filterNodeMethod: (value: string, d: any) => (!value ? true : d.label.includes(value)),
+      },
+    })
+    const btn = wrapper.find('.org-chart-node-btn')
+    expect(btn.find('.org-chart-node-btn-text').text()).toBe('3')
+    // 过滤会自动展开命中节点，收起后按钮上的数字才是本用例要看的
+    ;(wrapper.vm as any).filter('销售')
+    await nextTick()
+    ;(wrapper.vm as any).collapseAll()
+    await nextTick()
+    expect(btn.find('.org-chart-node-btn-text').text()).toBe('1')
+  })
 })
 
 describe('自定义内容', () => {

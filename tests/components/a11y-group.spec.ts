@@ -47,6 +47,30 @@ describe('可访问性：ARIA 属性', () => {
     expect(a.attributes('aria-selected')).toBe('true')
   })
 
+  it('aria-setsize / aria-posinset 按可见兄弟节点计数，被 filter 隐藏的不计入', async () => {
+    const wrapper = mount(VueOkrTree, {
+      props: {
+        data: makeData(),
+        nodeKey: 'id',
+        showCollapsable: true,
+        defaultExpandAll: true,
+        filterNodeMethod: (value: string, d: any) => (!value ? true : d.label.includes(value)),
+      },
+      global: { stubs: { transition: false } },
+    })
+    // A → [B, D]：A 在根集合里唯一，B / D 是同一组里的第 1 / 2 个
+    expect(itemByLabel(wrapper, 'A').attributes('aria-setsize')).toBe('1')
+    expect(itemByLabel(wrapper, 'A').attributes('aria-posinset')).toBe('1')
+    expect(itemByLabel(wrapper, 'B').attributes('aria-setsize')).toBe('2')
+    expect(itemByLabel(wrapper, 'B').attributes('aria-posinset')).toBe('1')
+    expect(itemByLabel(wrapper, 'D').attributes('aria-posinset')).toBe('2')
+
+    // 过滤后 B 及其子树隐藏，A 的可见子节点只剩 D
+    await (wrapper.vm as any).filter('D')
+    expect(itemByLabel(wrapper, 'D').attributes('aria-setsize')).toBe('1')
+    expect(itemByLabel(wrapper, 'D').attributes('aria-posinset')).toBe('1')
+  })
+
   it('禁用节点 aria-disabled', () => {
     const wrapper = mount(VueOkrTree, { props: { data: [{ label: 'X', disabled: true }] } })
     expect(wrapper.find('[role="treeitem"]').attributes('aria-disabled')).toBe('true')

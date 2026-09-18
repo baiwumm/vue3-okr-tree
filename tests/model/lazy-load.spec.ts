@@ -215,7 +215,7 @@ describe('懒加载：OKR 左树', () => {
     const leftNode = store.leftNodesMap[1]
     expect(leftNode).toBeTruthy()
     expect(leftNode.loaded).toBe(false)
-    leftNode.expand(null, false)
+    leftNode.expand(false)
     expect(load).toHaveBeenCalledTimes(1)
     expect(load.mock.calls[0][0].isLeftChild).toBe(true)
     await flushMicrotasks()
@@ -224,7 +224,7 @@ describe('懒加载：OKR 左树', () => {
     expect(store.leftNodesMap[88]).toBeTruthy()
 
     // 右树同 key 节点独立加载
-    store.getNode(1)!.expand(null, false)
+    store.getNode(1)!.expand(false)
     await flushMicrotasks()
     expect(load).toHaveBeenCalledTimes(2)
     expect(load.mock.calls[1][0].isLeftChild).toBe(false)

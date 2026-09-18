@@ -73,7 +73,13 @@ export const attributesSection: ApiSection = {
       '—',
       'false',
     ],
-    ['show-node-num', '折叠时在圆形按钮内显示子节点数', 'boolean', '—', 'false'],
+    [
+      'show-node-num',
+      '折叠时在圆形按钮内显示子节点数（只计未被 <code>filter</code> 隐藏的可见子节点）',
+      'boolean',
+      '—',
+      'false',
+    ],
     [
       'default-expand-all',
       '默认展开全部，仅在 show-collapsable 为 true 时有意义',
@@ -113,7 +119,13 @@ export const attributesSection: ApiSection = {
       '—',
       '—',
     ],
-    ['animate', '是否开启节点展开的过渡动画', 'boolean', '—', 'false'],
+    [
+      'animate',
+      '是否开启节点展开的过渡动画。系统开启「减弱动态效果」（<code>prefers-reduced-motion: reduce</code>）时自动按关闭处理',
+      'boolean',
+      '—',
+      'false',
+    ],
     [
       'animate-name',
       '过渡动画名称',
@@ -137,7 +149,7 @@ export const attributesSection: ApiSection = {
     ],
     [
       'theme',
-      '<strong>Vue 3 版新增。</strong>内置主题：default / feishu / dark / auto / minimal / colorful，或自定义名字（自行编写 <code>.okr-theme-{name}</code> 变量）。全部外观取值可通过 <code>--okr-*</code> CSS 变量覆盖',
+      '<strong>Vue 3 版新增。</strong>内置主题：default / feishu / dark / auto / minimal / colorful，或自定义名字（自行编写 <code>.okr-theme-{name}</code> 变量，名字不在内置清单里会输出开发期警告）。全部外观取值可通过 <code>--okr-*</code> CSS 变量覆盖',
       'string',
       'default / feishu / dark / auto / minimal / colorful',
       'default',

@@ -255,8 +255,8 @@ export class TreeStore {
     keys.forEach((key) => {
       const right = this.nodesMap[key as string]
       const left = this.leftNodesMap[key as string]
-      if (right) right.expand(null, true)
-      if (left) left.expand(null, true)
+      if (right) right.expand(true)
+      if (left) left.expand(true)
     })
   }
 
@@ -289,7 +289,7 @@ export class TreeStore {
   expandAll() {
     this.forEachNode((node) => {
       if (this.lazy && this.load && !node.loaded && node.level > 0) {
-        node.expand(null, false)
+        node.expand(false)
         if (this.onlyBothTree && node.level === 1 && !node.isLeftChild) node.leftExpanded = true
         return
       }
@@ -313,7 +313,7 @@ export class TreeStore {
   expandNode(data: TreeNode | TreeKey | TreeNodeData, expandParent = true): TreeNode | null {
     const node = this.getNode(data)
     if (!node) return null
-    node.expand(null, expandParent)
+    node.expand(expandParent)
     if (this.onlyBothTree && node.level === 1 && !node.isLeftChild) node.leftExpanded = true
     return node
   }
@@ -358,7 +358,7 @@ export class TreeStore {
       const on = set.has(String(key))
       if (on) {
         // expand 内部处理懒加载：完成后由 onExpandSettled 同步受控值
-        node.expand(null, false)
+        node.expand(false)
       } else if (node.isLeftChild) {
         node.leftExpanded = false
       } else {

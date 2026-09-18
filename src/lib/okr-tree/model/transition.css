@@ -127,3 +127,56 @@
 .okr-opacity-transition {
   transition: opacity 0.3s cubic-bezier(0.55, 0, 0.1, 1);
 }
+
+/*
+ * ---------- prefers-reduced-motion ----------
+ * 系统要求减少动效时把过渡时长归零（Vue <transition> 读到 0 时长即当帧完成），
+ * 并把 enter 起始态的 opacity/transform 抹平，避免零时长下仍闪一帧。
+ * 只枚举本库自己的类名：[class*="-enter-active"] 之类的属性选择器会波及宿主应用的过渡。
+ */
+@media (prefers-reduced-motion: reduce) {
+  .okr-fade-in-linear-enter-active,
+  .okr-fade-in-linear-leave-active,
+  .fade-in-linear-enter-active,
+  .fade-in-linear-leave-active,
+  .okr-fade-in-enter-active,
+  .okr-fade-in-leave-active,
+  .okr-zoom-in-center-enter-active,
+  .okr-zoom-in-center-leave-active,
+  .okr-zoom-in-top-enter-active,
+  .okr-zoom-in-top-leave-active,
+  .okr-zoom-in-bottom-enter-active,
+  .okr-zoom-in-bottom-leave-active,
+  .okr-zoom-in-left-enter-active,
+  .okr-zoom-in-left-leave-active,
+  .okr-list-enter-active,
+  .okr-list-leave-active,
+  .collapse-transition,
+  .horizontal-collapse-transition,
+  .okr-opacity-transition {
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+
+  .okr-fade-in-linear-enter,
+  .okr-fade-in-linear-enter-from,
+  .fade-in-linear-enter,
+  .fade-in-linear-enter-from,
+  .okr-fade-in-enter,
+  .okr-fade-in-enter-from,
+  .okr-zoom-in-center-enter,
+  .okr-zoom-in-center-enter-from,
+  .okr-zoom-in-top-enter,
+  .okr-zoom-in-top-enter-from,
+  .okr-zoom-in-bottom-enter,
+  .okr-zoom-in-bottom-enter-from,
+  .okr-zoom-in-left-enter,
+  .okr-zoom-in-left-enter-from,
+  .okr-list-enter,
+  .okr-list-enter-from {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

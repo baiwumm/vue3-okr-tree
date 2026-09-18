@@ -11,6 +11,8 @@
     :aria-selected="node.isCurrent ? 'true' : 'false'"
     :aria-expanded="ariaExpanded"
     :aria-disabled="node.disabled ? 'true' : undefined"
+    :aria-setsize="ariaSet?.size"
+    :aria-posinset="ariaSet?.pos"
     @contextmenu="handleContextMenu"
     @focus="handleFocus"
     @keydown="handleKeydown"
@@ -97,9 +99,7 @@
         @click="handleBtnClick('right')"
       >
         <template v-if="showNodeNum">
-          <span v-if="showRightBtnText" class="org-chart-node-btn-text">{{
-            node.childNodes.length
-          }}</span>
+          <span v-if="showRightBtnText" class="org-chart-node-btn-text">{{ rightBtnCount }}</span>
         </template>
         <slot
           v-else-if="$slots['expand-btn']"
@@ -164,6 +164,7 @@ import {
 import { OKR_TREE_INJECTION_KEY } from './context'
 import { NodeContent, NodeBtnContent } from './node-content'
 import { getNodeKey as _getNodeKey } from './model/util'
+import { usePrefersReducedMotion } from './use-reduced-motion'
 import type { TreeNode } from './model/node'
 import type { ExpandBtnSlotScope, NodeBtnContentFunction, RenderContentFunction } from '../../types'
 
@@ -207,6 +208,11 @@ const instance = getCurrentInstance()
 
 const node = computed(() => props.node)
 
+// 系统要求减少动效时按「animate 关闭」处理：CSS 媒体查询只掐掉过渡，
+// 若 JS 仍保留撑高度的延迟，收起后会出现一段空白，状态就不算直切。
+const prefersReducedMotion = usePrefersReducedMotion()
+const animateOn = computed(() => !!store.animate && !prefersReducedMotion.value)
+
 // 登记根元素供 scrollToNode 查找；node prop 变化（key 复用）时重新登记
 const rootEl = ref<HTMLElement | null>(null)
 watch(
@@ -248,7 +254,7 @@ const isLeaf = computed(() => {
 
 /** 折叠态容器：与原版一致，保留在 DOM 中但隐藏且高度为 0；animate 开启时附带过渡时长变量 */
 const animVar = computed<CSSProperties>(() =>
-  store.animate ? ({ '--okr-anim-duration': `${store.animateDuration}ms` } as CSSProperties) : {}
+  animateOn.value ? ({ '--okr-anim-duration': `${store.animateDuration}ms` } as CSSProperties) : {}
 )
 /**
  * animate 开启时，收起动作先保留容器高度让内容完成淡出/缩放过渡，
@@ -263,7 +269,7 @@ const useDelayedCollapse = (isExpanded: () => boolean) => {
   }
   watch(isExpanded, (expanded) => {
     clear()
-    if (!expanded && store.animate) {
+    if (!expanded && animateOn.value) {
       keepHeight.value = true
       timer = setTimeout(() => {
         keepHeight.value = false
@@ -293,7 +299,7 @@ const childrenStyle = computed<CSSProperties>(() => ({
 }))
 /** 展开/收起过渡的状态类（原版 animate 在切换时无过渡，见 requirements 第 6 节） */
 const animClass = computed(() =>
-  store.animate ? ['is-animated', `okr-anim-${store.animateName}`] : []
+  animateOn.value ? ['is-animated', `okr-anim-${store.animateName}`] : []
 )
 
 /**
@@ -301,7 +307,7 @@ const animClass = computed(() =>
  * 不依赖 requestAnimationFrame（后台/隐藏标签页中 rAF 会被节流甚至暂停，否则卸载会被挂起）。
  */
 const transitionProps = computed(() =>
-  store.animate
+  animateOn.value
     ? { css: true, name: store.animateName, duration: store.animateDuration }
     : { css: false }
 )
@@ -338,10 +344,16 @@ const showLeftChildNode = computed(
     leftChildNodes.value.length > 0
 )
 
+/** show-node-num 与 aria 都按「未被 filter 隐藏」的子节点计数，保证数字与视觉一致 */
+const visibleCount = (nodes: TreeNode[]) =>
+  nodes.reduce((count, child) => (child.visible ? count + 1 : count), 0)
+
+const rightBtnCount = computed(() => visibleCount(node.value.childNodes))
+
 const leftBtnCount = computed(() =>
   node.value.level === 1 && leftChildNodes.value.length > 0
-    ? leftChildNodes.value.length
-    : node.value.childNodes.length
+    ? visibleCount(leftChildNodes.value)
+    : visibleCount(node.value.childNodes)
 )
 
 /** show-node-num：未加载（未加载完成 / 加载中）时不显示子节点数 */
@@ -429,6 +441,19 @@ const ariaExpanded = computed(() => {
   const rightOpen = hasRightChildren.value ? node.value.expanded : true
   const leftOpen = hasLeftChildren.value ? node.value.leftExpanded : true
   return rightOpen && leftOpen ? 'true' : 'false'
+})
+
+/**
+ * aria-setsize / aria-posinset：按父节点子列表里可见的兄弟节点给出 1-based 序号，
+ * 被 filter 隐藏的兄弟不计入（否则读屏会播报不存在的项）。左右子树各自成组。
+ */
+const ariaSet = computed(() => {
+  const siblings = node.value.parent?.childNodes
+  if (!siblings) return undefined
+  const visible = siblings.filter((child) => child.visible)
+  const index = visible.indexOf(node.value)
+  if (index === -1) return undefined
+  return { size: visible.length, pos: index + 1 }
 })
 
 const tabIndex = computed(() => {

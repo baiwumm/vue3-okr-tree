@@ -58,6 +58,8 @@ import {
 import OkrTreeNode from './OkrTreeNode.vue'
 import { DEFAULT_PROPS, TreeStore } from './model/tree-store'
 import { getNodeKey as _getNodeKey, warn } from './model/util'
+import { usePrefersReducedMotion } from './use-reduced-motion'
+import { BUILT_IN_THEMES } from '../../types'
 import type { ViewportTreeApi } from './viewport'
 import {
   OKR_TREE_GROUP_INJECTION_KEY,
@@ -203,6 +205,7 @@ defineSlots<{
 }>()
 
 const instance = getCurrentInstance()
+const prefersReducedMotion = usePrefersReducedMotion()
 
 const themeClass = computed(() =>
   props.theme && props.theme !== 'default' ? `okr-theme-${props.theme}` : ''
@@ -231,6 +234,19 @@ if (props.lazy && !props.load) {
 if (!props.lazy && props.load) {
   warn('传入 load 但未开启 lazy，load 不会生效。')
 }
+
+// theme 允许任意自定义名字，所以只能在「不在内置清单里」时提示，而不是限制类型
+watch(
+  () => props.theme,
+  (theme) => {
+    if (!theme || (BUILT_IN_THEMES as readonly string[]).includes(theme)) return
+    warn(
+      `theme="${theme}" 不是内置主题（${BUILT_IN_THEMES.join(' / ')}），` +
+        `需自行编写 .okr-theme-${theme} { --okr-*: ... } 变量，否则主题不会有任何视觉变化。`
+    )
+  },
+  { immediate: true }
+)
 
 const rawStore = new TreeStore({
   key: props.nodeKey,
@@ -638,7 +654,7 @@ async function scrollToNode(
       parent = parent.parent
     }
     // 逐个展开祖先（懒加载祖先会先触发 load、完成后再展开）
-    pending.forEach((ancestor) => ancestor.expand(null, false))
+    pending.forEach((ancestor) => ancestor.expand(false))
     // 目标节点自身未加载时也触发加载（不展开），加载完成后再滚动
     if (store.lazy && store.load && !node.loaded && !node.isLeaf && node.level > 0) {
       node.loadData()
@@ -656,7 +672,12 @@ async function scrollToNode(
   await nextTick()
   const el = nodeEls.get(node)
   if (!el || typeof el.scrollIntoView !== 'function') return false
-  el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center', ...scrollOptions })
+  el.scrollIntoView({
+    behavior: prefersReducedMotion.value ? 'auto' : 'smooth',
+    block: 'center',
+    inline: 'center',
+    ...scrollOptions,
+  })
   return true
 }
 

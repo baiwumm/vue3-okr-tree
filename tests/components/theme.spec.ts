@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { VueOkrTree } from '../../src/lib'
+import { resetWarnings } from '../../src/lib/okr-tree/model/util'
 
 const data = [
   {
@@ -31,5 +32,26 @@ describe('theme prop', () => {
     const child = nodes.find((n) => n.find('.org-chart-node-label-inner').text() === 'C')!
     expect(root.attributes('data-level')).toBe('1')
     expect(child.attributes('data-level')).toBe('2')
+  })
+
+  describe('未知 theme 值的开发期警告', () => {
+    beforeEach(() => resetWarnings())
+
+    it('不在内置清单里的 theme 值提示需自行编写变量', () => {
+      const spy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      mount(VueOkrTree, { props: { data, theme: 'my-brand' } })
+      expect(spy).toHaveBeenCalledWith(expect.stringContaining('theme="my-brand" 不是内置主题'))
+      expect(spy).toHaveBeenCalledWith(expect.stringContaining('.okr-theme-my-brand'))
+      spy.mockRestore()
+    })
+
+    it('内置主题名不警告', () => {
+      const spy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      for (const theme of ['default', 'feishu', 'dark', 'auto', 'minimal', 'colorful']) {
+        mount(VueOkrTree, { props: { data, theme } })
+      }
+      expect(spy).not.toHaveBeenCalled()
+      spy.mockRestore()
+    })
   })
 })
