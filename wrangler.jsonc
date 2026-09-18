@@ -1,0 +1,12 @@
+{
+  // Cloudflare Workers 静态资产部署配置（文档站 + Playground）
+  // 由 Workers Builds 的部署命令 `npx wrangler deploy` 读取；
+  // 资产目录由 `pnpm docs:build:full` 生成（VitePress 输出 + playground 合并）。
+  "name": "vue3-okr-tree",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./docs-site/.vitepress/dist",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}

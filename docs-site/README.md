@@ -22,7 +22,7 @@ pnpm docs:build:full     # 完整构建：Playground(dist) + 文档站 + 合并 
 | 构建输出目录 | `docs-site/.vitepress/dist`                                                                                                                                      |
 | 环境变量     | `NODE_VERSION=22`、`PLAYGROUND_USE_DIST=1`（脚本内部已设置，配置在此仅为显式声明）、`enablePrePostScripts=true`（如 CI 未启用 corepack 则先 `npm i -g pnpm@11`） |
 
-> Workers（静态资产）方式等价：`pnpm docs:build:full` 后把 `docs-site/.vitepress/dist` 作为资产目录上传即可。
+> **Workers Builds（仓库连接）方式**：仓库根目录的 `wrangler.jsonc` 已配置静态资产（`docs-site/.vitepress/dist`，含 404 处理）。界面填写：构建命令 `npm i -g pnpm@11 && pnpm install --frozen-lockfile && pnpm docs:build:full`，部署命令 `npx wrangler deploy`；Node 版本由根目录 `.node-version`（22）钉住，如构建镜像未生效则在「变量和机密」里加 `NODE_VERSION=22`。
 
 注意：
 
