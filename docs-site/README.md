@@ -10,6 +10,7 @@ pnpm docs:dev            # 文档站开发服务（库本体走 src 源码别名
 pnpm docs:build          # 仅构建文档站
 pnpm docs:preview        # 预览文档站构建产物
 pnpm docs:build:full     # 完整构建：Playground(dist) + 文档站 + 合并 /playground/ 子路径
+pnpm docs:preview:full   # 构建完整产物并本地预览（/playground/ 仅存在于完整产物中）
 ```
 
 ## 部署到 Cloudflare Pages / Workers

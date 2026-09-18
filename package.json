@@ -80,7 +80,8 @@
     "docs:build": "vitepress build docs-site",
     "docs:preview": "vitepress preview docs-site",
     "gen:readme": "node scripts/gen-readme-api.mjs",
-    "docs:build:full": "node scripts/build-docs-full.mjs"
+    "docs:build:full": "node scripts/build-docs-full.mjs",
+    "docs:preview:full": "pnpm docs:build:full && pnpm docs:preview"
   },
   "peerDependencies": {
     "vue": ">=3.0.0"
