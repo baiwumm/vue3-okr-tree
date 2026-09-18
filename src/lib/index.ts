@@ -7,17 +7,8 @@ export { TreeNode, createNode } from './okr-tree/model/node'
 export { TreeStore } from './okr-tree/model/tree-store'
 export type { TreeStoreOptions } from './okr-tree/model/tree-store'
 export { NODE_KEY, getNodeKey, markNodeData } from './okr-tree/model/util'
-export {
-  clampZoom,
-  computeFit,
-  renderToDataUrl,
-  loadHtmlToImage,
-} from './okr-tree/viewport'
-export type {
-  ExportImageOptions,
-  ViewportOffset,
-  ViewportWheelBehavior,
-} from './okr-tree/viewport'
+export { clampZoom, computeFit, renderToDataUrl, loadHtmlToImage } from './okr-tree/viewport'
+export type { ExportImageOptions, ViewportOffset, ViewportWheelBehavior } from './okr-tree/viewport'
 export type {
   AnimateName,
   ExpandBtnSlotScope,

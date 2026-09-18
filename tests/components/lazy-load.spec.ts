@@ -39,9 +39,9 @@ describe('懒加载：组件交互', () => {
     await flushMicrotasks()
     await nextTick()
     expect(labels(wrapper)).toEqual(['A', 'A-子', 'B'])
-    expect(
-      nodeByLabel(wrapper, 'A').find('.org-chart-node-btn').classes()
-    ).not.toContain('is-loading')
+    expect(nodeByLabel(wrapper, 'A').find('.org-chart-node-btn').classes()).not.toContain(
+      'is-loading'
+    )
   })
 
   it('reject 后按钮回到折叠态，可再次点击重试', async () => {
@@ -134,9 +134,7 @@ describe('懒加载：组件交互', () => {
         lazy: true,
         load: (node: any, resolve: (c: any[]) => void) => {
           const children =
-            node.key === 1
-              ? [{ id: 11, label: 'A-子' }]
-              : [{ id: 111, label: 'A-孙' }]
+            node.key === 1 ? [{ id: 11, label: 'A-子' }] : [{ id: 111, label: 'A-孙' }]
           setTimeout(() => resolve(children), 0)
         },
       },

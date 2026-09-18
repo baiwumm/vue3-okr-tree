@@ -2,10 +2,11 @@
   <div>
     <h3 id="demo-18" class="tree-demo-title-h3">懒加载子节点</h3>
     <p>
-      <code>lazy</code> + <code>load</code>（Vue 3 版 1.4.0 新增）：初始只给顶层节点，子级在首次展开时通过
-      <code>load</code> 异步获取（本用例模拟 800ms 接口延迟）；resolve 后写入源数据并展开，加载过的节点不会重复请求。
-      <code>reject</code> 或抛错时节点回到折叠态、可重试；加载中按钮带 <code>is-loading</code> 旋转指示，
-      <code>#expand-btn</code> 作用域新增 <code>loading</code>。
+      <code>lazy</code> + <code>load</code>（Vue 3 版 1.4.0
+      新增）：初始只给顶层节点，子级在首次展开时通过 <code>load</code> 异步获取（本用例模拟 800ms
+      接口延迟）；resolve 后写入源数据并展开，加载过的节点不会重复请求。
+      <code>reject</code> 或抛错时节点回到折叠态、可重试；加载中按钮带
+      <code>is-loading</code> 旋转指示， <code>#expand-btn</code> 作用域新增 <code>loading</code>。
     </p>
     <BaseCard>
       <template #header>

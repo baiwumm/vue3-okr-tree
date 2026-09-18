@@ -239,7 +239,9 @@ describe('OkrTreeViewport：centerNode 与 exportImage', () => {
       }
       return el
     })
-    const toPng = vi.fn(async (_el: HTMLElement, _opts?: Record<string, any>) => 'data:image/png;base64,xyz')
+    const toPng = vi.fn(
+      async (_el: HTMLElement, _opts?: Record<string, any>) => 'data:image/png;base64,xyz'
+    )
     const wrapper = mountViewport()
     const vp = wrapper.vm.$refs.vp as OkrTreeViewportInstance
     const dataUrl = await vp.exportImage({ toPng, scale: 3, background: '#ffffff' })
@@ -253,7 +255,9 @@ describe('OkrTreeViewport：centerNode 与 exportImage', () => {
   })
 
   it('exportImage 支持 svg 类型（toSvg）', async () => {
-    const toSvg = vi.fn(async (_el: HTMLElement, _opts?: Record<string, any>) => 'data:image/svg+xml;base64,abc')
+    const toSvg = vi.fn(
+      async (_el: HTMLElement, _opts?: Record<string, any>) => 'data:image/svg+xml;base64,abc'
+    )
     const wrapper = mountViewport()
     const vp = wrapper.vm.$refs.vp as OkrTreeViewportInstance
     const dataUrl = await vp.exportImage({ type: 'svg', toSvg })

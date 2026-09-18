@@ -317,7 +317,7 @@ const showNodeBtn = computed(() => {
   }
   return (
     props.showCollapsable &&
-    (!!node.value.childNodes && node.value.childNodes.length > 0 || lazyPending.value)
+    ((!!node.value.childNodes && node.value.childNodes.length > 0) || lazyPending.value)
   )
 })
 
@@ -345,9 +345,7 @@ const leftBtnCount = computed(() =>
 )
 
 /** show-node-num：未加载（未加载完成 / 加载中）时不显示子节点数 */
-const showRightBtnText = computed(
-  () => !node.value.expanded && (node.value.loaded || !store.lazy)
-)
+const showRightBtnText = computed(() => !node.value.expanded && (node.value.loaded || !store.lazy))
 const showLeftBtnText = computed(
   () => !node.value.leftExpanded && (node.value.loaded || !store.lazy)
 )

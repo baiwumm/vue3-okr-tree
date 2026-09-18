@@ -22,7 +22,9 @@ describe('懒加载：基础流程', () => {
   it('首次展开未加载节点触发 load，resolve 后写入源数据 children、构建子节点并展开', async () => {
     const data = makeLazyData()
     const store = new TreeStore({ key: 'id', data, lazy: true, showCollapsable: true })
-    const load = deferLoad(store, (node) => [{ id: Number(`${node.key}01`), label: `${node.label}-子` }])
+    const load = deferLoad(store, (node) => [
+      { id: Number(`${node.key}01`), label: `${node.label}-子` },
+    ])
 
     const nodeA = store.getNode(1)!
     expect(nodeA.loaded).toBe(false)
@@ -65,7 +67,12 @@ describe('懒加载：基础流程', () => {
   })
 
   it('reject 恢复折叠态且可重试', async () => {
-    const store = new TreeStore({ key: 'id', data: makeLazyData(), lazy: true, showCollapsable: true })
+    const store = new TreeStore({
+      key: 'id',
+      data: makeLazyData(),
+      lazy: true,
+      showCollapsable: true,
+    })
     const load = vi.fn((_node: any, _resolve: any, reject: () => void) => {
       Promise.resolve().then(() => reject())
     })
@@ -91,7 +98,12 @@ describe('懒加载：基础流程', () => {
 
   it('load 同步抛错时节点回到折叠态且可重试', async () => {
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    const store = new TreeStore({ key: 'id', data: makeLazyData(), lazy: true, showCollapsable: true })
+    const store = new TreeStore({
+      key: 'id',
+      data: makeLazyData(),
+      lazy: true,
+      showCollapsable: true,
+    })
     const load = vi.fn(() => {
       throw new Error('network error')
     })

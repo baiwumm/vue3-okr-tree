@@ -512,26 +512,14 @@
 
 /* ======================= 懒加载：展开按钮加载中态 ======================= */
 /* 隐藏 +/- 符号，圆形按钮自身旋转作为加载指示 */
-.org-chart-container
-  .org-chart-node-label
-  .org-chart-node-btn.is-loading::before,
-.org-chart-container
-  .org-chart-node-label
-  .org-chart-node-btn.is-loading::after,
-.org-chart-container
-  .org-chart-node-label
-  .org-chart-node-left-btn.is-loading::before,
-.org-chart-container
-  .org-chart-node-label
-  .org-chart-node-left-btn.is-loading::after {
+.org-chart-container .org-chart-node-label .org-chart-node-btn.is-loading::before,
+.org-chart-container .org-chart-node-label .org-chart-node-btn.is-loading::after,
+.org-chart-container .org-chart-node-label .org-chart-node-left-btn.is-loading::before,
+.org-chart-container .org-chart-node-label .org-chart-node-left-btn.is-loading::after {
   display: none;
 }
-.org-chart-container
-  .org-chart-node-label
-  .org-chart-node-btn.is-loading,
-.org-chart-container
-  .org-chart-node-label
-  .org-chart-node-left-btn.is-loading {
+.org-chart-container .org-chart-node-label .org-chart-node-btn.is-loading,
+.org-chart-container .org-chart-node-label .org-chart-node-left-btn.is-loading {
   cursor: wait;
   border-top-color: transparent;
   border-right-color: var(--okr-btn-sign-color, var(--okr-line-color, #ccc));

@@ -17,21 +17,11 @@
     </div>
     <div v-if="toolbarVisible" class="okr-viewport-toolbar" @dblclick.stop>
       <slot name="toolbar" v-bind="toolbarScope">
-        <button
-          type="button"
-          class="okr-viewport-toolbar-btn"
-          aria-label="缩小"
-          @click="zoomOut()"
-        >
+        <button type="button" class="okr-viewport-toolbar-btn" aria-label="缩小" @click="zoomOut()">
           −
         </button>
         <span class="okr-viewport-toolbar-zoom">{{ Math.round(currentZoom * 100) }}%</span>
-        <button
-          type="button"
-          class="okr-viewport-toolbar-btn"
-          aria-label="放大"
-          @click="zoomIn()"
-        >
+        <button type="button" class="okr-viewport-toolbar-btn" aria-label="放大" @click="zoomIn()">
           ＋
         </button>
         <button type="button" class="okr-viewport-toolbar-btn" @click="reset()">重置</button>
@@ -181,21 +171,13 @@ function zoomAt(nextZoom: number, anchorX: number, anchorY: number) {
 function zoomIn() {
   const vp = viewportEl.value
   const rect = vp?.getBoundingClientRect()
-  zoomAt(
-    currentZoom.value * props.zoomStep,
-    rect ? rect.width / 2 : 0,
-    rect ? rect.height / 2 : 0
-  )
+  zoomAt(currentZoom.value * props.zoomStep, rect ? rect.width / 2 : 0, rect ? rect.height / 2 : 0)
 }
 
 function zoomOut() {
   const vp = viewportEl.value
   const rect = vp?.getBoundingClientRect()
-  zoomAt(
-    currentZoom.value / props.zoomStep,
-    rect ? rect.width / 2 : 0,
-    rect ? rect.height / 2 : 0
-  )
+  zoomAt(currentZoom.value / props.zoomStep, rect ? rect.width / 2 : 0, rect ? rect.height / 2 : 0)
 }
 
 function reset() {
@@ -387,7 +369,10 @@ async function exportImage(options: ExportImageOptions = {}): Promise<string> {
 
 onMounted(() => {
   // 初始受控值越界时钳制
-  if (props.zoom !== undefined && props.zoom !== clampZoom(props.zoom, props.minZoom, props.maxZoom)) {
+  if (
+    props.zoom !== undefined &&
+    props.zoom !== clampZoom(props.zoom, props.minZoom, props.maxZoom)
+  ) {
     applyZoom(props.zoom)
   }
 })

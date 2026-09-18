@@ -37,9 +37,9 @@
         </div>
       </template>
       <template #description>
-        工具栏通过 <code>#toolbar</code> 作用域插槽自定义（作用域含 <code>zoom / zoomIn / zoomOut /
-        reset / fit</code>）；导出基于 html-to-image（默认动态 import，也可通过
-        <code>exportImage({ toPng })</code> 传入渲染函数，本用例即后者）。
+        工具栏通过 <code>#toolbar</code> 作用域插槽自定义（作用域含
+        <code>zoom / zoomIn / zoomOut / reset / fit</code>）；导出基于 html-to-image（默认动态
+        import，也可通过 <code>exportImage({ toPng })</code> 传入渲染函数，本用例即后者）。
         <code>centerNode(key)</code> 可先展开祖先再把视口中心对准指定节点。
       </template>
       <CodeBlock :code="code" />

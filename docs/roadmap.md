@@ -13,7 +13,7 @@
 | 1.1.0 | CSS 变量主题化 + 六套内置主题                             | ✅              |
 | 1.2.0 | 受控状态、扩展方法、插槽、开发期警告、CI                  | ✅              |
 | 1.3.0 | OkrTreeGroup 根对齐、键盘可访问性、node-component、类型化 | ✅              |
-| 1.4.0 | 懒加载 + 画布组件                                         | ⬜ 待开始       |
+| 1.4.0 | 懒加载 + 画布组件                                         | ✅              |
 | 1.5.0 | 文档站 + 发布流程                                         | ⬜ 待开始       |
 | 1.6.0 | 健壮性与运行时行为补齐                                    | ⬜ 待开始       |
 | 2.x   | 拖拽、SVG 连接线、复选框、虚拟滚动、更多布局              | ⬜ 视需求       |
@@ -24,27 +24,27 @@
 
 ### 1. 懒加载子节点（M）
 
-- [ ] 新增 prop `lazy: boolean` 与 `load: (node: TreeNode, resolve: (children: TreeNodeData[]) => void, reject?: () => void) => void`
-- [ ] `TreeNode` 增加 `loaded` / `loading` 状态；`lazy` 下未加载节点的 `isLeaf` 由 `props.isLeaf` 字段（或 `data[props.isLeaf]`）决定，默认视为有子节点
-- [ ] 首次展开未加载节点时调用 `load`，`resolve` 后通过 `insertChild` 写入（同步修改源数据 `children`，与现有增删语义一致），再展开
-- [ ] 展开按钮加载中态：`is-loading` 类 + `#expand-btn` 作用域新增 `loading`；`show-node-num` 在未加载时不显示数字
-- [ ] `expandAll` / `expandNode` / `scrollToNode` / `default-expanded-keys` / `v-model:expanded-keys` 对未加载节点的行为：触发加载并在完成后展开
-- [ ] OKR 左树的懒加载（`load` 回调收到的 `node.isLeftChild` 可区分）
-- [ ] 测试：加载一次不重复、reject 恢复折叠态、并发点击只触发一次 `load`
-- [ ] Demo：新增用例（模拟 800ms 异步接口）；README / API 表补 `lazy` / `load` / `props.isLeaf`
+- [x] 新增 prop `lazy: boolean` 与 `load: (node: TreeNode, resolve: (children: TreeNodeData[]) => void, reject?: () => void) => void`
+- [x] `TreeNode` 增加 `loaded` / `loading` 状态；`lazy` 下未加载节点的 `isLeaf` 由 `props.isLeaf` 字段（或 `data[props.isLeaf]`）决定，默认视为有子节点
+- [x] 首次展开未加载节点时调用 `load`，`resolve` 后通过 `insertChild` 写入（同步修改源数据 `children`，与现有增删语义一致），再展开
+- [x] 展开按钮加载中态：`is-loading` 类 + `#expand-btn` 作用域新增 `loading`；`show-node-num` 在未加载时不显示数字
+- [x] `expandAll` / `expandNode` / `scrollToNode` / `default-expanded-keys` / `v-model:expanded-keys` 对未加载节点的行为：触发加载并在完成后展开
+- [x] OKR 左树的懒加载（`load` 回调收到的 `node.isLeftChild` 可区分）
+- [x] 测试：加载一次不重复、reject 恢复折叠态、并发点击只触发一次 `load`
+- [x] Demo：新增用例（模拟 800ms 异步接口）；README / API 表补 `lazy` / `load` / `props.isLeaf`
 - **验收**：几千节点的组织架构只加载展开路径；`load` 抛错或 `reject` 时节点回到折叠态且可重试。
 
 ### 2. `<OkrTreeViewport>` 画布组件（L）
 
-- [ ] 独立包裹组件，不侵入树本体：`<okr-tree-viewport><vue-okr-tree …/></okr-tree-viewport>`
-- [ ] 滚轮缩放（以指针为中心）、按住拖拽平移、双击复位；触控 pinch 缩放
-- [ ] props：`min-zoom` / `max-zoom` / `zoom-step` / `v-model:zoom` / `v-model:offset`、`wheel-behavior`（`zoom` | `scroll`，默认需按 Ctrl 才缩放以免劫持页面滚动）
-- [ ] 方法：`zoomIn()` / `zoomOut()` / `reset()` / `fitToScreen(padding?)` / `centerNode(key)`（配合树的 `scrollToNode` 语义）
-- [ ] 工具栏插槽 `#toolbar="{ zoom, zoomIn, zoomOut, reset, fit }"` 与默认工具栏
-- [ ] 导出：`exportImage({ type: 'png' | 'svg', scale, background })`，基于 `html-to-image`（作为 `optionalDependencies` 或动态 import，未安装时给出明确错误）
-- [ ] 与 `OkrTreeGroup` 组合使用可行（Group 在 Viewport 内）
-- [ ] 测试：缩放边界、`fitToScreen` 计算、导出函数在缺依赖时的错误信息
-- [ ] Demo：新增用例（工具栏 + 导出按钮）；README 新章节
+- [x] 独立包裹组件，不侵入树本体：`<okr-tree-viewport><vue-okr-tree …/></okr-tree-viewport>`
+- [x] 滚轮缩放（以指针为中心）、按住拖拽平移、双击复位；触控 pinch 缩放
+- [x] props：`min-zoom` / `max-zoom` / `zoom-step` / `v-model:zoom` / `v-model:offset`、`wheel-behavior`（`zoom` | `scroll`，默认需按 Ctrl 才缩放以免劫持页面滚动）
+- [x] 方法：`zoomIn()` / `zoomOut()` / `reset()` / `fitToScreen(padding?)` / `centerNode(key)`（配合树的 `scrollToNode` 语义）
+- [x] 工具栏插槽 `#toolbar="{ zoom, zoomIn, zoomOut, reset, fit }"` 与默认工具栏
+- [x] 导出：`exportImage({ type: 'png' | 'svg', scale, background })`，基于 `html-to-image`（作为 `optionalDependencies` 或动态 import，未安装时给出明确错误）
+- [x] 与 `OkrTreeGroup` 组合使用可行（Group 在 Viewport 内）
+- [x] 测试：缩放边界、`fitToScreen` 计算、导出函数在缺依赖时的错误信息
+- [x] Demo：新增用例（工具栏 + 导出按钮）；README 新章节
 - **验收**：大图在 1280 宽度下可缩放浏览与导出清晰 PNG；`wheel-behavior: scroll` 时页面滚动不被劫持。
 
 ---
@@ -178,13 +178,13 @@
 
 ## 完成记录
 
-| 日期       | 版本  | 内容                                                                                                        | Commit    |
-| ---------- | ----- | ----------------------------------------------------------------------------------------------------------- | --------- |
-| 2026-09-17 | 1.0.0 | 原版复刻、Q1–Q9 修复、Demo 20 用例、dist 三格式 + d.ts                                                      | `803ce65` |
-| 2026-09-17 | 1.1.0 | CSS 变量化（23 个变量）、`theme` prop、六套主题、Demo 主题切换器                                            | `ea1df51` |
-| 2026-09-17 | 1.2.0 | `v-model:expanded-keys/current-key`、expandAll 等 5 方法、`#expand-btn`/`#empty`、开发期警告、CI、CHANGELOG | `4874895` |
-| 2026-09-17 | 1.3.0 | `OkrTreeGroup`、WAI-ARIA 键盘导航、`node-component`、`createTypedOkrTree<T>`                                | `115cd54` |
-|            |       |                                                                                                             |           |
+| 日期       | 版本  | 内容                                                                                                        | Commit              |
+| ---------- | ----- | ----------------------------------------------------------------------------------------------------------- | ------------------- |
+| 2026-09-17 | 1.0.0 | 原版复刻、Q1–Q9 修复、Demo 20 用例、dist 三格式 + d.ts                                                      | `803ce65`           |
+| 2026-09-17 | 1.1.0 | CSS 变量化（23 个变量）、`theme` prop、六套主题、Demo 主题切换器                                            | `ea1df51`           |
+| 2026-09-17 | 1.2.0 | `v-model:expanded-keys/current-key`、expandAll 等 5 方法、`#expand-btn`/`#empty`、开发期警告、CI、CHANGELOG | `4874895`           |
+| 2026-09-17 | 1.3.0 | `OkrTreeGroup`、WAI-ARIA 键盘导航、`node-component`、`createTypedOkrTree<T>`                                | `115cd54`           |
+| 2026-09-18 | 1.4.0 | `lazy`/`load` 懒加载、`OkrTreeViewport` 画布（缩放/平移/导出）、`getNodeEl` 方法、Demo +2                   | `498e9cc` `3ea31cd` |
 
 ## 已决定不做
 
