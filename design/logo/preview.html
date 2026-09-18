@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>vue3-okr-tree Logo 概念对比</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 40px 32px 80px;
+        font:
+          14px/1.6 -apple-system,
+          'Segoe UI',
+          'PingFang SC',
+          'Microsoft YaHei',
+          sans-serif;
+        background: #f4f5f7;
+        color: #1f2329;
+      }
+      h1 {
+        font-size: 22px;
+        margin: 0 0 4px;
+      }
+      .sub {
+        color: #646a73;
+        margin: 0 0 36px;
+      }
+      section {
+        background: #fff;
+        border: 1px solid #e5e6eb;
+        border-radius: 14px;
+        padding: 24px 24px 28px;
+        margin-bottom: 28px;
+      }
+      h2 {
+        font-size: 16px;
+        margin: 0 0 2px;
+      }
+      .desc {
+        color: #646a73;
+        margin: 0 0 20px;
+        font-size: 13px;
+      }
+      .pair {
+        display: flex;
+        gap: 24px;
+        flex-wrap: wrap;
+      }
+      .cell {
+        flex: 1 1 320px;
+        border-radius: 12px;
+        padding: 22px;
+      }
+      .cell.on-dark {
+        background: #0a0a0a;
+      }
+      .cell.on-light {
+        background: #fff;
+        border: 1px solid #e5e6eb;
+      }
+      .cell .tag {
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 14px;
+      }
+      .on-dark .tag {
+        color: #7d8087;
+      }
+      .on-light .tag {
+        color: #a3a6ad;
+      }
+      .ramp {
+        display: flex;
+        align-items: flex-end;
+        gap: 20px;
+      }
+      .ramp figure {
+        margin: 0;
+        text-align: center;
+      }
+      .ramp figcaption {
+        font-size: 10px;
+        margin-top: 6px;
+      }
+      .on-dark figcaption {
+        color: #5c5f66;
+      }
+      .on-light figcaption {
+        color: #a3a6ad;
+      }
+      img {
+        display: block;
+        image-rendering: auto;
+      }
+      .navbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 28px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        border: 1px solid #e5e6eb;
+        background: #fff;
+      }
+      .navbar.dark {
+        background: #1d1e1f;
+        border-color: #414243;
+      }
+      .navbar b {
+        font-size: 15px;
+        letter-spacing: -0.01em;
+      }
+      .navbar.dark b {
+        color: #fff;
+      }
+      .navbar span {
+        font-size: 12px;
+        opacity: 0.55;
+        margin-left: auto;
+      }
+      .navbar.dark span {
+        color: #cfd3dc;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>vue3-okr-tree · Logo 概念（3 套）</h1>
+    <p class="sub">
+      沿用参考图语言：360×360 / rx80 圆角方底、rx12 圆角几何块、纯色底 +
+      纯色图形、深浅双版本；品牌色取自组件 --okr-current-bg #3370FF。
+    </p>
+
+    <section>
+      <h2>方案 A 「中轴双向」</h2>
+      <p class="desc">
+        最贴近参考图：纯双色、三根圆角块 + 两段连线。中轴 = 根节点，左上右下两根不等高节点 =
+        组件招牌的「根节点左右双向展开」，右块 -8° 取参考图的倾斜动势。
+      </p>
+      <div class="pair">
+        <div class="cell on-dark">
+          <div class="tag">深色底 · 主用</div>
+          <div class="ramp">
+            <figure>
+              <img src="./concept-a-bidirectional-dark.svg" width="200" height="200" />
+              <figcaption>200</figcaption>
+            </figure>
+            <figure>
+              <img src="./concept-a-bidirectional-dark.svg" width="64" height="64" />
+              <figcaption>64</figcaption>
+            </figure>
+            <figure>
+              <img src="./concept-a-bidirectional-dark.svg" width="32" height="32" />
+              <figcaption>32</figcaption>
+            </figure>
+            <figure>
+              <img src="./concept-a-bidirectional-dark.svg" width="16" height="16" />
+              <figcaption>16</figcaption>
+            </figure>
+          </div>
+        </div>
+        <div class="cell on-light">
+          <div class="tag">浅色底 · 反相</div>
+          <div class="ramp">
+            <figure>
+              <img src="./concept-a-bidirectional-light.svg" width="200" height="200" />
+              <figcaption>200</figcaption>
+            </figure>
+            <figure>
+              <img src="./concept-a-bidirectional-light.svg" width="64" height="64" />
+              <figcaption>64</figcaption>
+            </figure>
+            <figure>
+              <img src="./concept-a-bidirectional-light.svg" width="32" height="32" />
+              <figcaption>32</figcaption>
+            </figure>
+            <figure>
+              <img src="./concept-a-bidirectional-light.svg" width="16" height="16" />
+              <figcaption>16</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+      <div class="navbar">
+        <img src="./concept-a-bidirectional-dark.svg" width="26" height="26" /><b>vue3-okr-tree</b
+        ><span>文档站导航栏（深色 Logo 用于任意底色）</span>
+      </div>
+    </section>
+
+    <section>
+      <h2>方案 B 「层级分枝」</h2>
+      <p class="desc">
+        缩小版组织架构图：蓝色横条 = 目标 O，圆角折线 = 组件连线，两片子节点向外 ±7° 张开 =
+        「展开」的动势（不是倾倒）。
+      </p>
+      <div class="pair">
+        <div class="cell on-dark">
+          <div class="tag">深色底 · 主用</div>
+          <div class="ramp">
+            <figure>
+              <img src="./concept-b-branch-dark.svg" width="200" height="200" />
+              <figcaption>200</figcaption>
+            </figure>
+            <figure>
+              <img src="./concept-b-branch-dark.svg" width="64" height="64" />
+              <figcaption>64</figcaption>
+            </figure>
+            <figure>
+              <img src="./concept-b-branch-dark.svg" width="32" height="32" />
+              <figcaption>32</figcaption>
+            </figure>
+            <figure>
+              <img src="./concept-b-branch-dark.svg" width="16" height="16" />
+              <figcaption>16</figcaption>
+            </figure>
+          </div>
+        </div>
+        <div class="cell on-light">
+          <div class="tag">浅色底 · 反相</div>
+          <div class="ramp">
+            <figure>
+              <img src="./concept-b-branch-light.svg" width="200" height="200" />
+              <figcaption>200</figcaption>
+            </figure>
+            <figure>
+              <img src="./concept-b-branch-light.svg" width="64" height="64" />
+              <figcaption>64</figcaption>
+            </figure>
+            <figure>
+              <img src="./concept-b-branch-light.svg" width="32" height="32" />
+              <figcaption>32</figcaption>
+            </figure>
+            <figure>
+              <img src="./concept-b-branch-light.svg" width="16" height="16" />
+              <figcaption>16</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+      <div class="navbar">
+        <img src="./concept-b-branch-dark.svg" width="26" height="26" /><b>vue3-okr-tree</b
+        ><span>文档站导航栏</span>
+      </div>
+    </section>
+
+    <section>
+      <h2>方案 C 「O 环 · 双向出口」</h2>
+      <p class="desc">
+        OKR 首字母 O = 断开的圆角环，左右两段短横从缺口向外伸出 =
+        双向展开；中心蓝色节点既是树根也是「靶心」，一形双关。三者中小尺寸表现最好，最像品牌符号而非功能示意。
+      </p>
+      <div class="pair">
+        <div class="cell on-dark">
+          <div class="tag">深色底 · 主用</div>
+          <div class="ramp">
+            <figure>
+              <img src="./concept-c-ring-dark.svg" width="200" height="200" />
+              <figcaption>200</figcaption>
+            </figure>
+            <figure>
+              <img src="./concept-c-ring-dark.svg" width="64" height="64" />
+              <figcaption>64</figcaption>
+            </figure>
+            <figure>
+              <img src="./concept-c-ring-dark.svg" width="32" height="32" />
+              <figcaption>32</figcaption>
+            </figure>
+            <figure>
+              <img src="./concept-c-ring-dark.svg" width="16" height="16" />
+              <figcaption>16</figcaption>
+            </figure>
+          </div>
+        </div>
+        <div class="cell on-light">
+          <div class="tag">浅色底 · 反相</div>
+          <div class="ramp">
+            <figure>
+              <img src="./concept-c-ring-light.svg" width="200" height="200" />
+              <figcaption>200</figcaption>
+            </figure>
+            <figure>
+              <img src="./concept-c-ring-light.svg" width="64" height="64" />
+              <figcaption>64</figcaption>
+            </figure>
+            <figure>
+              <img src="./concept-c-ring-light.svg" width="32" height="32" />
+              <figcaption>32</figcaption>
+            </figure>
+            <figure>
+              <img src="./concept-c-ring-light.svg" width="16" height="16" />
+              <figcaption>16</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+      <div class="navbar">
+        <img src="./concept-c-ring-dark.svg" width="26" height="26" /><b>vue3-okr-tree</b
+        ><span>文档站导航栏</span>
+      </div>
+    </section>
+  </body>
+</html>

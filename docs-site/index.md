@@ -5,6 +5,11 @@ hero:
   name: vue3-okr-tree
   text: Vue 3 组织架构树 / OKR 树组件
   tagline: 根节点左右双向展开 · 纯 CSS 连接线 · CSS 变量主题化 · 懒加载 · 画布缩放与导出
+  image:
+    src: /logo-tile.svg
+    alt: vue3-okr-tree Logo
+    width: 180
+    height: 180
   actions:
     - theme: brand
       text: 快速开始

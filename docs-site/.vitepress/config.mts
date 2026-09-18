@@ -19,8 +19,22 @@ export default defineConfig({
   srcExclude: ['README.md'],
   cleanUrls: false,
   lastUpdated: true,
+  // 图标与分享图放 docs-site/public/（构建时原样拷到站点根）；head 内路径 VitePress 不会自动加 base，
+  // 与 base 保持一致地写根绝对路径。
+  head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
+    ['link', { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32.png' }],
+    ['link', { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' }],
+    ['meta', { property: 'og:image', content: 'https://vue3-okr-tree.baiwumm.com/og-image.png' }],
+    ['meta', { property: 'og:image:width', content: '1200' }],
+    ['meta', { property: 'og:image:height', content: '630' }],
+    ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
+    ['meta', { name: 'twitter:image', content: 'https://vue3-okr-tree.baiwumm.com/og-image.png' }],
+  ],
   themeConfig: {
     siteTitle: 'vue3-okr-tree',
+    // 导航栏 Logo：透明底、图形随主题反相（源文件 design/logo/concept-c-ring-*.svg）
+    logo: { light: '/logo.svg', dark: '/logo-dark.svg' },
     nav: [
       { text: '指南', link: '/guide/quick-start', activeMatch: '/guide/' },
       { text: '主题', link: '/theme/', activeMatch: '/theme/' },
