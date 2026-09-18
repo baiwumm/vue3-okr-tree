@@ -2,6 +2,10 @@ name: Visual Regression
 
 # 视觉回归（roadmap 1.5.0 #5）：独立 job，真实浏览器截图比对 Playground 关键用例。
 # 失败时上传 diff 图与报告，便于定位像素级回归（改 CSS 变量 / 连接线时捕捉）。
+#
+# runner 镜像固定：Linux 基线（*-chromium-linux.png）由系统字体渲染决定，
+# ubuntu-latest 将于 2026-10-19 迁移到 Ubuntu 26，届时全部基线会集体失配。
+# 若要换镜像，必须先用 snapshot-bootstrap.yml 重新生成并提交 Linux 基线。
 
 on:
   push:
@@ -15,7 +19,7 @@ concurrency:
 jobs:
   visual:
     name: Playwright Visual · Perf
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 

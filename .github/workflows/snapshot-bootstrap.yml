@@ -1,0 +1,68 @@
+name: Snapshot Bootstrap
+
+# 一次性生成 Linux 视觉基线（配合 roadmap 1.5.0 #5）。
+# 背景：仓库里只有 *-chromium-win32.png，而 Visual Regression job 跑在 ubuntu 上，Playwright 找的是
+# *-chromium-linux.png；缺失基线时 updateSnapshots: 'missing' 依然返回 softError 判该用例失败
+# （playwright/lib/matchers/expect.js 的 handleMissing），所以新平台首轮必红，"CI 自动补齐"并不成立。
+#
+# 用法：
+#   1. Actions → Snapshot Bootstrap → Run workflow（master/main 分支）；
+#   2. 下载 artifact `linux-snapshots`，在仓库根目录解包：tar -xzf linux-snapshots.tgz
+#      （路径已含 tests/visual/…-snapshots/，解出来即就位）；
+#      已装 gh CLI 可直接：gh run download <RUN_ID> -n linux-snapshots && tar -xzf linux-snapshots.tgz
+#   3. git add 这些 *-chromium-linux.png 并提交，Visual Regression 即转绿。
+#
+# 构建步骤必须与 visual.yml 完全一致（同镜像、同 Playwright 版本、同 PLAYGROUND_USE_DIST 构建），
+# 否则生成的基线与门禁跑的产物不是同一份。
+
+on:
+  workflow_dispatch:
+
+jobs:
+  bootstrap:
+    name: Generate linux snapshots
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build library
+        run: pnpm build
+
+      - name: Build playground against dist
+        run: PLAYGROUND_USE_DIST=1 pnpm build:playground
+
+      # 本 job 的产出是基线文件而非门禁结论：perf 用例在 runner 上可能因机器抖动超标，
+      # 不应阻止 artifact 上传，故 continue-on-error。
+      - name: Generate baselines
+        continue-on-error: true
+        run: pnpm test:visual:update
+
+      - name: Pack baselines
+        run: |
+          find tests/visual -name '*-linux.png' | sort > linux-snapshots.txt
+          cat linux-snapshots.txt
+          test -s linux-snapshots.txt
+          tar -czf linux-snapshots.tgz --no-recursion -T linux-snapshots.txt
+
+      - name: Upload baselines
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-snapshots
+          path: linux-snapshots.tgz
+          retention-days: 14
+          if-no-files-found: error

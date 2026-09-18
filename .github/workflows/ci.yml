@@ -14,8 +14,11 @@ jobs:
     name: Lint · Typecheck · Test · Build
     runs-on: ubuntu-latest
     strategy:
+      # 单条矩阵项失败不连带取消其余项，便于一次看清所有 Node 版本的真实结果
+      fail-fast: false
       matrix:
-        node: [20, 22]
+        # pnpm 11 依赖 node:sqlite（Node ≥22.5），在 Node 20 上 setup-node 的 pnpm 缓存步骤直接崩
+        node: [22, 24]
     steps:
       - uses: actions/checkout@v4
 

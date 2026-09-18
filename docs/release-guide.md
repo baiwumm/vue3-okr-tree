@@ -114,8 +114,10 @@ node -e "const l=require('vue3-okr-tree'); console.log(typeof l.VueOkrTree)"   #
 ## 状态记录
 
 - [x] 域名确定：vue3-okr-tree.baiwumm.com（README / package.json homepage 已写入）
-- [ ] 推送仓库
-- [ ] Cloudflare 部署 + 域名绑定
+- [x] 推送仓库（`main` 与 `origin/main` 已同步至 `cb38701`）
+- [x] Cloudflare 部署 + 域名绑定（`https://vue3-okr-tree.baiwumm.com/` 与 `/playground/`、`/api/`、`/theme/`、`/guide/*` 均 200；Workers Builds 在 `cb38701` success）
+- [x] CI 红灯根因修复（2026-09-18）：`ci.yml` 矩阵 Node 20 → 22/24（pnpm 11 需 `node:sqlite`，Node ≥ 22.5）、加 `fail-fast: false`；`visual.yml` runner 固定 `ubuntu-24.04`（`ubuntu-latest` 2026-10-19 迁移 Ubuntu 26 会使基线集体失配）；新增 `snapshot-bootstrap.yml`
+- [ ] Linux 视觉基线提交：Actions 手动跑一次 **Snapshot Bootstrap** → 下载 `linux-snapshots` artifact → 仓库根目录 `tar -xzf linux-snapshots.tgz` → 提交 `*-chromium-linux.png`，Visual Regression 即转绿
 - [ ] npm 首发手动 1.6.0（等 2026-09-21 解封）
 - [ ] NPM_TOKEN 配置
 - [ ] 发布后验证
