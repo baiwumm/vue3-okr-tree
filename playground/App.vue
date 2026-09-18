@@ -72,6 +72,8 @@
     <BaseCheckbox />
     <!-- 23 拖拽调整层级（1.10.0 新增） -->
     <BaseDraggable />
+    <!-- 24 SVG 连接线模式（1.11.0 新增） -->
+    <BaseConnector />
     <!-- 17-20 API 文档表格 -->
     <Attributes />
     <Props />
@@ -109,6 +111,7 @@ import BaseAccordion from './components/demos/BaseAccordion.vue'
 import BaseNodeClick from './components/demos/BaseNodeClick.vue'
 import BaseCheckbox from './components/demos/BaseCheckbox.vue'
 import BaseDraggable from './components/demos/BaseDraggable.vue'
+import BaseConnector from './components/demos/BaseConnector.vue'
 import Attributes from './components/api/Attributes.vue'
 import Props from './components/api/Props.vue'
 import Events from './components/api/Events.vue'
@@ -153,6 +156,7 @@ const nav = [
   { id: 'demo-node-click-expand', text: '点击展开' },
   { id: 'demo-checkbox', text: '复选框' },
   { id: 'demo-draggable', text: '拖拽' },
+  { id: 'demo-connector', text: 'SVG 连接线' },
   { id: 'api-attributes', text: 'Attributes' },
   { id: 'api-props', text: 'Props' },
   { id: 'api-events', text: 'Events API' },

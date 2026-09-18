@@ -27,6 +27,7 @@
 <BaseNodeClick />
 <BaseCheckbox />
 <BaseDraggable />
+<BaseConnector />
 
 </DemoBlock>
 
@@ -55,4 +56,5 @@ import BaseAccordion from '../../playground/components/demos/BaseAccordion.vue'
 import BaseNodeClick from '../../playground/components/demos/BaseNodeClick.vue'
 import BaseCheckbox from '../../playground/components/demos/BaseCheckbox.vue'
 import BaseDraggable from '../../playground/components/demos/BaseDraggable.vue'
+import BaseConnector from '../../playground/components/demos/BaseConnector.vue'
 </script>

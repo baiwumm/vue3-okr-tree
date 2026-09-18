@@ -130,6 +130,20 @@ export const attributesSection: ApiSection = {
       '—',
     ],
     [
+      'connector',
+      '<strong>Vue 3 版新增（1.11.0）。</strong>连接线渲染模式：css（默认，伪元素像素几何）/ svg（覆盖层 <code>&lt;svg&gt;</code> 路径）。svg 模式布局与 css 模式完全一致，随展开/收起、<code>animate</code> 过渡、尺寸变化自动重绘无残影；可与画布缩放、OKR 模式组合',
+      'string',
+      'css / svg',
+      'css',
+    ],
+    [
+      'connector-shape',
+      '<strong>Vue 3 版新增（1.11.0）。</strong>svg 模式的路径形状（仅 <code>connector="svg"</code> 时生效）：curve 贝塞尔曲线 / orthogonal 直角折线 / straight 直线',
+      'string',
+      'curve / orthogonal / straight',
+      'curve',
+    ],
+    [
       'show-node-num',
       '折叠时在圆形按钮内显示子节点数（只计未被 <code>filter</code> 隐藏的可见子节点）',
       'boolean',

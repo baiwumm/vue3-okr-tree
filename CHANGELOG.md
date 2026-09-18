@@ -2,6 +2,19 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## 1.11.0
+
+### 新增
+
+- **SVG 连接线模式（2.x #11）**：`connector: 'css' | 'svg'`（默认 css）+ `connector-shape: 'curve' | 'orthogonal' | 'straight'`（仅 svg 模式生效，默认 curve）。要点——
+  - **布局零改动**：svg 模式只中和连线伪元素的边框（保留其占位盒，垂直模式 is-leaf 的间隔伪元素不受影响），线条改由 OkrTree 内的覆盖层 `<svg>` 按可见父子边绘制；展开按钮的 +/− 符号同为伪元素边框，已明确排除在中和范围外；
+  - **路径形状**：curve 三次贝塞尔（控制点随主轴延伸，最长 40px）、orthogonal 中点直角折线、straight 两点直线；线色/线宽继续走 `--okr-line-color` / `--okr-line-width`，全部主题与自定义变量零配置适配；
+  - **锚点随模式镜像**：vertical 出底入顶；horizontal 右树出右入左、OKR 左树出左入右；根节点到 OKR 左树顶层节点绘制镜像连线，收起时与 CSS 模式同形的残枝线（垂直向下 20 / 水平侧向 10 / OKR 根左侧 20）；
+  - **无残影重绘**：onUpdated + ResizeObserver + animate 过渡期 rAF 连续重绘三重触发，展开/收起动画期间路径持续贴合布局；测量批量读取一次成形，≤500 节点与 CSS 模式同量级；
+  - 运行时切换 `connector` / `connector-shape` 即时生效；非法值输出开发期警告并回退。
+- **ESM 产物压缩（构建修复）**：Vite lib 多格式构建中 `es` 输出不经过压缩（cjs/umd 正常，es 带完整缩进换行，gzip 体积高出约 40%），`post-build` 补一次 `transformWithEsbuild` 压缩——ESM gzip 从 24.2 kB 降至 16.2 kB，三种格式首次同量级；压缩后与构建期 sourcemap 错位，`es.js.map` 随之移除（cjs/umd 的 map 不受影响）。size-limit 的 ESM 预算回到 19 kB。
+- 测试 +12（模式切换、三形状、残枝、filter 重算、OKR 左树镜像），全量 219 通过；Demo / 文档站新增「SVG 连接线」交互用例（模式与形状实时切换）。
+
 ## 1.10.0
 
 ### 新增

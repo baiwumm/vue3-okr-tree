@@ -770,6 +770,55 @@
   bottom: -4px;
 }
 
+/* ======================= SVG 连接线模式（connector="svg"，Vue 3 版内建） ======================= */
+/*
+ * svg 模式布局与 css 模式完全一致：这里只中和「连线」伪元素的边框（保留其占位盒，
+ * 尤其是垂直模式 is-leaf 的间隔伪元素），线条改由 OkrTree 内的覆盖层 <svg> 绘制。
+ * 注意必须排除展开按钮的 ::before/::after（+/− 符号也是伪元素边框，不能被中和）。
+ */
+.org-chart-container.connector-svg {
+  position: relative;
+}
+.org-chart-container.connector-svg .vertical .org-chart-node:not(.is-leaf)::before,
+.org-chart-container.connector-svg .vertical .org-chart-node::after,
+.org-chart-container.connector-svg .vertical .org-chart-node-children::before,
+.org-chart-container.connector-svg .vertical .org-chart-node.collapsed .org-chart-node-label::after,
+.org-chart-container.connector-svg .horizontal .org-chart-node:not(.is-left-child-node)::before,
+.org-chart-container.connector-svg .horizontal .org-chart-node:not(.is-left-child-node)::after,
+.org-chart-container.connector-svg .horizontal .is-left-child-node::before,
+.org-chart-container.connector-svg .horizontal .is-left-child-node::after,
+.org-chart-container.connector-svg .horizontal .org-chart-node-children::before,
+.org-chart-container.connector-svg .horizontal .org-chart-node-left-children::before,
+.org-chart-container.connector-svg
+  .horizontal
+  .org-chart-node.collapsed
+  .org-chart-node-label::after,
+.org-chart-container.connector-svg
+  .horizontal
+  .is-left-child-node.collapsed
+  .org-chart-node-label::before,
+.org-chart-container.connector-svg
+  .horizontal
+  .only-both-tree-node
+  > .org-chart-node-label::before {
+  border: 0 none !important;
+}
+/* 覆盖层：铺满容器、不吃事件、可溢出（内容超出容器时连线不被裁剪） */
+.org-chart-container.connector-svg .okr-connector-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.org-chart-container.connector-svg .okr-connector-svg path {
+  fill: none;
+  stroke: var(--okr-line-color, #ccc);
+  stroke-width: var(--okr-line-width, 1px);
+}
+
 /* ======================= 内置主题 ======================= */
 /*
  * theme prop 会在组件根容器（或任意祖先元素）加 okr-theme-{name} 类。

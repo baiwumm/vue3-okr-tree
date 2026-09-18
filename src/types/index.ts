@@ -92,6 +92,12 @@ export interface TreeCheckInfo {
 /** 拖拽放置位置：目标节点前 / 内部（成为子节点）/ 后（对齐 el-tree） */
 export type DropType = 'prev' | 'inner' | 'next'
 
+/** 连接线渲染模式：css 伪元素（默认）或 svg 覆盖层路径 */
+export type ConnectorMode = 'css' | 'svg'
+
+/** svg 连接线的路径形状 */
+export type ConnectorShape = 'curve' | 'orthogonal' | 'straight'
+
 export type { TreeNode }
 
 /** createTypedOkrTree<T> 返回组件的插槽类型：作用域中的 data 为 T */

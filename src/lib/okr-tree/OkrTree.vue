@@ -1,5 +1,8 @@
 <template>
-  <div class="org-chart-container" :class="themeClass">
+  <div class="org-chart-container" :class="[themeClass, connectorClass]">
+    <svg v-if="connector === 'svg'" class="okr-connector-svg" aria-hidden="true">
+      <path v-for="edge in connectorEdges" :key="edge.id" :d="edge.d" />
+    </svg>
     <div
       ref="orgChartRoot"
       class="org-chart-node-children"
@@ -78,6 +81,7 @@ import type {
   RenderContentFunction,
   ScrollToNodeOptions,
   TreeCheckInfo,
+  ConnectorMode,
   TreeDirection,
   TreeKey,
   TreeLoadFunction,
@@ -139,6 +143,17 @@ const props = defineProps({
       (draggingNode: TreeNode, dropNode: TreeNode, type: DropType) => boolean
     >,
     default: undefined,
+  },
+  /**
+   * 连接线渲染模式（Vue 3 版 1.11.0 新增）：css（默认，伪元素像素几何）/ svg（覆盖层 <svg> 路径）。
+   * svg 模式布局与 css 模式完全一致（只替换线条渲染），随展开/收起、尺寸变化自动重绘；
+   * 线色/线宽继续走 --okr-line-color / --okr-line-width。
+   */
+  connector: { type: String as PropType<ConnectorMode>, default: 'css' },
+  /** svg 模式的路径形状（仅 connector="svg" 时生效）：curve 贝塞尔 / orthogonal 直角 / straight 直线 */
+  connectorShape: {
+    type: String as PropType<'curve' | 'orthogonal' | 'straight'>,
+    default: 'curve',
   },
   /** 飞书 OKR 模式：子树在根节点左右两侧展开 */
   onlyBothTree: { type: Boolean, default: false },
@@ -302,6 +317,16 @@ if (props.lazy && !props.load) {
 if (!props.lazy && props.load) {
   warn('传入 load 但未开启 lazy，load 不会生效。')
 }
+if (props.connector !== 'css' && props.connector !== 'svg') {
+  warn(`connector 仅支持 "css" / "svg"，收到 "${props.connector}"，将按 "css" 渲染。`)
+} else if (
+  props.connector === 'svg' &&
+  !['curve', 'orthogonal', 'straight'].includes(props.connectorShape)
+) {
+  warn(
+    `connector-shape 仅支持 curve / orthogonal / straight，收到 "${props.connectorShape}"，将回退为 curve。`
+  )
+}
 
 // theme 允许任意自定义名字，所以只能在「不在内置清单里」时提示，而不是限制类型
 watch(
@@ -440,6 +465,172 @@ const draggingNode = shallowRef<TreeNode | null>(null)
 const dragOverNode = shallowRef<TreeNode | null>(null)
 const dragOverType = shallowRef<DropType | null>(null)
 
+// ---- SVG 连接线模式（connector="svg"）：覆盖层 <svg> 按可见父子边绘制路径 ----
+// 布局仍由 CSS 模式完全负责（svg 模式仅中和连线伪元素的边框，保留占位），
+// 这里只测量可见节点卡片的位置并生成路径；线色/线宽走 --okr-line-* 变量。
+const connectorEdges = shallowRef<{ id: string; d: string }[]>([])
+const connectorClass = computed(() => (props.connector === 'svg' ? 'connector-svg' : ''))
+
+interface CardRect {
+  left: number
+  right: number
+  top: number
+  bottom: number
+  cx: number
+  cy: number
+}
+
+/** 批量测量全部可见节点卡片相对树根的位置（一次性读取，避免读写交错引发多次回流） */
+function collectCardRects(base: DOMRect): Map<TreeNode, CardRect> {
+  const rects = new Map<TreeNode, CardRect>()
+  const measure = (node: TreeNode) => {
+    if (node.visible) {
+      const el = nodeEls.get(node)
+      const card = el?.querySelector<HTMLElement>(
+        ':scope > .org-chart-node-label > .org-chart-node-label-inner'
+      )
+      if (card) {
+        const r = card.getBoundingClientRect()
+        rects.set(node, {
+          left: r.left - base.left,
+          right: r.right - base.left,
+          top: r.top - base.top,
+          bottom: r.bottom - base.top,
+          cx: r.left - base.left + r.width / 2,
+          cy: r.top - base.top + r.height / 2,
+        })
+      }
+    }
+    node.childNodes.forEach(measure)
+  }
+  store.root.childNodes.forEach(measure)
+  if (store.isLeftChilds) store.isLeftChilds.childNodes.forEach(measure)
+  return rects
+}
+
+const round = (v: number) => Math.round(v * 100) / 100
+
+/** 按形状生成两点间路径；orient 为连线的主轴方向（h 水平 / v 垂直），未知 shape 回退 curve */
+function buildPath(x1: number, y1: number, x2: number, y2: number, orient: 'h' | 'v'): string {
+  const shape = props.connectorShape
+  if (shape === 'straight') return `M ${round(x1)} ${round(y1)} L ${round(x2)} ${round(y2)}`
+  if (shape === 'orthogonal') {
+    if (orient === 'h') {
+      const m = round((x1 + x2) / 2)
+      return `M ${round(x1)} ${round(y1)} L ${m} ${round(y1)} L ${m} ${round(y2)} L ${round(x2)} ${round(y2)}`
+    }
+    const m = round((y1 + y2) / 2)
+    return `M ${round(x1)} ${round(y1)} L ${round(x1)} ${m} L ${round(x2)} ${m} L ${round(x2)} ${round(y2)}`
+  }
+  const g = Math.min(40, (orient === 'h' ? Math.abs(x2 - x1) : Math.abs(y2 - y1)) / 2)
+  if (orient === 'h') {
+    const s = x2 >= x1 ? 1 : -1
+    return `M ${round(x1)} ${round(y1)} C ${round(x1 + g * s)} ${round(y1)}, ${round(x2 - g * s)} ${round(y2)}, ${round(x2)} ${round(y2)}`
+  }
+  const s = y2 >= y1 ? 1 : -1
+  return `M ${round(x1)} ${round(y1)} C ${round(x1)} ${round(y1 + g * s)}, ${round(x2)} ${round(y2 - g * s)}, ${round(x2)} ${round(y2)}`
+}
+
+/** 收起残枝：与 CSS 模式的 stub 同形（垂直向下 20、水平侧向 10、OKR 根左侧 20） */
+function stubPath(from: { x: number; y: number }, side: 'right' | 'left' | 'bottom'): string {
+  const len = side === 'bottom' ? 20 : side === 'right' ? 10 : 10
+  const dx = side === 'right' ? len : side === 'left' ? -len : 0
+  return `M ${round(from.x)} ${round(from.y)} l ${dx} ${side === 'bottom' ? len : 0}`
+}
+
+function redrawConnectors() {
+  if (props.connector !== 'svg') return
+  const baseEl = orgChartRoot.value
+  if (!baseEl) {
+    connectorEdges.value = []
+    return
+  }
+  const base = baseEl.getBoundingClientRect()
+  const rects = collectCardRects(base)
+  const horizontal = store.direction === 'horizontal'
+  const edges: { id: string; d: string }[] = []
+  let seq = 0
+
+  const outAnchor = (r: CardRect, side: 'right' | 'left' | 'bottom') =>
+    side === 'bottom'
+      ? { x: r.cx, y: r.bottom }
+      : { x: side === 'right' ? r.right : r.left, y: r.cy }
+  const inAnchor = (r: CardRect, side: 'left' | 'right' | 'top') =>
+    side === 'top' ? { x: r.cx, y: r.top } : { x: side === 'left' ? r.left : r.right, y: r.cy }
+  const outSide = (node: TreeNode) =>
+    !horizontal ? ('bottom' as const) : node.isLeftChild ? ('left' as const) : ('right' as const)
+  const inSide = (node: TreeNode) =>
+    !horizontal ? ('top' as const) : node.isLeftChild ? ('right' as const) : ('left' as const)
+
+  const walk = (node: TreeNode) => {
+    if (node.visible) {
+      const r = rects.get(node)
+      if (r && node.level > 0) {
+        const expandedFlag = node.isLeftChild ? node.leftExpanded : node.expanded
+        const orient = horizontal ? ('h' as const) : ('v' as const)
+        // 常规父子边（右树的 childNodes；左树节点的 childNodes 即左子节点）
+        if (node.childNodes.length) {
+          const from = outAnchor(r, outSide(node))
+          if (expandedFlag) {
+            for (const child of node.childNodes) {
+              if (!child.visible) continue
+              const cr = rects.get(child)
+              if (!cr) continue
+              const to = inAnchor(cr, inSide(child))
+              edges.push({ id: `e${seq++}`, d: buildPath(from.x, from.y, to.x, to.y, orient) })
+            }
+          } else {
+            edges.push({ id: `e${seq++}`, d: stubPath(from, outSide(node)) })
+          }
+        }
+        // OKR 根节点的左子树：根卡片左锚点 → 左树顶层节点右锚点
+        if (store.onlyBothTree && node.level === 1 && !node.isLeftChild && horizontal) {
+          const from = outAnchor(r, 'left')
+          if (node.leftChildNodes.length && node.leftExpanded) {
+            for (const child of node.leftChildNodes) {
+              if (!child.visible) continue
+              const cr = rects.get(child)
+              if (!cr) continue
+              edges.push({ id: `e${seq++}`, d: buildPath(from.x, from.y, cr.right, cr.cy, 'h') })
+            }
+          } else if (node.leftChildNodes.length) {
+            // 根左侧的指向线（与 CSS 的 only-both-tree-node ::before 同位，宽 20）
+            const dx = -20
+            edges.push({ id: `e${seq++}`, d: `M ${round(from.x)} ${round(from.y)} l ${dx} 0` })
+          }
+        }
+      }
+    }
+    node.childNodes.forEach(walk)
+  }
+  store.root.childNodes.forEach(walk)
+  if (store.isLeftChilds) store.isLeftChilds.childNodes.forEach(walk)
+  connectorEdges.value = edges
+}
+
+/** 重绘调度：合并到 rAF；animate 开启时在过渡时长内连续重绘以贴合动画（避免残影） */
+let redrawRaf = 0
+let redrawAnimatedUntil = 0
+let connectorResizeObserver: ResizeObserver | null = null
+function requestRedraw(withTransition = false) {
+  if (props.connector !== 'svg') return
+  if (withTransition && store.animate && !prefersReducedMotion.value) {
+    redrawAnimatedUntil = performance.now() + store.animateDuration + 32
+  }
+  if (redrawRaf) return
+  const step = () => {
+    redrawRaf = 0
+    redrawConnectors()
+    if (performance.now() < redrawAnimatedUntil) redrawRaf = requestAnimationFrame(step)
+  }
+  redrawRaf = requestAnimationFrame(step)
+}
+
+watch(
+  () => [props.connector, props.connectorShape] as const,
+  () => requestRedraw(true)
+)
+
 provide(OKR_TREE_INJECTION_KEY, {
   store,
   root,
@@ -492,6 +683,21 @@ if (viewport) {
   onMounted(() => viewport.registerTree(viewportApi))
   onBeforeUnmount(() => viewport.unregisterTree(viewportApi))
 }
+
+// ---- SVG 连接线：首绘 / 更新重绘 / 尺寸重绘 / 卸载清理 ----
+onMounted(() => {
+  nextTick(() => requestRedraw(true))
+  if (props.connector === 'svg' && typeof ResizeObserver !== 'undefined' && orgChartRoot.value) {
+    connectorResizeObserver = new ResizeObserver(() => requestRedraw())
+    connectorResizeObserver.observe(orgChartRoot.value)
+  }
+})
+onUpdated(() => requestRedraw(true))
+onBeforeUnmount(() => {
+  if (redrawRaf) cancelAnimationFrame(redrawRaf)
+  connectorResizeObserver?.disconnect()
+  connectorResizeObserver = null
+})
 
 // ---- 配置同步：运行时变更的 prop 写回 store（原版为创建时快照） ----
 watch(
