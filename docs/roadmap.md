@@ -70,7 +70,7 @@
 - [ ] 首次 `npm publish`（此前仅做过 `--dry-run`）
 - [ ] 发布后用一个空 Vite 项目 `pnpm add vue3-okr-tree` 验证：ESM import、`require`、CDN `<script>` 三条路径
 - **验收**：npm 页面可见 1.x，安装后类型提示与样式正常。
-  > ⏸ 2026-09-18 中断进度：release workflow（tag → 校验 → `npm publish --provenance` → GitHub Release）与 package.json（repository/homepage/bugs/keywords/publishConfig.access）已就绪；发布前四条路径已用 `npm pack` tarball 在空 Vite 项目中本地验证（见 docs/release-readiness.md）｜剩余：维护者配置 NPM_TOKEN 后 push tag 由用户手动执行真实发布，及发布后 npm 线上验证（含 CDN 路径）。
+  > ⏸ 2026-09-19 更新：release workflow（tag → 校验 → `npm publish --provenance` → GitHub Release）与 package.json 元信息已就绪；`npm pack` 四条路径已在空 Vite 项目本地验证（见 docs/release-readiness.md）。**等待维护者 npm 账号解封**：先手动发一版 → GitHub 配置 NPM_TOKEN → 之后 push main 并 `git tag v1.11.0 && git push origin v1.11.0` 即自动发布。1.7.0–1.11.0 均未发过 tag，npm 首个线上版本将是 1.11.0（1.8.0 起新增 peer `vue>=3.3.0` 收紧、accordion / expand-on-click-node / 复选框 / 拖拽 / SVG 连接线，详见 CHANGELOG）。真实发布与线上验证由维护者手动执行。
 
 ### 5. 视觉回归测试（M）
 
@@ -117,6 +117,10 @@
 ---
 
 ## 2.x — 大功能（视需求排期）
+
+> **进度停点（2026-09-19 收工）**：2.x 已完成 #13 低风险档（1.7.0）→ #13 交互档 + #16 SSR/peer（1.8.0）→ #14 复选框（1.9.0）→ #10 拖拽（1.10.0）→ #11 SVG 连接线（1.11.0）。全部提交在本地 main（领先 origin 8 个提交），未 push、未打 tag。
+> **下一步顺序**：① #13 / #16 剩余 S 项合集（`unstyled`、`getVisibleNodes` / `getNodePath`、`@media print` 样式、node-key 缺失策略文档化、双语 README 等）→ ② #12 更多布局（M–L）→ ③ #15 虚拟滚动先做半天预研 spike（伪元素连接线与虚拟化兼容性），再决定排期。
+> 发布侧等待维护者 npm 账号解封后手动首版 + 配 NPM_TOKEN，见 1.5.0 #4 的 ⏸ 注记。
 
 ### 10. 拖拽调整层级（L）
 
@@ -194,7 +198,7 @@
 | 2026-09-18 | 1.8.0  | #13 交互档（`accordion` 手风琴、`expand-on-click-node`）、SSR `renderToString` 冒烟测试、peer 实测收紧 `vue>=3.3.0` + CI peer-matrix、Demo +2                  | `e531e0c`           |
 | 2026-09-19 | 1.9.0  | #14 复选框选择模式（联动/半选/strictly、check/check-change、六方法、OKR 语义、键盘/a11y）、Demo +1、ESM 预算上调 22 kB                                         | `a14c0cc`           |
 | 2026-09-19 | 1.10.0 | #10 拖拽调整层级（draggable / allow 钩子 / 六事件 / moveNode / 分区指示线 / OKR 跨树规则）、Demo +1、ESM 预算 24 kB、样式 4 kB                                 | `888cf33`           |
-| 2026-09-19 | 1.11.0 | #11 SVG 连接线（connector 双模式 / connector-shape 三形状 / 无残影重绘 / OKR 左树镜像）、ESM 产物压缩修复（gzip 24.2→16.2 kB，预算回 19 kB）、Demo +1        | `90dcc85`           |
+| 2026-09-19 | 1.11.0 | #11 SVG 连接线（connector 双模式 / connector-shape 三形状 / 无残影重绘 / OKR 左树镜像）、ESM 产物压缩修复（gzip 24.2→16.2 kB，预算回 19 kB）、Demo +1          | `90dcc85`           |
 
 ## 已决定不做
 
