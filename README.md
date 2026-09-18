@@ -517,7 +517,7 @@ API 名称与语义完全对齐，直接把 `import { VueOkrTree } from 'vue-okr
 
 ## 开发
 
-后续优化计划见 [docs/roadmap.md](./docs/roadmap.md)（可勾选清单），需求与决策见 [docs/requirements.md](./docs/requirements.md)。
+在线文档站：<https://baiwumm.github.io/vue3-okr-tree/>（源码在 [docs-site/](./docs-site/)，`pnpm docs:dev` 本地开发，push 到 main 后由 GitHub Actions 自动部署）。后续优化计划见 [docs/roadmap.md](./docs/roadmap.md)（可勾选清单），需求与决策见 [docs/requirements.md](./docs/requirements.md)。
 
 ```bash
 pnpm install
@@ -525,10 +525,23 @@ pnpm dev              # Demo 站（引用源码）
 pnpm test             # Vitest：模型层单测 + 组件冒烟测试
 pnpm typecheck        # vue-tsc
 pnpm lint             # ESLint
-pnpm build            # 库构建 → dist/
+pnpm build            # 库构建 → dist/（含 index.d.cts 后处理）
 pnpm verify:dist      # 用 dist 产物做挂载冒烟
+pnpm verify:package   # publint + attw 包发布体检
+pnpm size             # size-limit 体积预算
+pnpm test:coverage    # 覆盖率（阈值见 vite.config.ts）
 pnpm build:playground # Demo 站构建（PLAYGROUND_USE_DIST=1 时引用 dist 产物）
+pnpm test:visual      # Playwright 视觉回归 + 浏览器性能基线（先 build 与 build:playground）
+pnpm bench            # 2000 节点性能基准（jsdom，先 build）
+pnpm gen:readme       # 从 shared/api.ts 重新生成 README 的 API 段落
 ```
+
+### 发布流程
+
+1. 更新 `package.json` 的 `version` 与 `CHANGELOG.md`，提交；
+2. `git tag v1.x.x && git push origin v1.x.x`；
+3. `release.yml` 自动执行：校验 tag 与版本一致 → lint/typecheck/test → build + verify:dist + publint/attw + size-limit → `npm publish --provenance` → 创建 GitHub Release。
+4. 前置一次性配置：仓库 Secrets 添加 `NPM_TOKEN`（npm Automation token）。
 
 ## License
 

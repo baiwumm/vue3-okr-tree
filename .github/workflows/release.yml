@@ -1,0 +1,68 @@
+name: Release
+
+# 发布流程（roadmap 1.5.0 #4）：推送 v* tag 后自动构建、校验并发包。
+#
+# 前置（一次性，由维护者手动完成）：
+#   1. GitHub 仓库 Settings → Secrets → 添加 NPM_TOKEN（npmjs.com 的 Automation token）
+#   2. npm 包首次发布可由本 workflow 完成（npm publish --provenance，需仓库公开）
+#
+# 日常发布：更新 package.json version 与 CHANGELOG → 提交 → git tag v1.x.x && git push origin v1.x.x
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write # 创建 GitHub Release
+  id-token: write # npm provenance（OIDC）
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Verify & Publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify version matches tag
+        run: node -e "const p=require('./package.json'); const t=process.env.GITHUB_REF_NAME.slice(1); if(p.version!==t){console.error('package.json version '+p.version+' != tag '+t);process.exit(1)}"
+
+      - name: Lint / Typecheck / Test
+        run: |
+          pnpm lint
+          pnpm typecheck
+          pnpm test
+
+      - name: Build & verify dist
+        run: |
+          pnpm build
+          pnpm verify:dist
+          pnpm verify:package
+          pnpm size
+
+      - name: Publish to npm (with provenance)
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        run: gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}
