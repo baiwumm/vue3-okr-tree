@@ -49,3 +49,4 @@ import { VueOkrTreePlugin } from 'vue3-okr-tree'
 - 想直接把玩所有用例：前往 [Demo 总览](/guide/demos)（与 GitHub 上的 Playground 相同的组件）。
 - 大数据量：阅读[懒加载](/guide/lazy)与[画布缩放](/guide/viewport)。
 - 从 vue-okr-tree 迁移：阅读[迁移说明](/migration)。
+- 注意：`append` / `remove` 等方法会同步修改源数据，冻结 / 只读数据下不可用（开发期有警告，只读操作不受影响）。

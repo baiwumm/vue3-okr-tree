@@ -4,22 +4,42 @@ import type { TreeNodeData } from '../../../types'
 export const NODE_KEY = '$treeNodeId'
 
 /**
+ * markNodeData 写入失败的兜底注册表（冻结/只读对象上 Object.defineProperty 会抛 TypeError）。
+ * WeakMap 不阻止源数据被回收。
+ */
+const nodeIdByData = new WeakMap<object, number>()
+
+/** 开发期「只读源数据」一次性警告（回写类操作在冻结数据上不生效时触发） */
+export function warnReadonlySource(action: string) {
+  warn(
+    `检测到冻结/只读源数据，"${action}" 需要回写源数据，本次操作不会生效。` +
+      'append / insertBefore / insertAfter / remove / updateKeyChildren / 懒加载 resolve 等回写类方法与冻结数据不兼容' +
+      '（详见 README「需要注意的行为」）。'
+  )
+}
+
+/**
  * 在源数据对象上写入不可枚举的内部 node id。
  * 未配置 node-key 时，该标记作为 v-for key 与 getNode(data) 的查找依据。
+ * 冻结/只读对象上写入失败时降级到 WeakMap 兜底（行为不变，不抛错）。
  */
 export const markNodeData = function (node: { id: number }, data: TreeNodeData | null | undefined) {
   if (!data || typeof data !== 'object' || (data as any)[NODE_KEY]) return
-  Object.defineProperty(data, NODE_KEY, {
-    value: node.id,
-    enumerable: false,
-    configurable: false,
-    writable: false,
-  })
+  try {
+    Object.defineProperty(data, NODE_KEY, {
+      value: node.id,
+      enumerable: false,
+      configurable: false,
+      writable: false,
+    })
+  } catch {
+    nodeIdByData.set(data, node.id)
+  }
 }
 
-/** 读取节点 key：配置了 node-key 用该字段，否则用隐藏标记 */
+/** 读取节点 key：配置了 node-key 用该字段，否则用隐藏标记（或 WeakMap 兜底） */
 export const getNodeKey = function (key: string | undefined, data: TreeNodeData) {
-  if (!key) return data[NODE_KEY]
+  if (!key) return data[NODE_KEY] ?? nodeIdByData.get(data)
   return data[key]
 }
 

@@ -1,5 +1,5 @@
 import { shallowReactive } from 'vue'
-import { markNodeData, getNodeKey } from './util'
+import { markNodeData, getNodeKey, warnReadonlySource } from './util'
 import type { TreeStore } from './tree-store'
 import type { TreeKey, TreeNodeData } from '../../../types'
 
@@ -233,10 +233,15 @@ export class TreeNode {
       if (!batch) {
         const children = this.getChildren(true)
         if (children && children.indexOf(child.data) === -1) {
-          if (index === undefined || index === null || index < 0) {
-            children.push(child.data)
-          } else {
-            children.splice(index, 0, child.data)
+          try {
+            if (index === undefined || index === null || index < 0) {
+              children.push(child.data)
+            } else {
+              children.splice(index, 0, child.data)
+            }
+          } catch {
+            // 冻结/只读源数据：跳过回写（视图仍会插入节点）并给出开发期警告
+            warnReadonlySource('append / insert（写入 children）')
           }
         }
       }
@@ -268,12 +273,22 @@ export class TreeNode {
       children = props.children || 'children'
     }
 
+    // 冻结/只读源数据：占位与初始化写入会抛 TypeError，降级为跳过写入并给出开发期警告
     if (data[children] === undefined) {
-      data[children] = null
+      try {
+        data[children] = null
+      } catch {
+        /* 只读数据：跳过占位写入 */
+      }
     }
 
     if (forceInit && !data[children]) {
-      data[children] = []
+      try {
+        data[children] = []
+      } catch {
+        warnReadonlySource('append / insert（写入 children）')
+        return null
+      }
     }
 
     return data[children]
@@ -383,7 +398,12 @@ export class TreeNode {
     const children = this.getChildren() || []
     const dataIndex = children.indexOf(child.data)
     if (dataIndex > -1) {
-      children.splice(dataIndex, 1)
+      try {
+        children.splice(dataIndex, 1)
+      } catch {
+        // 深层冻结的 children 数组：跳过源数据删除并给出开发期警告，视图仍正常移除
+        warnReadonlySource('remove（从 children 删除）')
+      }
     }
 
     const index = this.childNodes.indexOf(child)
