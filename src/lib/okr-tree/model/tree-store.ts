@@ -35,6 +35,12 @@ export interface TreeStoreOptions {
   accordion?: boolean
   /** 点击节点内容时切换展开/收起 */
   expandOnClickNode?: boolean
+  /** 复选框选择模式：节点前渲染复选框，父子联动半选态 */
+  showCheckbox?: boolean
+  /** 复选框父子不联动（勾选只作用于自身，无半选传播） */
+  checkStrictly?: boolean
+  /** 初始勾选的节点 key 数组（需 node-key，创建期生效） */
+  defaultCheckedKeys?: TreeKey[] | null
 }
 
 /** 字段映射默认值（导出供 OkrTree 运行时同步 props 合并使用） */
@@ -71,6 +77,9 @@ export class TreeStore {
   load: TreeLoadFunction | null = null
   accordion = false
   expandOnClickNode = false
+  showCheckbox = false
+  checkStrictly = false
+  defaultCheckedKeys?: TreeKey[] | null = undefined
   /**
    * 懒加载展开完成后由组件设置的通知钩子（同步 v-model:expanded-keys）；
    * reject 时不会触发（展开集合未变化）。
@@ -111,6 +120,8 @@ export class TreeStore {
     if (this.key && this.currentNodeKey !== undefined && this.currentNodeKey !== null) {
       this.setCurrentNodeKey(this.currentNodeKey)
     }
+
+    this.initDefaultChecked()
   }
 
   filter(value: any, childName: ChildName = 'childNodes') {
@@ -346,6 +357,108 @@ export class TreeStore {
       if (child === node) return
       if (child.isLeftChild) child.leftExpanded = false
       else child.expanded = false
+    })
+  }
+
+  /**
+   * 应用 default-checked-keys：对左右两树同 key 节点同时生效（与 setCurrentNodeKey 一致），
+   * 非 checkStrictly 时带父子联动（勾选 key 节点会覆盖其后代、重算祖先）。
+   */
+  initDefaultChecked() {
+    const keys = this.defaultCheckedKeys
+    if (!keys || !keys.length || !this.key) return
+    keys.forEach((key) => {
+      const right = this.nodesMap[key as string]
+      const left = this.leftNodesMap[key as string]
+      if (right) right.setChecked(true, !this.checkStrictly)
+      if (left) left.setChecked(true, !this.checkStrictly)
+    })
+  }
+
+  /** 以新列表重新应用默认勾选：先清空全部勾选 / 半选，再按列表勾选（default-checked-keys 运行时变更） */
+  setDefaultCheckedKeys(keys?: TreeKey[] | null) {
+    this.defaultCheckedKeys = keys || []
+    this.forEachNode((node) => {
+      node.checked = false
+      node.indeterminate = false
+    })
+    this.initDefaultChecked()
+  }
+
+  /** 勾选节点实例列表（左右两树）；leafOnly 为 true 时只计叶子节点 */
+  getCheckedNodes(leafOnly = false): TreeNode[] {
+    const nodes: TreeNode[] = []
+    this.forEachNode((node) => {
+      if (!node.checked) return
+      if (leafOnly && !node.isLeaf) return
+      nodes.push(node)
+    })
+    return nodes
+  }
+
+  /** 勾选节点 key 列表（需 node-key；左右两树合并去重）；leafOnly 为 true 时只计叶子节点 */
+  getCheckedKeys(leafOnly = false): TreeKey[] {
+    if (!this.key) return []
+    const keys: TreeKey[] = []
+    const seen = new Set<string>()
+    this.getCheckedNodes(leafOnly).forEach((node) => {
+      const key = node.key
+      if (key === undefined || key === null) return
+      const sig = String(key)
+      if (seen.has(sig)) return
+      seen.add(sig)
+      keys.push(key)
+    })
+    return keys
+  }
+
+  /** 半选节点实例列表（子树部分选中的父节点） */
+  getHalfCheckedNodes(): TreeNode[] {
+    const nodes: TreeNode[] = []
+    this.forEachNode((node) => {
+      if (node.indeterminate && !node.checked) nodes.push(node)
+    })
+    return nodes
+  }
+
+  /** 半选节点 key 列表（需 node-key；左右两树合并去重） */
+  getHalfCheckedKeys(): TreeKey[] {
+    if (!this.key) return []
+    const keys: TreeKey[] = []
+    const seen = new Set<string>()
+    this.getHalfCheckedNodes().forEach((node) => {
+      const key = node.key
+      if (key === undefined || key === null) return
+      const sig = String(key)
+      if (seen.has(sig)) return
+      seen.add(sig)
+      keys.push(key)
+    })
+    return keys
+  }
+
+  /** 节点（Node / key / data）当前是否被勾选；未找到时为 false */
+  isChecked(data: TreeNode | TreeKey | TreeNodeData): boolean {
+    return this.getNode(data)?.checked ?? false
+  }
+
+  /**
+   * 以 key 列表整体设置勾选态（需 node-key；左右两树同 key 同时生效）。
+   * 非 checkStrictly 时与点击语义一致：列表内的父节点会联动其后代、重算祖先；
+   * leafOnly 为 true 时只逐个勾选列表中的叶子（不向下联动）。
+   */
+  setCheckedKeys(keys: TreeKey[] | null | undefined, leafOnly = false) {
+    const set = new Set((keys || []).map((k) => String(k)))
+    const all: TreeNode[] = []
+    this.forEachNode((node) => {
+      all.push(node)
+      node.checked = false
+      node.indeterminate = false
+    })
+    all.forEach((node) => {
+      if (node.key === undefined || node.key === null) return
+      if (!set.has(String(node.key))) return
+      node.setChecked(true, leafOnly ? false : !this.checkStrictly)
     })
   }
 

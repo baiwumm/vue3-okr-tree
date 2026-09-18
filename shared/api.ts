@@ -88,6 +88,27 @@ export const attributesSection: ApiSection = {
       'false',
     ],
     [
+      'show-checkbox',
+      '<strong>Vue 3 版新增（1.9.0）。</strong>复选框选择模式：节点内容前渲染复选框，父子联动半选态（<code>check-strictly</code> 可关闭）。键盘 Space 切换勾选、Enter 选中。OKR 模式左右两树勾选独立维护，方法按 key 对两树同时生效',
+      'boolean',
+      '—',
+      'false',
+    ],
+    [
+      'check-strictly',
+      '<strong>Vue 3 版新增（1.9.0）。</strong>父子不联动：勾选只作用于自身，无半选传播（运行时切换后新交互按新模式执行）',
+      'boolean',
+      '—',
+      'false',
+    ],
+    [
+      'default-checked-keys',
+      '<strong>Vue 3 版新增（1.9.0）。</strong>初始勾选的节点 key 数组（必须设置 node-key）。创建期生效；运行时变更会先清空再按新列表重新应用；data 重建后不恢复（与 default-expanded-keys 一致）',
+      'array',
+      '—',
+      '—',
+    ],
+    [
       'show-node-num',
       '折叠时在圆形按钮内显示子节点数（只计未被 <code>filter</code> 隐藏的可见子节点）',
       'boolean',
@@ -258,6 +279,16 @@ export const eventsSection: ApiSection = {
       '<strong>Vue 3 版新增。</strong>受控选中态变化时触发（仅传入 current-key 时）',
       '(key: TreeKey | null)',
     ],
+    [
+      'check',
+      '<strong>Vue 3 版新增（1.9.0）。</strong>复选框被点击时触发（仅 show-checkbox；程序化 setCheckedKeys 不触发）',
+      '(data, { checkedNodes, checkedKeys, halfCheckedNodes, halfCheckedKeys })',
+    ],
+    [
+      'check-change',
+      '<strong>Vue 3 版新增（1.9.0）。</strong>节点勾选状态变化时触发（仅 show-checkbox；每个受影响节点各触发一次，含联动与 setCheckedKeys 批量变更）',
+      '(data, checked, indeterminate)',
+    ],
   ],
 }
 
@@ -344,6 +375,36 @@ export const methodsSection: ApiSection = {
       'getNodeEl',
       '<strong>Vue 3 版新增（1.4.0）。</strong>按 Node / key / data 获取节点对应的 DOM 元素（OkrTreeViewport 的 centerNode 也基于它定位）',
       '(data)',
+    ],
+    [
+      'getCheckedKeys',
+      '<strong>Vue 3 版新增（1.9.0）。</strong>获取勾选节点 key 列表（需 node-key；OKR 模式左右两树合并去重）',
+      '(leafOnly = false) leafOnly 为 true 时只计叶子节点',
+    ],
+    [
+      'getCheckedNodes',
+      '<strong>Vue 3 版新增（1.9.0）。</strong>获取勾选节点 Node 实例列表',
+      '(leafOnly = false)',
+    ],
+    [
+      'setCheckedKeys',
+      '<strong>Vue 3 版新增（1.9.0）。</strong>以 key 列表整体设置勾选态（先清空再勾选；非 checkStrictly 时带父子联动，OKR 模式左右同 key 同时生效）',
+      '(keys, leafOnly = false)',
+    ],
+    [
+      'getHalfCheckedKeys',
+      '<strong>Vue 3 版新增（1.9.0）。</strong>获取半选节点 key 列表（子树部分选中的父节点）',
+      '—',
+    ],
+    [
+      'getHalfCheckedNodes',
+      '<strong>Vue 3 版新增（1.9.0）。</strong>获取半选节点 Node 实例列表',
+      '—',
+    ],
+    [
+      'isChecked',
+      '<strong>Vue 3 版新增（1.9.0）。</strong>判断节点当前是否被勾选',
+      '(data) key、data 对象或 Node 实例',
     ],
   ],
 }

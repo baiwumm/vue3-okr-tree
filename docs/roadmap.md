@@ -18,7 +18,8 @@
 | 1.6.0 | 健壮性与运行时行为补齐                                                           | ✅              |
 | 1.7.0 | 2.x #13 低风险档 + Logo 接入 + CI/视觉回归转绿修复                               | ✅ 发布待维护者 |
 | 1.8.0 | 2.x #13 交互档（accordion / expand-on-click-node）+ SSR 冒烟 + peer 收紧 vue≥3.3 | ✅ 发布待维护者 |
-| 2.x   | 拖拽、SVG 连接线、复选框、虚拟滚动、更多布局                                     | ⬜ 视需求       |
+| 1.9.0 | 2.x #14 复选框选择模式（联动/半选/strictly/事件/方法/OKR 语义）                  | ✅ 发布待维护者 |
+| 2.x   | 拖拽、SVG 连接线、虚拟滚动、更多布局（复选框已于 1.9.0 完成）                    | ⬜ 视需求       |
 
 ---
 
@@ -155,12 +156,12 @@
 
 ### 14. 复选框选择模式（M–L）
 
-- [ ] `show-checkbox` / `check-strictly`（父子不联动）/ `default-checked-keys`；节点前渲染复选框，父子联动半选态
-- [ ] 方法：`getCheckedKeys` / `setCheckedKeys` / `getHalfCheckedKeys` / `isChecked`
-- [ ] 事件：`check`（点击本身）/ `check-change`（状态变化）
-- [ ] 样式走 `--okr-*` 变量与六套主题；OKR 模式左右两树同 key 节点的选中语义文档化
-- [ ] 测试：联动/不联动、半选传播、受控用法；Demo 新增用例
-- **验收**：交互与 el-tree 习惯一致，受控/非受控均可用。
+- [x] `show-checkbox` / `check-strictly`（父子不联动）/ `default-checked-keys`；节点前渲染复选框，父子联动半选态
+- [x] 方法：`getCheckedKeys` / `setCheckedKeys` / `getHalfCheckedKeys` / `isChecked`（另附 `getCheckedNodes` / `getHalfCheckedNodes`）
+- [x] 事件：`check`（点击本身）/ `check-change`（状态变化，每个受影响节点各一次）
+- [x] 样式走 `--okr-*` 变量与六套主题；OKR 模式左右两树同 key 节点的选中语义文档化（独立维护、方法按 key 合并生效）
+- [x] 测试：联动/不联动、半选传播、受控用法；Demo 新增用例
+- **验收**：交互与 el-tree 习惯一致，受控/非受控均可用。✅ 2026-09-19 完成（13 个专项测试）
 
 ### 15. 虚拟滚动（L）
 
@@ -189,7 +190,7 @@
 | 2026-09-17 | 1.3.0 | `OkrTreeGroup`、WAI-ARIA 键盘导航、`node-component`、`createTypedOkrTree<T>`                                                                                   | `115cd54`           |
 | 2026-09-18 | 1.4.0 | `lazy`/`load` 懒加载、`OkrTreeViewport` 画布（缩放/平移/导出）、`getNodeEl` 方法、Demo +2                                                                      | `498e9cc` `3ea31cd` |
 | 2026-09-18 | 1.7.0 | #13 低风险档（reduced-motion 直切、`aria-setsize`/`aria-posinset`、`show-node-num` 只计可见、未知 `theme` 警告、死代码清理）、Logo 接入、CI 与视觉回归红灯修复 | `6830337` `698aec4` |
-| 2026-09-18 | 1.8.0 | #13 交互档（`accordion` 手风琴、`expand-on-click-node`）、SSR `renderToString` 冒烟测试、peer 实测收紧 `vue>=3.3.0` + CI peer-matrix、Demo +2 | `e531e0c`           |
+| 2026-09-18 | 1.8.0 | #13 交互档（`accordion` 手风琴、`expand-on-click-node`）、SSR `renderToString` 冒烟测试、peer 实测收紧 `vue>=3.3.0` + CI peer-matrix、Demo +2                  | `e531e0c`           |
 
 ## 已决定不做
 

@@ -25,6 +25,7 @@
 <Base11 />
 <BaseAccordion />
 <BaseNodeClick />
+<BaseCheckbox />
 
 </DemoBlock>
 
@@ -51,4 +52,5 @@ import Base10 from '../../playground/components/demos/Base10.vue'
 import Base11 from '../../playground/components/demos/Base11.vue'
 import BaseAccordion from '../../playground/components/demos/BaseAccordion.vue'
 import BaseNodeClick from '../../playground/components/demos/BaseNodeClick.vue'
+import BaseCheckbox from '../../playground/components/demos/BaseCheckbox.vue'
 </script>

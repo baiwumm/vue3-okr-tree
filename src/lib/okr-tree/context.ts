@@ -3,7 +3,8 @@ import type { TreeStore } from './model/tree-store'
 import type { TreeNode } from './model/node'
 import type { ViewportTreeApi } from './viewport'
 
-export type OkrTreeEventName = 'node-click' | 'node-expand' | 'node-collapse' | 'node-contextmenu'
+export type OkrTreeEventName =
+  'node-click' | 'node-expand' | 'node-collapse' | 'node-contextmenu' | 'check' | 'check-change'
 
 /** OkrTree 通过 provide 向递归节点组件提供的上下文（替代原 $parent.isTree 探测与 okrEventBus） */
 export interface OkrTreeContext {

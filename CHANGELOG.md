@@ -2,6 +2,19 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## 1.9.0
+
+### 新增
+
+- **复选框选择模式（2.x #14）**：`show-checkbox` / `check-strictly` / `default-checked-keys` 三 prop + `check` / `check-change` 两事件 + `getCheckedKeys` / `getCheckedNodes` / `setCheckedKeys` / `getHalfCheckedKeys` / `getHalfCheckedNodes` / `isChecked` 六方法。交互与 el-tree 习惯一致——
+  - 勾选父节点向下联动全部后代（**含 disabled 节点**，disabled 仅阻止直接点击）、祖先按子树重算全选/半选；「全部子节点选中 ⇒ 父选中」，唯一子链选中会让父节点直接全选；
+  - `check-strictly` 关闭联动，勾选只作用于自身；`default-checked-keys` 创建期生效（需 node-key），运行时变更先清空再应用，data 重建后不恢复；
+  - `check` 只在点击复选框时触发（携带全量勾选信息）；`check-change` 在每个状态变化的节点各触发一次（联动、批量 setCheckedKeys、增删子节点级联均覆盖）；
+  - 键盘：Space 切换勾选、Enter 选中（`show-checkbox` 开启时）；treeitem 输出 `aria-checked`（half → `mixed`）；
+  - OKR 模式：左右两树勾选**独立维护**（点击只作用于所在树），`setCheckedKeys` / `getCheckedKeys` 等按 key 对左右同时生效 / 合并去重（与 `setCurrentNodeKey` 的既有语义一致）；
+  - 样式复用既有 `--okr-*` 变量（边框 `--okr-line-color`、填充 `--okr-current-bg` 等），六套主题与自定义主题零配置适配；勾选状态在增删子节点、懒加载、`updateChildren` 增量重建后自动重算祖先。
+- Demo / 文档站新增「复选框」交互用例（check-strictly 切换、事件日志、方法演示）；API 表（`shared/api.ts`）补 Attributes 3 行、Events 2 行、Methods 6 行。
+
 ## 1.8.0
 
 ### 新增

@@ -17,6 +17,7 @@ export type {
   NodeBtnContentFunction,
   RenderContentFunction,
   ScrollToNodeOptions,
+  TreeCheckInfo,
   TreeDirection,
   TreeKey,
   TreeLoadFunction,

@@ -651,6 +651,62 @@
   outline-offset: 2px;
 }
 
+/* ======================= 复选框（show-checkbox，Vue 3 版内建） ======================= */
+/*
+ * 节点内容前的复选框，渲染在 .org-chart-node-label-inner 内部（随卡片内边距布局）。
+ * 配色复用既有变量，主题无需额外声明：
+ *   边框 --okr-line-color / 底色 --okr-node-bg / 勾选填充 --okr-current-bg /
+ *   对勾与横杠 --okr-current-color / 禁用 --okr-disabled-opacity
+ */
+.org-chart-container .org-chart-node-checkbox {
+  display: inline-block;
+  vertical-align: -2px;
+  position: relative;
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  border: 1px solid var(--okr-line-color, #c0c4cc);
+  border-radius: 2px;
+  background: var(--okr-node-bg, #fff);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.org-chart-container .org-chart-node-checkbox::after {
+  content: '';
+  position: absolute;
+  display: none;
+}
+.org-chart-container .org-chart-node-checkbox.is-checked,
+.org-chart-container .org-chart-node-checkbox.is-indeterminate {
+  border-color: var(--okr-current-bg, #3370ff);
+}
+.org-chart-container .org-chart-node-checkbox.is-checked {
+  background: var(--okr-current-bg, #3370ff);
+}
+.org-chart-container .org-chart-node-checkbox.is-checked::after {
+  display: block;
+  left: 4px;
+  top: 1px;
+  width: 3px;
+  height: 7px;
+  border: solid var(--okr-current-color, #fff);
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+}
+.org-chart-container .org-chart-node-checkbox.is-indeterminate::after {
+  display: block;
+  left: 2px;
+  top: 5px;
+  width: 8px;
+  height: 0;
+  border-top: 2px solid var(--okr-current-bg, #3370ff);
+}
+.org-chart-container .org-chart-node-checkbox.is-disabled {
+  opacity: var(--okr-disabled-opacity, 0.6);
+  cursor: not-allowed;
+}
+
 /* ======================= 内置主题 ======================= */
 /*
  * theme prop 会在组件根容器（或任意祖先元素）加 okr-theme-{name} 类。

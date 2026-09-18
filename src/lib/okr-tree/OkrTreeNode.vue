@@ -10,6 +10,7 @@
     :aria-level="node.level"
     :aria-selected="node.isCurrent ? 'true' : 'false'"
     :aria-expanded="ariaExpanded"
+    :aria-checked="ariaChecked"
     :aria-disabled="node.disabled ? 'true' : undefined"
     :aria-setsize="ariaSet?.size"
     :aria-posinset="ariaSet?.pos"
@@ -79,6 +80,17 @@
         :style="computeLabelStyle"
         @click="handleNodeClick"
       >
+        <span
+          v-if="store.showCheckbox"
+          class="org-chart-node-checkbox"
+          :class="{
+            'is-checked': node.checked,
+            'is-indeterminate': node.indeterminate && !node.checked,
+            'is-disabled': node.disabled,
+          }"
+          aria-hidden="true"
+          @click.stop="handleCheckToggle"
+        />
         <NodeContent
           :node="node"
           :has-user-slot="!!$slots.default"
@@ -443,6 +455,13 @@ const ariaExpanded = computed(() => {
   return rightOpen && leftOpen ? 'true' : 'false'
 })
 
+/** 复选框模式下的 treeitem 勾选语义（half → mixed）；未开启 show-checkbox 时不输出 */
+const ariaChecked = computed(() => {
+  if (!store.showCheckbox) return undefined
+  if (node.value.indeterminate && !node.value.checked) return 'mixed'
+  return node.value.checked ? 'true' : 'false'
+})
+
 /**
  * aria-setsize / aria-posinset：按父节点子列表里可见的兄弟节点给出 1-based 序号，
  * 被 filter 隐藏的兄弟不计入（否则读屏会播报不存在的项）。左右子树各自成组。
@@ -499,9 +518,14 @@ function handleKeydown(event: KeyboardEvent) {
   if (event.target !== rootEl.value) return
   switch (event.key) {
     case 'Enter':
-    case ' ':
       event.preventDefault()
       handleNodeClick()
+      break
+    case ' ':
+      event.preventDefault()
+      // 复选框模式下空格 = 勾选/取消勾选；否则与 Enter 一致为选中
+      if (store.showCheckbox) handleCheckToggle()
+      else handleNodeClick()
       break
     case 'ArrowDown':
       event.preventDefault()
@@ -548,6 +572,28 @@ function handleNodeClick() {
   }
   tree!.emit('node-click', node.value.data, node.value, instance?.proxy)
 }
+
+/** 复选框点击 / 空格键：切换勾选并触发 check 事件（携带当前全量勾选信息） */
+function handleCheckToggle() {
+  if (!store.showCheckbox || node.value.disabled) return
+  node.value.setChecked(!node.value.checked, !store.checkStrictly)
+  tree!.emit('check', node.value.data, {
+    checkedNodes: store.getCheckedNodes().map((n) => n.data),
+    checkedKeys: store.getCheckedKeys(),
+    halfCheckedNodes: store.getHalfCheckedNodes(),
+    halfCheckedKeys: store.getHalfCheckedKeys(),
+  })
+}
+
+// check-change：勾选状态变化的每个节点各触发一次（含 setCheckedKeys 等批量变更、增删子节点引发的级联）
+watch(
+  () => [node.value.checked, node.value.indeterminate] as const,
+  ([checked, indeterminate], [prevChecked, prevIndeterminate]) => {
+    if (!store.showCheckbox) return
+    if (checked === prevChecked && indeterminate === prevIndeterminate) return
+    tree!.emit('check-change', node.value.data, checked, indeterminate)
+  }
+)
 
 function handleBtnClick(side: 'left' | 'right') {
   const isLeft = side === 'left'

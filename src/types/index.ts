@@ -81,6 +81,14 @@ export interface ScrollToNodeOptions extends ScrollIntoViewOptions {
   expand?: boolean
 }
 
+/** check 事件的信息对象（对齐 el-tree） */
+export interface TreeCheckInfo {
+  checkedNodes: TreeNodeData[]
+  checkedKeys: TreeKey[]
+  halfCheckedNodes: TreeNode[]
+  halfCheckedKeys: TreeKey[]
+}
+
 export type { TreeNode }
 
 /** createTypedOkrTree<T> 返回组件的插槽类型：作用域中的 data 为 T */

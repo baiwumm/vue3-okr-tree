@@ -46,6 +46,10 @@ export class TreeNode {
   leftExpanded = false
   isCurrent = false
   visible = true
+  /** 复选框（show-checkbox）：选中态；父子节点是否联动由 store.checkStrictly 决定 */
+  checked = false
+  /** 复选框（show-checkbox）：半选态（有子树部分选中），由子节点重算得出 */
+  indeterminate = false
   parent: TreeNode | null = null
   level = 0
   isLeaf = false
@@ -199,6 +203,8 @@ export class TreeNode {
     // 与 setData 一致：重建后按源数据是否带 children 刷新懒加载状态
     this.loaded = !store.lazy || newData.length > 0
     this.updateLeafState()
+    // 复用的节点保留勾选态、新节点默认未勾选，按子树重算自身与祖先的全选 / 半选
+    this.refreshCheckedUpward()
   }
 
   get key(): TreeKey | undefined {
@@ -254,6 +260,8 @@ export class TreeNode {
       this.childNodes.splice(index, 0, node)
     }
     this.updateLeafState()
+    // 新子节点默认未勾选，可能改变自身的全选 / 半选（进而影响祖先）
+    this.refreshCheckedUpward()
   }
 
   getChildren(forceInit = false): any[] | null {
@@ -302,6 +310,49 @@ export class TreeNode {
   /** 节点的收起 */
   collapse() {
     this.expanded = false
+  }
+
+  /**
+   * 复选框选中：checkStrictly 下只改自身；否则 deep（默认）时向下联动全部后代
+   * （含 disabled 节点，与 el-tree 一致——disabled 仅阻止直接点击），并向上重算祖先的
+   * 选中 / 半选态。indeterminate 只能由 refreshCheckedUpward 从子节点推导，不直接置位。
+   */
+  setChecked(value: boolean, deep = !this.store.checkStrictly) {
+    if (this.store.checkStrictly) {
+      this.checked = value
+      this.indeterminate = false
+      return
+    }
+    this.checked = value
+    this.indeterminate = false
+    if (deep) {
+      const walk = (node: TreeNode) => {
+        node.checked = value
+        node.indeterminate = false
+        node.childNodes.forEach(walk)
+      }
+      this.childNodes.forEach(walk)
+    }
+    this.parent?.refreshCheckedUpward()
+  }
+
+  /**
+   * 由子节点重算自身选中 / 半选，并继续向上重算全部祖先（checkStrictly 下不联动）。
+   * 勾选联动、增删子节点、懒加载完成后共用。
+   */
+  refreshCheckedUpward() {
+    if (this.store.checkStrictly) return
+    let node: TreeNode | null = this
+    while (node && node.level > 0) {
+      const children = node.childNodes
+      if (children.length > 0) {
+        const all = children.every((c) => c.checked)
+        const some = children.some((c) => c.checked || c.indeterminate)
+        node.checked = all
+        node.indeterminate = !all && some
+      }
+      node = node.parent
+    }
   }
 
   /**
@@ -408,6 +459,7 @@ export class TreeNode {
     }
 
     this.updateLeafState()
+    this.refreshCheckedUpward()
   }
 
   insertBefore(child: TreeNodeOptions | TreeNode, ref?: TreeNode) {

@@ -76,6 +76,7 @@ import type {
   NodeBtnContentFunction,
   RenderContentFunction,
   ScrollToNodeOptions,
+  TreeCheckInfo,
   TreeDirection,
   TreeKey,
   TreeLoadFunction,
@@ -106,6 +107,20 @@ const props = defineProps({
    * 叶子节点不切换；仍会设置选中态并触发 node-click。OKR 模式根节点点击内容只切换右侧子树。
    */
   expandOnClickNode: { type: Boolean, default: false },
+  /**
+   * 复选框选择模式（Vue 3 版新增）：节点内容前渲染复选框，父子联动半选态。
+   * 事件 check / check-change，方法 getCheckedKeys / setCheckedKeys / getHalfCheckedKeys / isChecked。
+   * OKR 模式左右两树的勾选各自独立维护（点击只作用于所在树），方法按 key 对左右同时生效
+   * （与 setCurrentNodeKey 的既有语义一致）。
+   */
+  showCheckbox: { type: Boolean, default: false },
+  /** 复选框父子不联动（Vue 3 版新增）：勾选只作用于自身，无半选传播 */
+  checkStrictly: { type: Boolean, default: false },
+  /**
+   * 初始勾选的节点 key 数组（Vue 3 版新增，需 node-key，创建期生效）。
+   * 运行时变更会先清空再按新列表重新应用；data 重建后不恢复（与 default-expanded-keys 一致）。
+   */
+  defaultCheckedKeys: { type: Array as PropType<TreeKey[]>, default: undefined },
   /** 飞书 OKR 模式：子树在根节点左右两侧展开 */
   onlyBothTree: { type: Boolean, default: false },
   /** 树节点的内容区的渲染 Function (h, node) */
@@ -204,6 +219,8 @@ const emit = defineEmits<{
   ): void
   (e: 'update:expandedKeys', keys: TreeKey[]): void
   (e: 'update:currentKey', key: TreeKey | null): void
+  (e: 'check', data: TreeNodeData, checkInfo: TreeCheckInfo): void
+  (e: 'check-change', data: TreeNodeData, checked: boolean, indeterminate: boolean): void
 }>()
 
 defineSlots<{
@@ -238,6 +255,9 @@ if (!props.nodeKey) {
   if (props.currentKey !== undefined || props.currentNodeKey !== undefined) {
     warn('current-key / current-node-key 需要同时设置 node-key，否则不会生效。')
   }
+  if (props.defaultCheckedKeys) {
+    warn('default-checked-keys 需要同时设置 node-key，否则不会生效。')
+  }
 }
 if (props.lazy && !props.load) {
   warn('lazy 需要同时提供 load 函数，否则未加载节点无法展开。')
@@ -268,6 +288,9 @@ const rawStore = new TreeStore({
   showCollapsable: props.showCollapsable,
   accordion: props.accordion,
   expandOnClickNode: props.expandOnClickNode,
+  showCheckbox: props.showCheckbox,
+  checkStrictly: props.checkStrictly,
+  defaultCheckedKeys: props.defaultCheckedKeys,
   currentNodeKey: props.currentNodeKey,
   defaultExpandAll: props.defaultExpandAll,
   filterNodeMethod: props.filterNodeMethod,
@@ -463,6 +486,21 @@ watch(
   () => props.expandOnClickNode,
   (v) => (store.expandOnClickNode = v)
 )
+// showCheckbox：控制复选框显隐（已有勾选状态保留，重新开启时恢复显示）
+watch(
+  () => props.showCheckbox,
+  (v) => (store.showCheckbox = v)
+)
+// checkStrictly：切换后新交互按新联动模式执行，已有勾选状态不变
+watch(
+  () => props.checkStrictly,
+  (v) => (store.checkStrictly = v)
+)
+// default-checked-keys：以新列表为准（先清空再应用）
+watch(
+  () => props.defaultCheckedKeys,
+  (v) => store.setDefaultCheckedKeys(v)
+)
 // defaultExpandAll：同步到 store，影响后续新建（重建）的节点；不追溯改变现有展开态
 watch(
   () => props.defaultExpandAll,
@@ -657,6 +695,37 @@ function collapseNode(data: TreeNode | TreeKey | TreeNodeData) {
   return node
 }
 
+// ---- 复选框选择模式（show-checkbox）----
+/** 获取勾选节点实例列表（左右两树）；leafOnly 为 true 时只计叶子 */
+function getCheckedNodes(leafOnly = false) {
+  return store.getCheckedNodes(leafOnly)
+}
+
+/** 获取勾选节点 key 列表（需 node-key；左右两树合并去重）；leafOnly 为 true 时只计叶子 */
+function getCheckedKeys(leafOnly = false): TreeKey[] {
+  return store.getCheckedKeys(leafOnly)
+}
+
+/** 获取半选节点实例列表（子树部分选中的父节点） */
+function getHalfCheckedNodes() {
+  return store.getHalfCheckedNodes()
+}
+
+/** 获取半选节点 key 列表（需 node-key；左右两树合并去重） */
+function getHalfCheckedKeys(): TreeKey[] {
+  return store.getHalfCheckedKeys()
+}
+
+/** 以 key 列表整体设置勾选态（需 node-key；非 checkStrictly 时与点击语义一致，带父子联动） */
+function setCheckedKeys(keys: TreeKey[] | null | undefined, leafOnly = false) {
+  store.setCheckedKeys(keys, leafOnly)
+}
+
+/** 节点（Node / key / data）当前是否被勾选；未找到时为 false */
+function isChecked(data: TreeNode | TreeKey | TreeNodeData): boolean {
+  return store.isChecked(data)
+}
+
 /**
  * 滚动到指定节点：默认先展开其全部祖先使其可见，再 scrollIntoView（居中、平滑）。
  * 返回是否找到节点并完成滚动。
@@ -724,6 +793,12 @@ defineExpose({
   expandNode,
   collapseNode,
   scrollToNode,
+  getCheckedNodes,
+  getCheckedKeys,
+  getHalfCheckedNodes,
+  getHalfCheckedKeys,
+  setCheckedKeys,
+  isChecked,
 })
 </script>
 
