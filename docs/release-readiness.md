@@ -24,22 +24,22 @@
 
 ## 二、发包门禁逐项状态
 
-| 门禁项 | 状态 | 说明 |
-| ---- | ---- | ---- |
-| lint | ✅ 通过 | ESLint 0 错误 |
-| typecheck | ✅ 通过 | vue-tsc --noEmit 0 错误 |
-| test | ✅ 通过 | **161 tests**（14 spec 文件）全绿 |
-| build | ✅ 通过 | ESM/CJS/UMD + style.css + index.d.ts + index.d.cts |
-| verify:dist | ✅ 通过 | dist 产物 jsdom 挂载冒烟（含 d.cts 一致性检查） |
-| test:coverage | ✅ 通过 | statements ≈90%，阈值 statements/functions/lines ≥80%、branches ≥75% |
-| verify:package | ✅ 通过 | publint「No problems found」+ attw 全绿（排除两个 CSS 子路径） |
-| size（size-limit） | ✅ 通过 | es 17.1/19 kB、style 3.16/3.6 kB、umd 17.23/19.5 kB gzip |
-| test:visual | ✅ 通过 | 14 快照用例 + 浏览器性能用例（本机连续两轮全绿） |
-| docs:build | ✅ 通过 | VitePress 构建成功 |
-| npm pack 产物核对 | ⬜ 未验证 | 待：pack 产物仅含 dist + README/LICENSE/CHANGELOG，无内部目录泄漏 |
-| tarball 四路径冒烟 | ⬜ 未验证 | 待：临时 Vite 项目装 tarball，验 ESM / CJS / style.css / vue-tsc 四条路径 |
+| 门禁项               | 状态      | 说明                                                                                                                |
+| -------------------- | --------- | ------------------------------------------------------------------------------------------------------------------- |
+| lint                 | ✅ 通过   | ESLint 0 错误                                                                                                       |
+| typecheck            | ✅ 通过   | vue-tsc --noEmit 0 错误                                                                                             |
+| test                 | ✅ 通过   | **161 tests**（14 spec 文件）全绿                                                                                   |
+| build                | ✅ 通过   | ESM/CJS/UMD + style.css + index.d.ts + index.d.cts                                                                  |
+| verify:dist          | ✅ 通过   | dist 产物 jsdom 挂载冒烟（含 d.cts 一致性检查）                                                                     |
+| test:coverage        | ✅ 通过   | statements ≈90%，阈值 statements/functions/lines ≥80%、branches ≥75%                                                |
+| verify:package       | ✅ 通过   | publint「No problems found」+ attw 全绿（排除两个 CSS 子路径）                                                      |
+| size（size-limit）   | ✅ 通过   | es 17.1/19 kB、style 3.16/3.6 kB、umd 17.23/19.5 kB gzip                                                            |
+| test:visual          | ✅ 通过   | 14 快照用例 + 浏览器性能用例（本机连续两轮全绿）                                                                    |
+| docs:build           | ✅ 通过   | VitePress 构建成功                                                                                                  |
+| npm pack 产物核对    | ⬜ 未验证 | 待：pack 产物仅含 dist + README/LICENSE/CHANGELOG，无内部目录泄漏                                                   |
+| tarball 四路径冒烟   | ⬜ 未验证 | 待：临时 Vite 项目装 tarball，验 ESM / CJS / style.css / vue-tsc 四条路径                                           |
 | 浏览器 Demo 截图终验 | ⬜ 未验证 | 待：preview 页面对三方向/OKR/主题/懒加载/画布截图确认交互与无控制台报错（视觉回归已覆盖大部分，缺控制台报错检查项） |
-| npm 线上验证 | ⬜ 不可行 | 真实发布由维护者执行后验证（npm 页面、CDN 路径） |
+| npm 线上验证         | ⬜ 不可行 | 真实发布由维护者执行后验证（npm 页面、CDN 路径）                                                                    |
 
 > 注：本报告中的 ✅ 均为本地实跑结果；正式发布前建议完整重跑一轮「二」中全部 ✅ 项。
 
@@ -47,11 +47,14 @@
 
 1. **门禁终验三项**（见上表 ⬜）：`npm pack` 产物核对、tarball 四路径冒烟、浏览器 Demo 截图终验（含控制台无报错断言）。
 2. **维护者手动步骤**（无法代办）：
-   - GitHub 仓库 Settings → Pages → Source 选「GitHub Actions」（启用文档站部署）；
-   - Secrets 添加 `NPM_TOKEN`（npm Automation token）；
-   - 推送代码后确认 CI / visual / docs 三条 workflow 通过；
+   - Cloudflare：按 [docs-site/README.md](../docs-site/README.md) 把仓库绑定到 Pages/Workers（构建命令与输出目录见该文档）；
+   - GitHub 仓库 Secrets 添加 `NPM_TOKEN`（npm Automation token）；
+   - 提供最终文档站域名后，替换 README 中两处 `<!--DOCS-URL-->` 占位（搜索 `TODO(deploy)`）；
+   - 推送代码后确认 CI / visual 两条 workflow 通过；
    - `git tag v1.6.0 && git push origin v1.6.0` 触发 release.yml 完成真实 `npm publish --provenance`；
    - 发布后空 Vite 项目 `pnpm add vue3-okr-tree` 线上验证 ESM / CJS / CDN 三路径。
+
+> ⚠️ 2026-09-18 卡点：文档站最终域名未定（改部署到 Cloudflare）。README 顶部与「开发」一节的文档站链接暂以 `<!--DOCS-URL-->` 占位，域名确定后全局替换；不影响发包门禁。
 
 ## 四、结论
 

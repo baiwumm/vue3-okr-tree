@@ -25,7 +25,7 @@
   "bugs": {
     "url": "https://github.com/baiwumm/vue3-okr-tree/issues"
   },
-  "homepage": "https://baiwumm.github.io/vue3-okr-tree/",
+  "homepage": "https://github.com/baiwumm/vue3-okr-tree#readme",
   "files": [
     "dist",
     "README.md",
@@ -79,7 +79,8 @@
     "docs:dev": "vitepress dev docs-site",
     "docs:build": "vitepress build docs-site",
     "docs:preview": "vitepress preview docs-site",
-    "gen:readme": "node scripts/gen-readme-api.mjs"
+    "gen:readme": "node scripts/gen-readme-api.mjs",
+    "docs:build:full": "node scripts/build-docs-full.mjs"
   },
   "peerDependencies": {
     "vue": ">=3.0.0"

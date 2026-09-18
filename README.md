@@ -6,7 +6,9 @@
 [![codecov](https://codecov.io/gh/baiwumm/vue3-okr-tree/graph/badge.svg)](https://codecov.io/gh/baiwumm/vue3-okr-tree)
 [![license](https://img.shields.io/npm/l/vue3-okr-tree.svg)](./LICENSE)
 
-📚 **[在线文档站（开发中）](https://baiwumm.github.io/vue3-okr-tree/)** · [Playground 演示](https://baiwumm.github.io/vue3-okr-tree/playground/) · [更新日志](./CHANGELOG.md)
+<!-- TODO(deploy): 文档站将部署到 Cloudflare，域名确定后统一替换下面两处占位链接（含「开发」一节），参见 docs-site/README.md -->
+
+📚 **[在线文档站](!--DOCS-URL--)**（部署到 Cloudflare，域名待定） · [Playground 演示](<!--DOCS-URL-->/playground/) · [更新日志](./CHANGELOG.md)
 
 基于 Vue 3 的组织架构树 / OKR 树组件，是 [vue-okr-tree](https://github.com/qq449245884/vue-okr-tree)（Vue 2）的 Vue 3 完整复刻版。特色是支持类似飞书 OKR 的**根节点左右双向展开**布局，全部连接线由纯 CSS 绘制。
 
@@ -517,7 +519,7 @@ API 名称与语义完全对齐，直接把 `import { VueOkrTree } from 'vue-okr
 
 ## 开发
 
-在线文档站：<https://baiwumm.github.io/vue3-okr-tree/>（源码在 [docs-site/](./docs-site/)，`pnpm docs:dev` 本地开发，push 到 main 后由 GitHub Actions 自动部署）。后续优化计划见 [docs/roadmap.md](./docs/roadmap.md)（可勾选清单），需求与决策见 [docs/requirements.md](./docs/requirements.md)。
+在线文档站：<!--DOCS-URL-->（源码在 [docs-site/](./docs-site/)，`pnpm docs:dev` 本地开发；部署到 Cloudflare Pages/Workers，见 [docs-site/README.md](./docs-site/README.md)，`pnpm docs:build:full` 完整构建）。后续优化计划见 [docs/roadmap.md](./docs/roadmap.md)（可勾选清单），需求与决策见 [docs/requirements.md](./docs/requirements.md)。
 
 ```bash
 pnpm install
