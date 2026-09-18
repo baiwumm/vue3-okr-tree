@@ -2,6 +2,25 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## 1.5.0
+
+### 新增
+
+- **VitePress 文档站**（`docs-site/`）：按「指南 / 主题 / API / 迁移 / 更新日志」组织，20+ 用例直接复用 Playground 组件源码可交互；`pnpm docs:dev` / `docs:build`，push main 后自动部署到 GitHub Pages（Playground 同步发布到 `/playground/` 子路径）。API 表单一来源化：`shared/api.ts` 同时驱动 Playground 表格、文档站与 README（`pnpm gen:readme` 生成）。
+- **性能基线**（详见 `docs/perf.md`）：2000 节点基准脚本（`pnpm bench`，jsdom）与浏览器实测（Playwright，首渲染 ≈ 137ms，达标 < 300ms）；`updateChildren` 逐层脏检查——原地变更只重建受影响路径，未受影响节点实例保持复用；**`deep-watch: false`** prop（创建期生效）关闭深度侦听、只响应 `data` 引用变化。
+- **工程化**：vitest 覆盖率阈值（statements/lines/functions ≥ 80%）；size-limit 体积预算（es 19kB / style 3.6kB / umd 19.5kB gzip，超限 CI 失败）；publint + attw 包体检（`pnpm verify:package`，双 🌟 零错误）；Renovate 自动依赖更新；CJS 类型修复（新增 `dist/index.d.cts`，require 条件不再 "Masquerading as ESM"）。
+- **发布流程**：`release.yml`——推送 `v*` tag 自动校验版本、跑全部门禁、`npm publish --provenance` 并创建 GitHub Release；`publishConfig.access: public`。
+- **Playwright 视觉回归**（`tests/visual/`，独立 `visual.yml` workflow，失败上传 diff）：三模式、OKR 对齐（含 OkrTreeGroup 实况 Demo）、六套主题、动画落定态、懒加载、画布缩放共 14 个快照用例。
+
+### 修复
+
+- CJS require 的类型解析：`exports["."].require` 指向 `index.d.cts`（此前与 ESM 共用 `index.d.ts`，被 attw 判为类型格式不符）。
+
+### 变更
+
+- Playground 样式拆分：`style-base.css`（全局 reset，仅 Playground）与 `style.css`（类作用域，文档站复用）。
+- 开发依赖新增：vitepress、@playwright/test、@vitest/coverage-v8、size-limit、@size-limit/file、publint、@arethetypeswrong/cli、html-to-image（Demo 导出用例用；库本体保持零运行时依赖）。
+
 ## 1.4.0
 
 ### 新增

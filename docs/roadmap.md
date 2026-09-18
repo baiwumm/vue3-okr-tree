@@ -14,7 +14,7 @@
 | 1.2.0 | 受控状态、扩展方法、插槽、开发期警告、CI                  | ✅              |
 | 1.3.0 | OkrTreeGroup 根对齐、键盘可访问性、node-component、类型化 | ✅              |
 | 1.4.0 | 懒加载 + 画布组件                                         | ✅              |
-| 1.5.0 | 文档站 + 发布流程                                         | ⬜ 待开始       |
+| 1.5.0 | 文档站 + 发布流程                                         | ✅ 发布待维护者 |
 | 1.6.0 | 健壮性与运行时行为补齐                                    | ⬜ 待开始       |
 | 2.x   | 拖拽、SVG 连接线、复选框、虚拟滚动、更多布局              | ⬜ 视需求       |
 
@@ -53,40 +53,41 @@
 
 ### 3. VitePress 文档站 + GitHub Pages（M）
 
-- [ ] `docs-site/`（或迁移 `playground/`）：VitePress，页面按「指南 / 主题 / API / 迁移 / 更新日志」组织，Demo 用例以组件形式嵌入
-- [ ] 保留现有 playground 作为开发调试入口（`pnpm dev`），文档站单独 `pnpm docs:dev` / `pnpm docs:build`
-- [ ] GitHub Actions：`main` 推送后构建并部署到 `gh-pages`
-- [ ] README 顶部加文档站链接与徽章（npm 版本、CI 状态）
+- [x] `docs-site/`（或迁移 `playground/`）：VitePress，页面按「指南 / 主题 / API / 迁移 / 更新日志」组织，Demo 用例以组件形式嵌入
+- [x] 保留现有 playground 作为开发调试入口（`pnpm dev`），文档站单独 `pnpm docs:dev` / `pnpm docs:build`
+- [x] GitHub Actions：`main` 推送后构建并部署到 `gh-pages`
+- [x] README 顶部加文档站链接与徽章（npm 版本、CI 状态）
 - **验收**：仓库 Pages 地址可访问，20+ 用例可交互，API 表与 README 单一来源（避免三处维护）。
 
 ### 4. 发布流程（S）
 
-- [ ] 引入 `changesets`（或简化为 `release` workflow：打 tag → 构建 → `npm publish --provenance`）
-- [ ] `package.json` 核对：`repository` / `homepage` / `bugs` / `author` / `keywords`；`publishConfig.access: public`
+- [x] 引入 `changesets`（或简化为 `release` workflow：打 tag → 构建 → `npm publish --provenance`）
+- [x] `package.json` 核对：`repository` / `homepage` / `bugs` / `author` / `keywords`；`publishConfig.access: public`
 - [ ] 首次 `npm publish`（此前仅做过 `--dry-run`）
 - [ ] 发布后用一个空 Vite 项目 `pnpm add vue3-okr-tree` 验证：ESM import、`require`、CDN `<script>` 三条路径
 - **验收**：npm 页面可见 1.x，安装后类型提示与样式正常。
+  > ⏸ 2026-09-18 中断进度：release workflow（tag → 校验 → `npm publish --provenance` → GitHub Release）与 package.json（repository/homepage/bugs/keywords/publishConfig.access）已就绪；发布前四条路径已用 `npm pack` tarball 在空 Vite 项目中本地验证（见 docs/release-readiness.md）｜剩余：维护者配置 NPM_TOKEN 后 push tag 由用户手动执行真实发布，及发布后 npm 线上验证（含 CDN 路径）。
 
 ### 5. 视觉回归测试（M）
 
-- [ ] Playwright（真实浏览器，绕开自动化窗格 rAF 节流问题）对 Demo 关键用例截图比对：三模式、OKR 对齐、六套主题、动画落定态
-- [ ] CI 中作为独立 job，失败时上传 diff 图
+- [x] Playwright（真实浏览器，绕开自动化窗格 rAF 节流问题）对 Demo 关键用例截图比对：三模式、OKR 对齐、六套主题、动画落定态
+- [x] CI 中作为独立 job，失败时上传 diff 图
 - **验收**：改 CSS 变量/连接线时 CI 能抓到像素级回归。
 
 ### 6. 性能基线（S）
 
-- [ ] 用 2000 节点数据做 benchmark（首渲染、展开/收起、`filter`、原地 `push`）；记录到 `docs/perf.md`
-- [ ] 评估 `data` deep watch 成本，提供 `deep-watch: false` 开关（只响应引用变化，回到原版行为）
-- [ ] `computeLabelClass` 等每节点 computed 的开销核对
-- [ ] `updateChildren` 增量重建目前按 key diff 全树递归，大数据量原地变更时引入脏标记、只重建受影响路径
+- [x] 用 2000 节点数据做 benchmark（首渲染、展开/收起、`filter`、原地 `push`）；记录到 `docs/perf.md`
+- [x] 评估 `data` deep watch 成本，提供 `deep-watch: false` 开关（只响应引用变化，回到原版行为）
+- [x] `computeLabelClass` 等每节点 computed 的开销核对
+- [x] `updateChildren` 增量重建目前按 key diff 全树递归，大数据量原地变更时引入脏标记、只重建受影响路径
 - **验收**：2000 节点首渲染 < 300ms（开发机），提供可复现脚本。
 
 ### 7. 工程化补齐（S）
 
-- [ ] 测试覆盖率：`@vitest/coverage-v8`，CI 输出覆盖率并设初始阈值（如 statements 80%），README 加 badge
-- [ ] dist 体积预算：`size-limit`（按当前 gzip 体积 +10% 设阈值），超限 CI 失败，防止无意膨胀
-- [ ] 包发布体检：`publint` + `@arethetypeswrong/cli` 并入 `verify:dist` 或 CI，校验 exports 与类型解析
-- [ ] 依赖自动更新：Renovate（或 Dependabot）配置，minor/patch 分组自动合并
+- [x] 测试覆盖率：`@vitest/coverage-v8`，CI 输出覆盖率并设初始阈值（如 statements 80%），README 加 badge
+- [x] dist 体积预算：`size-limit`（按当前 gzip 体积 +10% 设阈值），超限 CI 失败，防止无意膨胀
+- [x] 包发布体检：`publint` + `@arethetypeswrong/cli` 并入 `verify:dist` 或 CI，校验 exports 与类型解析
+- [x] 依赖自动更新：Renovate（或 Dependabot）配置，minor/patch 分组自动合并
 - **验收**：CI 在 lint/test/build 之外额外输出覆盖率与体积检查，publint/attw 零错误。
 
 ---
