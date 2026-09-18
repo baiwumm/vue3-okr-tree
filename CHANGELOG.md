@@ -2,6 +2,26 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## 1.7.0
+
+### 新增
+
+- **`prefers-reduced-motion` 支持**：系统开启「减弱动态效果」时，展开/收起过渡与 `scrollToNode` 的平滑滚动自动关闭。不止是 CSS 媒体查询掐掉过渡——组件同时把 `animate` 视为关闭（撤掉撑容器高度的延迟），否则收起后会留下一段空白，做不到状态直切。
+- **`aria-setsize` / `aria-posinset`**：`role="treeitem"` 补齐在兄弟组内的序号与总数，按**可见**节点计数，被 `filter` 隐藏的项不再被读屏播报。
+- **未知 `theme` 值的开发期警告**：`theme` 允许任意自定义名字（用于挂用户自己的 `.okr-theme-{name}`），因此不收紧类型，只在名字不在内置六套清单时提示，避免拼错主题名时毫无视觉变化却找不到原因。内置清单收敛为 `BUILT_IN_THEMES`，`TreeTheme` 类型由它派生。
+- **品牌 Logo 与站点图标**：定稿 Logo，接入 README / 文档站（favicon、apple-touch-icon、`og:image` / `twitter:image`）与 Playground。
+- **`snapshot-bootstrap.yml`**：手动触发，在真实 runner 上生成 Linux 视觉基线（`*-chromium-linux.png`）并以 artifact 上传，供下载提交。
+
+### 修复
+
+- **`show-node-num` 过滤后计数错误**：数字此前直接取 `childNodes.length`，把被 `filter` 隐藏的节点也算进去，与展开后实际看到的子节点数不符；右侧按钮与 OKR 左树按钮一并改为只计可见子节点。
+- **main 上 CI 与视觉回归两条 workflow 长期红灯**：CI 的 Node 20 矩阵项在 `setup-node` 步骤崩溃（pnpm 11 依赖 `node:sqlite`，要求 Node ≥ 22.13）；视觉回归因仓库只有 win32 基线、Linux 缺失基线必判失败。矩阵改为 22 / 24 并加 `fail-fast: false`，视觉回归 runner 固定 `ubuntu-24.04`（`ubuntu-latest` 将于 2026-10-19 迁移 Ubuntu 26，届时系统字体变化会使基线集体失配）。
+
+### 变更
+
+- **`TreeNode.expand()` 去掉 `callback` 形参**：该回调是同步立即调用的，等价于调用方自己的下一行。签名为 `expand(expandParent?: boolean)`。`TreeNode` 虽有导出，但 README 与 API 表未收录该方法，常规用法不受影响。
+- 清理无调用方的死代码：`util.objectAssign`、`TreeNode.hasLeftChild()`。
+
 ## 1.6.0
 
 ### 新增

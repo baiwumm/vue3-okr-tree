@@ -1,6 +1,6 @@
 # 发包就绪报告（release-readiness）
 
-> 更新：2026-09-18（终验完成）｜ 当前版本：1.6.0（本地，未发布）｜ 状态：**✅ 代码侧已达到可发包标准，下一步即可 npm publish（维护者手动执行）**
+> 更新：2026-09-18（终验完成；1.7.0 增补 #13 低风险档 + Logo 接入，同日复跑门禁同样全绿）｜ 当前版本：1.7.0（本地，未发布；1.6.0 从未上线，首发即为 1.7.0）｜ 状态：**✅ 代码侧已达到可发包标准，下一步即可 npm publish（维护者手动执行）**
 
 ## 一、进度总览
 
@@ -49,7 +49,7 @@
 
 1. 推送仓库到 GitHub，确认 CI / visual 两条 workflow 绿灯；
 2. Cloudflare 绑定仓库部署文档站，绑定域名 **vue3-okr-tree.baiwumm.com**（README 与 package.json homepage 已写入该域名）；
-3. **npm 账号 2026-09-21 14:22（北京时间）解封后**：本地手动首发 1.6.0（`pnpm build` → `pnpm verify:package` → `npm publish`）；
+3. **npm 账号 2026-09-21 14:22（北京时间）解封后**：本地手动首发 1.7.0（`pnpm build` → `pnpm verify:package` → `npm publish`）；
 4. 创建 Granular Token（只圈定 vue3-okr-tree、勾 Bypass 2FA）→ GitHub Secrets 配置 `NPM_TOKEN`；
 5. 后续版本：改版本号 + CHANGELOG → `git tag vx.y.z && git push origin vx.y.z` → release.yml 自动发布（带 provenance）。
 
@@ -57,4 +57,4 @@
 
 ## 四、结论
 
-1.0.0–1.6.0 六个版本区块的全部代码条目已完成并逐条提交；全部门禁（含 npm pack 核对、tarball 四路径冒烟、浏览器终验）本地全绿；文档站域名已定并落地。**按 release-guide.md 走完手动步骤（push、Cloudflare、首发 1.6.0、NPM_TOKEN）后，后续版本即可由 tag 触发 release workflow 自动发布。**
+1.0.0–1.7.0 各版本区块的代码条目已完成并逐条提交；全部门禁（含 npm pack 核对、tarball 四路径冒烟、浏览器终验）本地全绿；文档站域名已定并落地、Logo 与站点图标已接入。**按 release-guide.md 走完手动步骤（push、Cloudflare、首发 1.7.0、NPM_TOKEN）后，后续版本即可由 tag 触发 release workflow 自动发布。**

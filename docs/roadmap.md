@@ -16,6 +16,7 @@
 | 1.4.0 | 懒加载 + 画布组件                                         | ✅              |
 | 1.5.0 | 文档站 + 发布流程                                         | ✅ 发布待维护者 |
 | 1.6.0 | 健壮性与运行时行为补齐                                    | ✅              |
+| 1.7.0 | 2.x #13 低风险档 + Logo 接入 + CI/视觉回归转绿修复        | ✅ 发布待维护者 |
 | 2.x   | 拖拽、SVG 连接线、复选框、虚拟滚动、更多布局              | ⬜ 视需求       |
 
 ---
@@ -144,12 +145,12 @@
 - [ ] `getVisibleNodes()` / `getNodePath(key)` 辅助方法
 - [ ] `node-key` 缺失时的默认 key 策略文档化（`$treeNodeId`）
 - [ ] SSR/Nuxt 冒烟（当前 setup 不访问 window，理论兼容；补一个 `renderToString` 测试）
-- [ ] `prefers-reduced-motion: reduce` 时禁用展开/收起过渡动画（`transition.css` 加媒体查询，动画关、状态直切）
-- [ ] `aria-setsize` / `aria-posinset` 补全 treeitem 语义
-- [ ] 过滤后 `show-node-num` 的计数应只统计可见子节点（当前 `node.childNodes.length` 包含被过滤隐藏的节点，左右按钮同）
-- [ ] 死代码清理：`util.objectAssign`、`TreeNode.hasLeftChild()` 无调用方；`TreeNode.expand(callback)` 的回调为同步即时调用，评估移除参数
+- [x] `prefers-reduced-motion: reduce` 时禁用展开/收起过渡动画（`transition.css` 加媒体查询，动画关、状态直切）
+- [x] `aria-setsize` / `aria-posinset` 补全 treeitem 语义
+- [x] 过滤后 `show-node-num` 的计数应只统计可见子节点（当前 `node.childNodes.length` 包含被过滤隐藏的节点，左右按钮同）
+- [x] 死代码清理：`util.objectAssign`、`TreeNode.hasLeftChild()` 无调用方；`TreeNode.expand(callback)` 的回调为同步即时调用，评估移除参数
 - [ ] `@media print` 打印样式（隐藏展开按钮与滚动阴影）或在文档站给出导出图片的替代方案
-- [ ] 未知 `theme` 值的开发期警告（不在内置六套列表时，提示需自行编写 `.okr-theme-{name}` 变量）
+- [x] 未知 `theme` 值的开发期警告（不在内置六套列表时，提示需自行编写 `.okr-theme-{name}` 变量）
 
 ### 14. 复选框选择模式（M–L）
 
@@ -179,13 +180,14 @@
 
 ## 完成记录
 
-| 日期       | 版本  | 内容                                                                                                        | Commit              |
-| ---------- | ----- | ----------------------------------------------------------------------------------------------------------- | ------------------- |
-| 2026-09-17 | 1.0.0 | 原版复刻、Q1–Q9 修复、Demo 20 用例、dist 三格式 + d.ts                                                      | `803ce65`           |
-| 2026-09-17 | 1.1.0 | CSS 变量化（23 个变量）、`theme` prop、六套主题、Demo 主题切换器                                            | `ea1df51`           |
-| 2026-09-17 | 1.2.0 | `v-model:expanded-keys/current-key`、expandAll 等 5 方法、`#expand-btn`/`#empty`、开发期警告、CI、CHANGELOG | `4874895`           |
-| 2026-09-17 | 1.3.0 | `OkrTreeGroup`、WAI-ARIA 键盘导航、`node-component`、`createTypedOkrTree<T>`                                | `115cd54`           |
-| 2026-09-18 | 1.4.0 | `lazy`/`load` 懒加载、`OkrTreeViewport` 画布（缩放/平移/导出）、`getNodeEl` 方法、Demo +2                   | `498e9cc` `3ea31cd` |
+| 日期       | 版本  | 内容                                                                                                                                                           | Commit              |
+| ---------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| 2026-09-17 | 1.0.0 | 原版复刻、Q1–Q9 修复、Demo 20 用例、dist 三格式 + d.ts                                                                                                         | `803ce65`           |
+| 2026-09-17 | 1.1.0 | CSS 变量化（23 个变量）、`theme` prop、六套主题、Demo 主题切换器                                                                                               | `ea1df51`           |
+| 2026-09-17 | 1.2.0 | `v-model:expanded-keys/current-key`、expandAll 等 5 方法、`#expand-btn`/`#empty`、开发期警告、CI、CHANGELOG                                                    | `4874895`           |
+| 2026-09-17 | 1.3.0 | `OkrTreeGroup`、WAI-ARIA 键盘导航、`node-component`、`createTypedOkrTree<T>`                                                                                   | `115cd54`           |
+| 2026-09-18 | 1.4.0 | `lazy`/`load` 懒加载、`OkrTreeViewport` 画布（缩放/平移/导出）、`getNodeEl` 方法、Demo +2                                                                      | `498e9cc` `3ea31cd` |
+| 2026-09-18 | 1.7.0 | #13 低风险档（reduced-motion 直切、`aria-setsize`/`aria-posinset`、`show-node-num` 只计可见、未知 `theme` 警告、死代码清理）、Logo 接入、CI 与视觉回归红灯修复 | `6830337` `698aec4` |
 
 ## 已决定不做
 

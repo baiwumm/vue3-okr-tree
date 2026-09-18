@@ -1,7 +1,7 @@
 # 发布操作手册（release-guide）
 
 > vue3-okr-tree 首发与后续版本的完整操作步骤。写给维护者本人照着执行。
-> 当前状态（2026-09-18）：1.6.0 已在本地 main 就绪，**npm 从未发布过此包**；
+> 当前状态（2026-09-18）：1.7.0 已在本地 main 就绪（1.6.0 从未发布过，1.7.0 是首个上线版本），**npm 从未发布过此包**；
 > npm 账号 `baiwumm` 因使用恢复码登录被临时冻结 72 小时，**2026-09-21 14:22（北京时间，UTC 06:22）自动解封**——冻结期间只读（不能发包 / 建 token / 改设置），解封前先做不依赖 npm 的步骤。
 
 ---
@@ -12,7 +12,7 @@
 | --- | ----------------------------------------- | -------------------------------------------------- |
 | 1   | 推送仓库到 GitHub                         | ❌ 现在就能做                                      |
 | 2   | Cloudflare 绑定 + 部署文档站 + 配置域名   | ❌ 现在就能做                                      |
-| 3   | 手动首发 npm 包 1.6.0                     | ✅ 需解封                                          |
+| 3   | 手动首发 npm 包 1.7.0                     | ✅ 需解封                                          |
 | 4   | 创建 Granular Token → 配置 GitHub Secrets | ✅ 需解封                                          |
 | 5   | npm 包页面关联 GitHub 仓库                | ✅ 需解封                                          |
 | 6   | 确认 CI workflow 通过                     | ❌（push 后自动跑）                                |
@@ -49,7 +49,7 @@ git push origin main        # 首次推送全部本地提交
 
 > 仓库里 `wrangler.jsonc` 已配置静态资产与 404 处理；README 中的文档站链接已写死该域名。
 
-## 3. 手动首发 npm 包 1.6.0（解封后）
+## 3. 手动首发 npm 包 1.7.0（解封后）
 
 ```bash
 # 仓库根目录（确认 git 状态干净、与远端一致）
@@ -59,9 +59,9 @@ npm login               # 若本地登录态还在可跳过
 npm publish             # 会提示输入 2FA 验证码；access: public 已在 package.json 配好
 ```
 
-验证：https://www.npmjs.com/package/vue3-okr-tree 出现 **1.6.0**；随便找个目录 `npm i vue3-okr-tree` 能装上。
+验证：https://www.npmjs.com/package/vue3-okr-tree 出现 **1.7.0**；随便找个目录 `npm i vue3-okr-tree` 能装上。
 
-> 注意：手动发的 1.6.0 不带 provenance 标志（只有 CI 发布能生成），从下一版本起走自动发布即有。
+> 注意：手动发的 1.7.0 不带 provenance 标志（只有 CI 发布能生成），从下一版本起走自动发布即有。
 
 ## 4. 创建 Token → 配置 GitHub Secrets
 
@@ -91,7 +91,7 @@ npm i vue3-okr-tree
 node -e "const l=require('vue3-okr-tree'); console.log(typeof l.VueOkrTree)"   # object
 ```
 
-再加一条 ESM 检查：`node --input-type=module -e "import('vue3-okr-tree').then(m=>console.log(typeof m.VueOkrTree))"`。页面确认 npm 徽章、README 渲染、1.6.0 版本号。
+再加一条 ESM 检查：`node --input-type=module -e "import('vue3-okr-tree').then(m=>console.log(typeof m.VueOkrTree))"`。页面确认 npm 徽章、README 渲染、1.7.0 版本号。
 
 ## 7. 后续版本发布（全自动流程）
 
@@ -114,10 +114,10 @@ node -e "const l=require('vue3-okr-tree'); console.log(typeof l.VueOkrTree)"   #
 ## 状态记录
 
 - [x] 域名确定：vue3-okr-tree.baiwumm.com（README / package.json homepage 已写入）
-- [x] 推送仓库（`main` 与 `origin/main` 已同步至 `cb38701`）
+- [x] 推送仓库（`main` 已推到 origin，含 1.7.0 全部提交；本地不再领先远端）
 - [x] Cloudflare 部署 + 域名绑定（`https://vue3-okr-tree.baiwumm.com/` 与 `/playground/`、`/api/`、`/theme/`、`/guide/*` 均 200；Workers Builds 在 `cb38701` success）
 - [x] CI 红灯根因修复（2026-09-18）：`ci.yml` 矩阵 Node 20 → 22/24（pnpm 11 需 `node:sqlite`，Node ≥ 22.5）、加 `fail-fast: false`；`visual.yml` runner 固定 `ubuntu-24.04`（`ubuntu-latest` 2026-10-19 迁移 Ubuntu 26 会使基线集体失配）；新增 `snapshot-bootstrap.yml`
 - [ ] Linux 视觉基线提交：Actions 手动跑一次 **Snapshot Bootstrap** → 下载 `linux-snapshots` artifact → 仓库根目录 `tar -xzf linux-snapshots.tgz` → 提交 `*-chromium-linux.png`，Visual Regression 即转绿
-- [ ] npm 首发手动 1.6.0（等 2026-09-21 解封）
+- [ ] npm 首发手动 1.7.0（等 2026-09-21 解封）
 - [ ] NPM_TOKEN 配置
 - [ ] 发布后验证
