@@ -1,0 +1,54 @@
+name: Visual Regression
+
+# 视觉回归（roadmap 1.5.0 #5）：独立 job，真实浏览器截图比对 Playground 关键用例。
+# 失败时上传 diff 图与报告，便于定位像素级回归（改 CSS 变量 / 连接线时捕捉）。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: visual-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  visual:
+    name: Playwright Visual · Perf
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build library
+        run: pnpm build
+
+      - name: Build playground against dist
+        run: PLAYGROUND_USE_DIST=1 pnpm build:playground
+
+      - name: Visual & perf tests
+        run: pnpm test:visual
+
+      - name: Upload diff & report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14

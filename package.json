@@ -73,7 +73,9 @@
     "bench": "node scripts/benchmark.mjs",
     "test:coverage": "vitest run --coverage",
     "verify:package": "publint && attw --pack . --exclude-entrypoints ./style.css ./dist/style.css",
-    "size": "size-limit"
+    "size": "size-limit",
+    "test:visual": "playwright test",
+    "test:visual:update": "playwright test --update-snapshots"
   },
   "peerDependencies": {
     "vue": ">=3.0.0"
@@ -82,6 +84,7 @@
     "@arethetypeswrong/cli": "^0.18.5",
     "@eslint/js": "^9.39.5",
     "@microsoft/api-extractor": "^7.59.1",
+    "@playwright/test": "^1.63.0",
     "@size-limit/file": "^14.0.0",
     "@types/node": "^24.13.5",
     "@types/prismjs": "^1.26.6",
