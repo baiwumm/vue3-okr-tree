@@ -33,7 +33,8 @@ export interface TreeStoreOptions {
   load?: TreeLoadFunction | null
 }
 
-const DEFAULT_PROPS: TreeOptionProps = {
+/** 字段映射默认值（导出供 OkrTree 运行时同步 props 合并使用） */
+export const DEFAULT_PROPS: Readonly<TreeOptionProps> = {
   children: 'children',
   label: 'label',
   disabled: 'disabled',

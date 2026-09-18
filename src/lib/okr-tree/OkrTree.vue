@@ -56,7 +56,7 @@ import {
   type PropType,
 } from 'vue'
 import OkrTreeNode from './OkrTreeNode.vue'
-import { TreeStore } from './model/tree-store'
+import { DEFAULT_PROPS, TreeStore } from './model/tree-store'
 import { getNodeKey as _getNodeKey, warn } from './model/util'
 import type { ViewportTreeApi } from './viewport'
 import {
@@ -419,6 +419,51 @@ watch(
   (v) => (store.animateDuration = v)
 )
 
+// ---- 运行时 props 同步策略（1.6.0）：要么生效、要么警告，不存在静默失效 ----
+// 可直接同步：showCollapsable（按钮显隐 + 影响后续新建节点的默认展开态）
+watch(
+  () => props.showCollapsable,
+  (v) => (store.showCollapsable = v)
+)
+// defaultExpandAll：同步到 store，影响后续新建（重建）的节点；不追溯改变现有展开态
+watch(
+  () => props.defaultExpandAll,
+  (v) => (store.defaultExpandAll = v)
+)
+// 字段映射：label / disabled 为动态读取本就即时生效；children 字段变更需要按新映射增量重建
+watch(
+  () => props.props,
+  (v) => {
+    store.props = { ...DEFAULT_PROPS, ...v }
+    store.setData(props.data)
+    if (props.nodeKey) {
+      if (isExpandedControlled()) store.setExpandedKeys(props.expandedKeys)
+      if (isCurrentControlled()) store.setCurrentNodeKey(props.currentKey)
+    }
+  },
+  { deep: true }
+)
+// 创建期快照 prop：运行时变更不受支持，输出开发期警告（需换 :key 重建实例）
+watch(
+  () => props.nodeKey,
+  (v) => {
+    if (v !== store.key) warn('nodeKey 运行时变更不会生效，请为组件绑定 :key 以重建实例。')
+  }
+)
+watch(
+  () => props.direction,
+  (v) => {
+    if (v !== store.direction) warn('direction 运行时变更不会生效，请为组件绑定 :key 以重建实例。')
+  }
+)
+watch(
+  () => props.onlyBothTree,
+  (v) => {
+    if (v !== store.onlyBothTree)
+      warn('onlyBothTree 运行时变更不会生效，请为组件绑定 :key 以重建实例。')
+  }
+)
+
 // ---- 数据变更 ----
 // deep watch：引用变化 → 重建；原地变更（用户 data 为响应式时）→ Node.updateChildren 增量更新（Q4）。
 // deep-watch: false 时只响应引用变化（1.5.0 性能开关，创建期生效）。
@@ -437,7 +482,14 @@ watch(
 watch(
   () => props.leftData,
   (newVal) => {
-    if (props.onlyBothTree) store.setLeftData(newVal)
+    if (props.onlyBothTree) {
+      store.setLeftData(newVal)
+      // 1.6.0：左树重建后同样按受控值恢复状态（此前只恢复右树）
+      if (props.nodeKey) {
+        if (isExpandedControlled()) store.setExpandedKeys(props.expandedKeys)
+        if (isCurrentControlled()) store.setCurrentNodeKey(props.currentKey)
+      }
+    }
   },
   { deep: props.deepWatch }
 )
