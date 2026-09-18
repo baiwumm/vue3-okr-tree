@@ -49,10 +49,16 @@ export class TreeNode {
   parent: TreeNode | null = null
   level = 0
   isLeaf = false
+  /** 懒加载：子节点是否已加载（非 lazy 模式恒为 true） */
+  loaded = false
+  /** 懒加载：load 进行中（并发触发展开只发起一次 load） */
+  loading = false
   childNodes: TreeNode[]
   leftChildNodes: TreeNode[]
   isLeftChild: boolean
   store!: TreeStore
+  /** 懒加载完成（成功或失败）后依次执行的回调 */
+  loadCallbacks: Array<(success: boolean) => void> = []
 
   constructor(options: TreeNodeOptions, isLeftChild = false) {
     this.isLeftChild = isLeftChild
@@ -115,6 +121,9 @@ export class TreeNode {
     for (let i = 0, j = children.length; i < j; i++) {
       this.insertChild({ data: children[i] }, null, null, isLeftChild)
     }
+    // 懒加载：初始构建时已带 children 的节点视为已加载；没有 children（或为空数组）的
+    // 节点视为未加载，首次展开时触发 load。非 lazy 模式全部视为已加载。
+    this.loaded = !this.store.lazy || children.length > 0
   }
 
   /**
@@ -175,6 +184,8 @@ export class TreeNode {
 
     const target = this.childNodes
     target.splice(0, target.length, ...next)
+    // 与 setData 一致：重建后按源数据是否带 children 刷新懒加载状态
+    this.loaded = !store.lazy || newData.length > 0
     this.updateLeafState()
   }
 
@@ -257,6 +268,12 @@ export class TreeNode {
   }
 
   updateLeafState() {
+    // 懒加载：未加载节点的 isLeaf 由 props.isLeaf 字段（或函数）决定，默认视为有子节点
+    if (this.store.lazy && !this.loaded && this.level > 0) {
+      const isLeafProp = this.store.props && (this.store.props as any).isLeaf
+      this.isLeaf = isLeafProp === undefined ? false : !!getPropertyFromData(this, 'isLeaf')
+      return
+    }
     const childNodes = this.childNodes
     this.isLeaf = !childNodes || childNodes.length === 0
   }
@@ -266,14 +283,18 @@ export class TreeNode {
     this.expanded = false
   }
 
-  /** 节点的展开；expandParent 为 true 时连同祖先一起展开 */
+  /**
+   * 节点的展开；expandParent 为 true 时连同祖先一起展开。
+   * 懒加载模式下展开未加载节点会先触发 load，resolve 后写入源数据 children、构建子节点，再展开；
+   * reject / load 抛错时保持折叠态（可重试）。
+   */
   expand(callback?: (() => void) | null, expandParent?: boolean) {
-    const done = () => {
+    const store = this.store
+    const doExpand = () => {
       if (expandParent) {
         let parent = this.parent
         while (parent && parent.level > 0) {
-          if (parent.isLeftChild) parent.leftExpanded = true
-          else parent.expanded = true
+          parent.expand(null, false)
           parent = parent.parent
         }
       }
@@ -281,7 +302,69 @@ export class TreeNode {
       else this.expanded = true
       if (callback) callback()
     }
-    done()
+    if (store.lazy && store.load && !this.loaded && !this.isLeaf && this.level > 0) {
+      this.loadData((success) => {
+        if (!success) return
+        doExpand()
+        store.onExpandSettled?.()
+      })
+      return
+    }
+    doExpand()
+  }
+
+  /**
+   * 触发懒加载：调用 store.load，resolve 后经 insertChild 同步写入源数据 children 并构建子节点。
+   * 加载中重复调用只会登记回调，不重复发起 load；完成（成功或失败）后依次执行全部回调。
+   */
+  loadData(onSettled?: (success: boolean) => void) {
+    const store = this.store
+    if (!store.lazy || !store.load || this.loaded || this.level === 0) {
+      onSettled?.(this.loaded)
+      return
+    }
+    if (onSettled) this.loadCallbacks.push(onSettled)
+    if (this.loading) return
+    this.loading = true
+    const node = this
+    const resolve = (children?: TreeNodeData[]) => {
+      if (node.loading) node.finishLoad(true, children)
+    }
+    const reject = () => {
+      if (node.loading) node.finishLoad(false)
+    }
+    try {
+      store.load(this, resolve, reject)
+    } catch (error) {
+      // load 同步抛错：回到折叠态且可重试
+      node.finishLoad(false)
+      console.error('[vue3-okr-tree] load 函数执行出错:', error)
+    }
+  }
+
+  private finishLoad(success: boolean, children?: TreeNodeData[]) {
+    const callbacks = this.loadCallbacks
+    this.loadCallbacks = []
+    this.loading = false
+    if (success) {
+      this.loaded = true
+      if (Array.isArray(children)) {
+        for (const childData of children) {
+          // insertChild 会同步写入源数据 children（与 append 语义一致）并构建子节点
+          this.insertChild({ data: childData })
+        }
+      }
+    }
+    this.updateLeafState()
+    callbacks.forEach((cb) => cb(success))
+  }
+
+  /** 等待该节点未完成的懒加载结束；已加载或非懒加载时立即 resolve */
+  whenLoaded(): Promise<boolean> {
+    if (!this.store.lazy || this.loaded || this.level === 0) {
+      return Promise.resolve(this.loaded)
+    }
+    return new Promise((resolve) => this.loadCallbacks.push(resolve))
   }
 
   removeChild(child: TreeNode) {

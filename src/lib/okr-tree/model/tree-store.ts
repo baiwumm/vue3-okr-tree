@@ -5,6 +5,7 @@ import type {
   LabelClassName,
   TreeDirection,
   TreeKey,
+  TreeLoadFunction,
   TreeNodeData,
   TreeOptionProps,
 } from '../../../types'
@@ -26,6 +27,10 @@ export interface TreeStoreOptions {
   animate?: boolean
   animateName?: string
   animateDuration?: number
+  /** 懒加载：开启后未加载节点首次展开时调用 load */
+  lazy?: boolean
+  /** 懒加载取数函数（配合 lazy 使用） */
+  load?: TreeLoadFunction | null
 }
 
 const DEFAULT_PROPS: TreeOptionProps = {
@@ -57,6 +62,13 @@ export class TreeStore {
   animate = false
   animateName = 'okr-zoom-in-center'
   animateDuration = 200
+  lazy = false
+  load: TreeLoadFunction | null = null
+  /**
+   * 懒加载展开完成后由组件设置的通知钩子（同步 v-model:expanded-keys）；
+   * reject 时不会触发（展开集合未变化）。
+   */
+  onExpandSettled?: () => void = undefined
 
   /** 当前选中节点（右树 / 非 OKR 模式） */
   currentNode: TreeNode | null = null
@@ -120,7 +132,8 @@ export class TreeStore {
       }
       if (!value) return
 
-      if (node.visible) node.expand()
+      // 懒加载模式下未加载的节点没有可展开的子树，过滤不触发 load
+      if (node.visible && (!this.lazy || !this.load || node.loaded)) node.expand()
     }
 
     // Q1：遍历全部根节点（原版只遍历 root.childNodes[0]，多根数据会漏过滤）
@@ -271,9 +284,14 @@ export class TreeStore {
     if (this.isLeftChilds) walk(this.isLeftChilds)
   }
 
-  /** 展开全部节点（左右两树） */
+  /** 展开全部节点（左右两树）；懒加载节点会先触发加载、完成后再展开 */
   expandAll() {
     this.forEachNode((node) => {
+      if (this.lazy && this.load && !node.loaded && node.level > 0) {
+        node.expand(null, false)
+        if (this.onlyBothTree && node.level === 1 && !node.isLeftChild) node.leftExpanded = true
+        return
+      }
       node.expanded = true
       node.leftExpanded = true
     })
@@ -329,7 +347,7 @@ export class TreeStore {
 
   /**
    * 以 key 列表整体设置展开态：列表内的节点展开、其余节点收起（受控模式）。
-   * OKR 模式下根节点的左右两侧跟随根节点 key。
+   * OKR 模式下根节点的左右两侧跟随根节点 key；列表内的懒加载未加载节点触发加载、完成后展开。
    */
   setExpandedKeys(keys: TreeKey[] | null | undefined) {
     const set = new Set((keys || []).map((k) => String(k)))
@@ -337,8 +355,14 @@ export class TreeStore {
       const key = node.key
       if (key === undefined || key === null) return
       const on = set.has(String(key))
-      if (node.isLeftChild) node.leftExpanded = on
-      else node.expanded = on
+      if (on) {
+        // expand 内部处理懒加载：完成后由 onExpandSettled 同步受控值
+        node.expand(null, false)
+      } else if (node.isLeftChild) {
+        node.leftExpanded = false
+      } else {
+        node.expanded = false
+      }
       if (this.onlyBothTree && node.level === 1 && !node.isLeftChild) node.leftExpanded = on
     })
   }

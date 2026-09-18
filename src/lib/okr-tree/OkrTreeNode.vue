@@ -52,12 +52,12 @@
       <div
         v-if="showNodeLeftBtn && leftChildNodes.length > 0"
         class="org-chart-node-left-btn"
-        :class="{ expanded: node.leftExpanded }"
+        :class="{ expanded: node.leftExpanded, 'is-loading': node.loading }"
         aria-hidden="true"
         @click="handleBtnClick('left')"
       >
         <template v-if="showNodeNum">
-          <span v-if="!node.leftExpanded" class="org-chart-node-btn-text">{{ leftBtnCount }}</span>
+          <span v-if="showLeftBtnText" class="org-chart-node-btn-text">{{ leftBtnCount }}</span>
         </template>
         <slot
           v-else-if="$slots['expand-btn']"
@@ -65,6 +65,7 @@
           :node="node"
           :data="node.data"
           :expanded="node.leftExpanded"
+          :loading="node.loading"
           side="left"
         />
         <NodeBtnContent v-else :node="node" :node-btn-content="nodeBtnContent" />
@@ -91,12 +92,12 @@
       <div
         v-if="showNodeBtn && !isLeftChildNode"
         class="org-chart-node-btn"
-        :class="{ expanded: node.expanded }"
+        :class="{ expanded: node.expanded, 'is-loading': node.loading }"
         aria-hidden="true"
         @click="handleBtnClick('right')"
       >
         <template v-if="showNodeNum">
-          <span v-if="!node.expanded" class="org-chart-node-btn-text">{{
+          <span v-if="showRightBtnText" class="org-chart-node-btn-text">{{
             node.childNodes.length
           }}</span>
         </template>
@@ -106,6 +107,7 @@
           :node="node"
           :data="node.data"
           :expanded="node.expanded"
+          :loading="node.loading"
           side="right"
         />
         <NodeBtnContent v-else :node="node" :node-btn-content="nodeBtnContent" />
@@ -230,7 +232,14 @@ const leftChildNodes = computed<TreeNode[]>(() => {
   return []
 })
 
+/** 懒加载待展开：lazy 且未加载、未标记叶子（点开后会先加载数据） */
+const lazyPending = computed(
+  () => !!store.lazy && !node.value.loaded && !node.value.isLeaf && node.value.level > 0
+)
+
 const isLeaf = computed(() => {
+  // 懒加载：未加载且未标记为叶子的节点视为有子节点
+  if (lazyPending.value) return false
   if (node.value.level === 1) {
     return leftChildNodes.value.length === 0 && node.value.childNodes.length === 0
   }
@@ -301,15 +310,23 @@ const transitionProps = computed(() =>
 const showNodeBtn = computed(() => {
   if (props.isLeftChildNode) {
     return (
-      store.direction === 'horizontal' && props.showCollapsable && leftChildNodes.value.length > 0
+      store.direction === 'horizontal' &&
+      props.showCollapsable &&
+      (leftChildNodes.value.length > 0 || lazyPending.value)
     )
   }
-  return props.showCollapsable && !!node.value.childNodes && node.value.childNodes.length > 0
+  return (
+    props.showCollapsable &&
+    (!!node.value.childNodes && node.value.childNodes.length > 0 || lazyPending.value)
+  )
 })
 
 /** 是否显示左侧展开按钮（OKR 模式） */
 const showNodeLeftBtn = computed(
-  () => store.direction === 'horizontal' && props.showCollapsable && leftChildNodes.value.length > 0
+  () =>
+    store.direction === 'horizontal' &&
+    props.showCollapsable &&
+    (leftChildNodes.value.length > 0 || (props.isLeftChildNode && lazyPending.value))
 )
 
 /** 是否显示左子树 */
@@ -325,6 +342,14 @@ const leftBtnCount = computed(() =>
   node.value.level === 1 && leftChildNodes.value.length > 0
     ? leftChildNodes.value.length
     : node.value.childNodes.length
+)
+
+/** show-node-num：未加载（未加载完成 / 加载中）时不显示子节点数 */
+const showRightBtnText = computed(
+  () => !node.value.expanded && (node.value.loaded || !store.lazy)
+)
+const showLeftBtnText = computed(
+  () => !node.value.leftExpanded && (node.value.loaded || !store.lazy)
 )
 
 const isOkrRoot = computed(() => node.value.level === 1 && store.onlyBothTree)
@@ -392,8 +417,10 @@ function getNodeKey(child: TreeNode) {
 }
 
 // ---- 可访问性：漫游 tabindex + 键盘导航 ----
-const hasRightChildren = computed(() => node.value.childNodes.length > 0)
-const hasLeftChildren = computed(() => leftChildNodes.value.length > 0)
+const hasRightChildren = computed(() => node.value.childNodes.length > 0 || lazyPending.value)
+const hasLeftChildren = computed(
+  () => leftChildNodes.value.length > 0 || (props.isLeftChildNode && lazyPending.value)
+)
 
 /** 该 treeitem 控制的子树是否展开（无子节点时不输出 aria-expanded） */
 const ariaExpanded = computed(() => {
@@ -496,8 +523,8 @@ function handleNodeClick() {
 function handleBtnClick(side: 'left' | 'right') {
   const isLeft = side === 'left'
   const current = node.value
-  // OKR 飞书模式：左侧按钮直接切换 leftExpanded
-  if (store.onlyBothTree && isLeft) {
+  // OKR 飞书模式：根节点的左侧按钮直接切换 leftExpanded（左子树数据 leftData 前置给定，无懒加载）
+  if (store.onlyBothTree && isLeft && !props.isLeftChildNode) {
     if (current.leftExpanded) {
       current.leftExpanded = false
       tree!.onExpandChange()
@@ -509,8 +536,10 @@ function handleBtnClick(side: 'left' | 'right') {
     }
     return
   }
-  if (current.expanded) {
-    current.collapse()
+  // 左树节点的展开态在 leftExpanded；懒加载由 expand() 内部处理（首次展开先加载）
+  if (props.isLeftChildNode ? current.leftExpanded : current.expanded) {
+    if (props.isLeftChildNode) current.leftExpanded = false
+    else current.collapse()
     tree!.onExpandChange()
     tree!.emit('node-collapse', current.data, current, instance?.proxy)
   } else {

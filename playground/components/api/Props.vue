@@ -22,5 +22,11 @@ const rows: string[][] = [
     'string / function(data, node)',
     'disabled',
   ],
+  [
+    'isLeaf',
+    '指定叶子字段（Vue 3 版新增）：lazy 模式下未加载节点的 isLeaf 取该字段，标记为叶子的节点不显示展开按钮、不触发 load',
+    'string / function(data, node)',
+    '—',
+  ],
 ]
 </script>

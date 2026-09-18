@@ -16,7 +16,7 @@ const rows: string[][] = [
   [
     'expand-btn',
     '展开按钮内容；<code>show-node-num</code> 开启时折叠态的数字优先于该插槽',
-    '<code>{ node, data, expanded, side }</code>，side 为 <code>right</code>（常规/右子树）或 <code>left</code>（OKR 左子树）',
+    '<code>{ node, data, expanded, side, loading }</code>，side 为 <code>right</code>（常规/右子树）或 <code>left</code>（OKR 左子树），loading 为懒加载进行中',
   ],
   ['empty', '<code>data</code> 为空数组时在容器内渲染', '—'],
 ]

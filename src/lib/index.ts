@@ -16,6 +16,7 @@ export type {
   ScrollToNodeOptions,
   TreeDirection,
   TreeKey,
+  TreeLoadFunction,
   TreeNodeData,
   TreeOptionProps,
   TreeTheme,

@@ -510,6 +510,42 @@
   z-index: 2;
 }
 
+/* ======================= 懒加载：展开按钮加载中态 ======================= */
+/* 隐藏 +/- 符号，圆形按钮自身旋转作为加载指示 */
+.org-chart-container
+  .org-chart-node-label
+  .org-chart-node-btn.is-loading::before,
+.org-chart-container
+  .org-chart-node-label
+  .org-chart-node-btn.is-loading::after,
+.org-chart-container
+  .org-chart-node-label
+  .org-chart-node-left-btn.is-loading::before,
+.org-chart-container
+  .org-chart-node-label
+  .org-chart-node-left-btn.is-loading::after {
+  display: none;
+}
+.org-chart-container
+  .org-chart-node-label
+  .org-chart-node-btn.is-loading,
+.org-chart-container
+  .org-chart-node-label
+  .org-chart-node-left-btn.is-loading {
+  cursor: wait;
+  border-top-color: transparent;
+  border-right-color: var(--okr-btn-sign-color, var(--okr-line-color, #ccc));
+  animation: okr-loading-spin 0.8s linear infinite;
+}
+@keyframes okr-loading-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ======================= 根对齐（align-root，Vue 3 版内建） ======================= */
 /*
  * OKR 模式下根节点行是 [左子树容器][根节点][右子树容器] 的 flex 行。

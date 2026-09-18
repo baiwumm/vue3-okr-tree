@@ -32,7 +32,22 @@ export interface TreeOptionProps {
   children?: string
   /** 禁用字段，支持 string 或 function(data, node) */
   disabled?: string | ((data: TreeNodeData, node: TreeNode) => boolean)
+  /**
+   * 叶子节点字段（懒加载模式下未加载节点的 isLeaf 取该字段，默认视为有子节点），
+   * 支持 string 或 function(data, node)
+   */
+  isLeaf?: string | ((data: TreeNodeData, node: TreeNode) => boolean)
 }
+
+/**
+ * 懒加载函数：首次展开未加载节点时调用。
+ * resolve 提交子节点数据（会同步写入源数据 children，再展开）；reject 或抛错时节点回到折叠态、可重试。
+ */
+export type TreeLoadFunction = (
+  node: TreeNode,
+  resolve: (children: TreeNodeData[]) => void,
+  reject?: () => void
+) => void
 
 /** 过滤方法：返回 false 隐藏节点 */
 export type FilterNodeMethod = (value: any, data: TreeNodeData, node: TreeNode) => boolean
@@ -55,6 +70,8 @@ export interface ExpandBtnSlotScope {
   expanded: boolean
   /** 按钮所在侧：right 为常规/右子树按钮，left 为 OKR 模式左子树按钮 */
   side: 'left' | 'right'
+  /** 懒加载进行中（配合 lazy 使用） */
+  loading: boolean
 }
 
 /** scrollToNode 选项：ScrollIntoViewOptions + 是否先展开祖先（默认 true） */

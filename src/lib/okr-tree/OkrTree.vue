@@ -74,6 +74,7 @@ import type {
   ScrollToNodeOptions,
   TreeDirection,
   TreeKey,
+  TreeLoadFunction,
   TreeNodeData,
   TreeOptionProps,
   TreeTheme,
@@ -139,6 +140,17 @@ const props = defineProps({
   animateName: { type: String as PropType<AnimateName>, default: 'okr-zoom-in-center' },
   /** 过渡动画时长 ms */
   animateDuration: { type: Number, default: 200 },
+  /**
+   * 懒加载子节点（Vue 3 版新增）：开启后，初始 data 中没有 children（或为空数组）的节点
+   * 视为未加载，首次展开时调用 load 取子节点；需配合 nodeKey 展开按钮使用。
+   */
+  lazy: { type: Boolean, default: false },
+  /**
+   * 懒加载取数函数（Vue 3 版新增）：(node, resolve, reject) => void。
+   * resolve(children) 后子节点写入源数据 children 并展开；reject 或抛错时节点回到折叠态、可重试。
+   * node.isLeftChild 可区分 OKR 左树节点。
+   */
+  load: { type: Function as PropType<TreeLoadFunction>, default: undefined },
   /** OKR 模式下自动根对齐（Vue 3 版新增，默认开启） */
   alignRoot: { type: Boolean, default: true },
   /**
@@ -205,6 +217,12 @@ if (!props.nodeKey) {
     warn('current-key / current-node-key 需要同时设置 node-key，否则不会生效。')
   }
 }
+if (props.lazy && !props.load) {
+  warn('lazy 需要同时提供 load 函数，否则未加载节点无法展开。')
+}
+if (!props.lazy && props.load) {
+  warn('传入 load 但未开启 lazy，load 不会生效。')
+}
 
 const rawStore = new TreeStore({
   key: props.nodeKey,
@@ -223,10 +241,15 @@ const rawStore = new TreeStore({
   animate: props.animate,
   animateName: props.animateName,
   animateDuration: props.animateDuration,
+  lazy: props.lazy,
+  load: props.load,
 })
 // shallowReactive 包装 store，使节点组件读取的配置字段（labelClassName / animate 等）可被追踪
 const store = shallowReactive(rawStore) as TreeStore
 const root = store.root
+
+// 懒加载展开完成后同步受控展开态（syncExpandedKeys 内部自检是否受控）
+store.onExpandSettled = syncExpandedKeys
 
 const isEmpty = computed(() => root.childNodes.length === 0)
 
@@ -530,11 +553,17 @@ async function scrollToNode(
   if (!node) return false
   const { expand = true, ...scrollOptions } = options
   if (expand) {
+    const pending: TreeNode[] = []
     let parent = node.parent
     while (parent && parent.level > 0) {
-      if (parent.isLeftChild) parent.leftExpanded = true
-      else parent.expanded = true
+      pending.push(parent)
       parent = parent.parent
+    }
+    // 逐个展开祖先（懒加载祖先会先触发 load、完成后再展开）
+    pending.forEach((ancestor) => ancestor.expand(null, false))
+    // 目标节点自身未加载时也触发加载（不展开），加载完成后再滚动
+    if (store.lazy && store.load && !node.loaded && !node.isLeaf && node.level > 0) {
+      node.loadData()
     }
     // 左树节点还受右树根节点的 leftExpanded 控制
     if (node.isLeftChild && store.onlyBothTree) {
@@ -542,6 +571,9 @@ async function scrollToNode(
       if (okrRoot) okrRoot.leftExpanded = true
     }
     syncExpandedKeys()
+    // 等待懒加载完成，保证目标节点已渲染、可定位
+    pending.push(node)
+    await Promise.all(pending.map((pendingNode) => pendingNode.whenLoaded()))
   }
   await nextTick()
   const el = nodeEls.get(node)

@@ -8,7 +8,7 @@
 - 内建 `align-root` 根对齐，OKR 模式下展开/收起不再位移，无需手动测量 DOM
 - 全部外观取值通过 `--okr-*` CSS 变量暴露，内置 `default / feishu / dark / auto / minimal / colorful` 六套主题（`theme` prop），也可自定义
 - 受控状态 `v-model:expanded-keys` / `v-model:current-key`，`expandAll` / `collapseAll` / `expandNode` / `collapseNode` / `scrollToNode` 方法，`#expand-btn` / `#empty` 插槽
-- `<OkrTreeGroup>` 跨实例根对齐、WAI-ARIA 键盘导航、`node-component` prop、`createTypedOkrTree<T>()` 类型化辅助
+- `lazy` + `load` 懒加载子节点（大数据量只加载展开路径），`<OkrTreeGroup>` 跨实例根对齐、WAI-ARIA 键盘导航、`node-component` prop、`createTypedOkrTree<T>()` 类型化辅助
 - 修复了原版的多根过滤、左右树同 key 覆盖、`animate` / `animate-duration` 无效等问题（见下文「与 vue-okr-tree 的差异」）
 
 ## 安装
@@ -174,6 +174,45 @@ const currentKey = ref<TreeKey | null>(null) // null 表示无选中
 </script>
 ```
 
+## 懒加载子节点
+
+数据量大时（如几千节点的组织架构），初始只给顶层节点，子级在首次展开时通过 `load` 函数异步获取：
+
+```vue
+<template>
+  <vue-okr-tree
+    :data="data"
+    node-key="id"
+    show-collapsable
+    lazy
+    :load="loadNode"
+  />
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { VueOkrTree, type TreeNodeData } from 'vue3-okr-tree'
+
+const data = ref<TreeNodeData[]>([{ id: 1, label: '总部' }])
+
+function loadNode(node: TreeNodeData & { level: number }, resolve: (children: TreeNodeData[]) => void, reject?: () => void) {
+  // node 是内部 Node 实例：node.data 为源数据，node.isLeftChild 区分 OKR 左树节点
+  fetchChildren(node.data.id)
+    .then(resolve)
+    .catch(() => reject?.())
+}
+</script>
+```
+
+行为约定：
+
+- **未加载节点**：初始 `data` 中没有 `children` 字段（或为空数组）的节点视为未加载；`load` resolve 后子节点会同步写入源数据的 `children`（与 `append` 语义一致），并标记为已加载，之后不再重复请求。
+- **展开驱动**：点击 +/- 按钮、`expandAll` / `expandNode` / `scrollToNode`、`default-expanded-keys`、`v-model:expanded-keys` 触发未加载节点时，都会先调用 `load`，完成后再展开。
+- **失败与重试**：`reject()` 或 `load` 抛错时节点回到折叠态（按钮上的 `is-loading` 状态清除），下次展开会重新请求。
+- **叶子节点**：用 `props: { isLeaf: 'leaf' }` 指定叶子字段（支持函数），标记为叶子的未加载节点不显示展开按钮、不触发请求；未指定时未加载节点默认视为有子节点。
+- **加载中状态**：按钮带 `is-loading` 类（内置旋转指示），`#expand-btn` 插槽作用域新增 `loading: boolean`；`show-node-num` 在未加载时不显示数字。
+- **过滤**：`filter` 不会触发未加载节点的 `load`（未加载子树内容未知）。
+
 ## 多棵树根对齐：OkrTreeGroup
 
 `align-root` 让每棵树的根节点在自身容器内居中。多棵 OKR 树并排对比、且宽度不足以容纳最深的一侧时，各树"各自居中"的位置会不同——这正是原版 README 里需要"结合业务层手动测量 DOM"的场景。用 `<OkrTreeGroup>` 包裹即可：它测量组内所有左子树容器的最大自然宽度并统一设置，使各树根节点水平坐标完全一致，并自动响应成员的挂载 / 更新 / 尺寸变化。
@@ -333,6 +372,8 @@ const DeptTree = createTypedOkrTree<Dept>()
 | `theme`                    | **新增。** 内置主题：`default` / `feishu` / `dark` / `auto` / `minimal` / `colorful`，或自定义名字（自行编写 `.okr-theme-{name}` 变量），见「主题与样式定制」 | string                 | `default`            |
 | `expanded-keys`            | **新增。** 受控展开态（`v-model:expanded-keys`，需 `node-key`）：列表内节点展开、其余收起；变化时触发 `update:expandedKeys`。未传为非受控                     | array                  | —                    |
 | `current-key`              | **新增。** 受控选中态（`v-model:current-key`，需 `node-key`）：`null` 表示无选中；变化时触发 `update:currentKey`                                              | string / number / null | —                    |
+| `lazy`                     | **新增。** 懒加载子节点：初始 data 中没有 children（或为空数组）的节点首次展开时调用 `load`，见「懒加载子节点」                                                | boolean                | `false`              |
+| `load`                     | **新增。** 懒加载取数函数 `(node, resolve, reject)`；resolve 后子节点写入源数据 children 并展开，reject / 抛错时回到折叠态可重试。`node.isLeftChild` 区分 OKR 左树 | Function               | —                    |
 
 ### props 配置
 
@@ -341,6 +382,7 @@ const DeptTree = createTypedOkrTree<Dept>()
 | `label`    | 节点文本字段                                                                           | string / `function(data, node)` | `label`    |
 | `children` | 子节点字段                                                                             | string                          | `children` |
 | `disabled` | 禁用字段。禁用节点带 `is-disabled` 类，点击不选中、不触发 `node-click`（Vue 3 版实现） | string / `function(data, node)` | `disabled` |
+| `isLeaf`   | **新增。** 叶子字段：`lazy` 模式下未加载节点的 isLeaf 取该字段，标记为叶子的节点不触发 `load` | string / `function(data, node)` | —          |
 
 ### Events
 
@@ -368,18 +410,18 @@ const DeptTree = createTypedOkrTree<Dept>()
 | `append(data, parentNode)`              | 追加子节点；`parentNode` 支持 key / data / Node，省略则追加为根                                                                                        |
 | `insertBefore(data, refNode)`           | 在 refNode 前插入                                                                                                                                      |
 | `insertAfter(data, refNode)`            | 在 refNode 后插入                                                                                                                                      |
-| `expandAll()`                           | **新增。** 展开全部节点（OKR 模式含左右两树）                                                                                                          |
+| `expandAll()`                           | **新增。** 展开全部节点（OKR 模式含左右两树）；`lazy` 模式下未加载节点先触发加载、完成后再展开                                                         |
 | `collapseAll()`                         | **新增。** 收起全部节点                                                                                                                                |
-| `expandNode(data, expandParent = true)` | **新增。** 展开指定节点（key / data / Node），默认连同祖先展开；OKR 根节点同时展开左右两侧。返回 Node 或 null                                          |
+| `expandNode(data, expandParent = true)` | **新增。** 展开指定节点（key / data / Node），默认连同祖先展开；OKR 根节点同时展开左右两侧；`lazy` 下先加载再展开。返回 Node 或 null                   |
 | `collapseNode(data)`                    | **新增。** 收起指定节点；OKR 根节点同时收起左右两侧                                                                                                    |
-| `scrollToNode(data, options?)`          | **新增。** 先展开祖先使其可见，再 `scrollIntoView`（居中、平滑）。`options` 为 `ScrollIntoViewOptions & { expand?: boolean }`，返回 `Promise<boolean>` |
+| `scrollToNode(data, options?)`          | **新增。** 先展开祖先使其可见，再 `scrollIntoView`（居中、平滑）。`options` 为 `ScrollIntoViewOptions & { expand?: boolean }`，返回 `Promise<boolean>`；`lazy` 下等待路径上的节点加载完成后再滚动 |
 
 ### Slots
 
 | 插槽         | 说明                                                                    | 作用域参数                                                                                |
 | ------------ | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | `default`    | 节点内容（替代 `render-content`）                                       | `{ node, data }`                                                                          |
-| `expand-btn` | 展开按钮内容（替代 `node-btn-content`；`show-node-num` 开启时数字优先） | `{ node, data, expanded, side }`，`side` 为 `right`（常规/右子树）或 `left`（OKR 左子树） |
+| `expand-btn` | 展开按钮内容（替代 `node-btn-content`；`show-node-num` 开启时数字优先） | `{ node, data, expanded, side, loading }`，`side` 为 `right`（常规/右子树）或 `left`（OKR 左子树），`loading` 为懒加载进行中 |
 | `empty`      | `data` 为空数组时在容器内渲染                                           | —                                                                                         |
 
 ### 需要注意的行为

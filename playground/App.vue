@@ -60,6 +60,8 @@
     <BaseEventsOkr />
     <!-- 17 受控状态与方法（1.2.0 新增） -->
     <Base09 />
+    <!-- 18 懒加载子节点（1.4.0 新增） -->
+    <Base10 />
     <!-- 17-20 API 文档表格 -->
     <Attributes />
     <Props />
@@ -91,6 +93,7 @@ import BaseFilterOkr from './components/demos/BaseFilterOkr.vue'
 import BaseEvents from './components/demos/BaseEvents.vue'
 import BaseEventsOkr from './components/demos/BaseEventsOkr.vue'
 import Base09 from './components/demos/Base09.vue'
+import Base10 from './components/demos/Base10.vue'
 import Attributes from './components/api/Attributes.vue'
 import Props from './components/api/Props.vue'
 import Events from './components/api/Events.vue'
@@ -129,6 +132,7 @@ const nav = [
   { id: 'demo-15', text: 'Events' },
   { id: 'demo-16', text: 'OKR Events' },
   { id: 'demo-17', text: '受控状态与方法' },
+  { id: 'demo-18', text: '懒加载' },
   { id: 'api-attributes', text: 'Attributes' },
   { id: 'api-props', text: 'Props' },
   { id: 'api-events', text: 'Events API' },

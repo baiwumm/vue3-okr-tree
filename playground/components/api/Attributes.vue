@@ -137,5 +137,19 @@ const rows: string[][] = [
     '—',
     '—',
   ],
+  [
+    'lazy',
+    '<strong>Vue 3 版新增（1.4.0）。</strong>懒加载子节点：初始 data 中没有 children（或为空数组）的节点视为未加载，首次展开时调用 <code>load</code>，见「懒加载子节点」用例',
+    'boolean',
+    '—',
+    'false',
+  ],
+  [
+    'load',
+    '<strong>Vue 3 版新增（1.4.0）。</strong>懒加载取数函数。<code>resolve(children)</code> 后子节点同步写入源数据 children 并展开；<code>reject()</code> 或抛错时节点回到折叠态、可重试。<code>node.isLeftChild</code> 可区分 OKR 左树节点',
+    'Function(node, resolve, reject?)',
+    '—',
+    '—',
+  ],
 ]
 </script>
