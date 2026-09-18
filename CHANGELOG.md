@@ -2,6 +2,16 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## 1.6.0
+
+### 新增
+
+- **冻结 / 只读源数据兼容**：传入 `Object.freeze` 数据（或外部 store 的 readonly 数据）不再抛 TypeError——内部 id 标记自动降级为 WeakMap 兜底（`v-for` key 与按 data 查找不受影响）；渲染、展开/收起、选中、过滤等只读操作完全正常。需要回写源数据的操作（`append` / `insertBefore` / `insertAfter` / `remove` / `updateKeyChildren` / 懒加载 resolve）在冻结数据上自动跳过写入并输出开发期警告，不再静默失败（README 已标注该语义）。
+- **运行时 props 同步策略**：运行时改 prop 要么生效、要么有警告，不存在静默失效——
+  - 即时生效：`filterNodeMethod` / `labelClassName` / `animate*`（1.2.0 起）、`showCollapsable`、`defaultExpandAll`（影响后续新建节点）、`props` 字段映射（`label` 动态读取即时生效；`children` 字段变更触发增量重建并恢复受控态）；
+  - 创建期快照 + 开发期警告：`nodeKey` / `direction` / `onlyBothTree` 运行时变更提示「请为组件绑定 `:key` 重建实例」（README 已标注）。
+- **OKR 左树受控态恢复**：`leftData` 变更重建左树后，按 `expanded-keys` / `current-key` 恢复左树展开与选中状态（此前 `data` 重建只恢复右树）。
+
 ## 1.5.0
 
 ### 新增

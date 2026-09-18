@@ -15,7 +15,7 @@
 | 1.3.0 | OkrTreeGroup 根对齐、键盘可访问性、node-component、类型化 | ✅              |
 | 1.4.0 | 懒加载 + 画布组件                                         | ✅              |
 | 1.5.0 | 文档站 + 发布流程                                         | ✅ 发布待维护者 |
-| 1.6.0 | 健壮性与运行时行为补齐                                    | ⬜ 待开始       |
+| 1.6.0 | 健壮性与运行时行为补齐                                    | ✅              |
 | 2.x   | 拖拽、SVG 连接线、复选框、虚拟滚动、更多布局              | ⬜ 视需求       |
 
 ---
@@ -96,18 +96,18 @@
 
 ### 8. 边界数据兼容（M）
 
-- [ ] 冻结/只读源数据（`Object.freeze`、外部 store 的 readonly 数据）：`markNodeData` 的 `Object.defineProperty` 与 `getChildren(true)` 的 `data[children] = …` 回写在冻结对象上会抛 TypeError → 降级为内部 id 走 WeakMap 兜底 + 开发期警告
-- [ ] 「不回写源数据」语义文档化：append / remove / insertBefore 等会同步修改用户 `children` 数组，只读数据下不可用，需在 README 标注并在开发期给出明确报错提示
-- [ ] 测试：`Object.freeze` 的 data 可正常渲染与展开收起（不可增删），不抛异常
+- [x] 冻结/只读源数据（`Object.freeze`、外部 store 的 readonly 数据）：`markNodeData` 的 `Object.defineProperty` 与 `getChildren(true)` 的 `data[children] = …` 回写在冻结对象上会抛 TypeError → 降级为内部 id 走 WeakMap 兜底 + 开发期警告
+- [x] 「不回写源数据」语义文档化：append / remove / insertBefore 等会同步修改用户 `children` 数组，只读数据下不可用，需在 README 标注并在开发期给出明确报错提示
+- [x] 测试：`Object.freeze` 的 data 可正常渲染与展开收起（不可增删），不抛异常
 - **验收**：传入冻结数据不抛错、可渲染可展开；调用需要回写源数据的方法时收到开发期警告而非静默失败。
 
 ### 9. 运行时 props 同步策略（S）
 
-- [ ] 现状盘点：`filterNodeMethod` / `labelClassName` / `animate*` 已 watch 同步；`showCollapsable` / `props`（字段映射）/ `onlyBothTree` / `direction` / `nodeKey` / `defaultExpandAll` 仍是创建期快照，运行时变更静默失效
-- [ ] 低成本补同步：`showCollapsable`（只影响按钮显隐）等可直接 watch 的 prop
-- [ ] 不支持同步的 prop（`nodeKey` / `direction` / `onlyBothTree`）：运行时变更输出开发期警告「需换 :key 重建实例」，README 标注
-- [ ] OKR 左树受控态：`leftData` 变更重建左树后按 `expanded-keys` / `current-key` 恢复左树状态（当前 `watch(data)` 只恢复右树）
-- [ ] 测试：以上同步与警告行为各一条
+- [x] 现状盘点：`filterNodeMethod` / `labelClassName` / `animate*` 已 watch 同步；`showCollapsable` / `props`（字段映射）/ `onlyBothTree` / `direction` / `nodeKey` / `defaultExpandAll` 仍是创建期快照，运行时变更静默失效
+- [x] 低成本补同步：`showCollapsable`（只影响按钮显隐）等可直接 watch 的 prop
+- [x] 不支持同步的 prop（`nodeKey` / `direction` / `onlyBothTree`）：运行时变更输出开发期警告「需换 :key 重建实例」，README 标注
+- [x] OKR 左树受控态：`leftData` 变更重建左树后按 `expanded-keys` / `current-key` 恢复左树状态（当前 `watch(data)` 只恢复右树）
+- [x] 测试：以上同步与警告行为各一条
 - **验收**：运行时改 prop 要么生效、要么有警告，不存在静默失效。
 
 ---
