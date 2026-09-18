@@ -25,7 +25,7 @@
   "bugs": {
     "url": "https://github.com/baiwumm/vue3-okr-tree/issues"
   },
-  "homepage": "https://github.com/baiwumm/vue3-okr-tree#readme",
+  "homepage": "https://vue3-okr-tree.baiwumm.com",
   "files": [
     "dist",
     "README.md",

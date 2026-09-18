@@ -45,19 +45,16 @@
 
 ## 三、距离可发包还差什么（维护者手动步骤）
 
-代码侧无剩余项。以下为必须由维护者执行的操作：
+代码侧无剩余项。**逐步操作手册见 [release-guide.md](./release-guide.md)**（含 npm 账号解封时间线）。概要：
 
-1. **Cloudflare 绑定**：按 [docs-site/README.md](../docs-site/README.md) 将仓库接入 Cloudflare Pages/Workers（构建命令 `pnpm docs:build:full`，输出目录 `docs-site/.vitepress/dist`，`NODE_VERSION=22`）；
-2. **文档站域名**：确定后全局替换 README 中两处 `<!--DOCS-URL-->` 占位（搜索 `TODO(deploy)`）；
-3. **GitHub Secrets 添加 `NPM_TOKEN`**（npm Automation token，release.yml 发包用）；
-4. 推送代码到 GitHub，确认 CI（ci.yml）与 visual（visual.yml）两条 workflow 通过；
-5. **发布**：`git tag v1.6.0 && git push origin v1.6.0` → release.yml 自动校验版本、跑全部门禁、`npm publish --provenance` 并创建 GitHub Release；
-6. **发布后线上验证**：空 Vite 项目 `pnpm add vue3-okr-tree`，验证 ESM / CJS / CDN `<script>` 三条路径与 npm 页面。
+1. 推送仓库到 GitHub，确认 CI / visual 两条 workflow 绿灯；
+2. Cloudflare 绑定仓库部署文档站，绑定域名 **vue3-okr-tree.baiwumm.com**（README 与 package.json homepage 已写入该域名）；
+3. **npm 账号 2026-09-21 14:22（北京时间）解封后**：本地手动首发 1.6.0（`pnpm build` → `pnpm verify:package` → `npm publish`）；
+4. 创建 Granular Token（只圈定 vue3-okr-tree、勾 Bypass 2FA）→ GitHub Secrets 配置 `NPM_TOKEN`；
+5. 后续版本：改版本号 + CHANGELOG → `git tag vx.y.z && git push origin vx.y.z` → release.yml 自动发布（带 provenance）。
 
-## 四、卡点
+> ⚠️ 2026-09-18 记录：npm 账号因恢复码登录被冻结 72 小时（2026-09-21 06:22 UTC 解封），冻结期间只读；域名已确定为 vue3-okr-tree.baiwumm.com 并落地到 README / homepage，原占位链接已全部替换，该卡点解除。
 
-> ⚠️ 2026-09-18 卡点：文档站最终域名未定（部署到 Cloudflare）。README 顶部与「开发」一节的文档站链接暂以 `<!--DOCS-URL-->` 占位，域名确定后全局替换；不影响发包门禁与 npm 发布。
+## 四、结论
 
-## 五、结论
-
-1.0.0–1.6.0 六个版本区块的全部代码条目已完成并逐条提交；全部门禁（含 npm pack 核对、tarball 四路径冒烟、浏览器终验）本地全绿。**完成第三节中维护者的手动步骤（Cloudflare 绑定、NPM_TOKEN、push tag）后，即可由 release workflow 自动完成 `npm publish`。**
+1.0.0–1.6.0 六个版本区块的全部代码条目已完成并逐条提交；全部门禁（含 npm pack 核对、tarball 四路径冒烟、浏览器终验）本地全绿；文档站域名已定并落地。**按 release-guide.md 走完手动步骤（push、Cloudflare、首发 1.6.0、NPM_TOKEN）后，后续版本即可由 tag 触发 release workflow 自动发布。**
