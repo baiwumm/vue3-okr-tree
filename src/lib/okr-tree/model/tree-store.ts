@@ -1,5 +1,5 @@
 import { TreeNode, createNode, createChildNodes } from './node'
-import { getNodeKey, warn } from './util'
+import { getNodeKey, warn, warnReadonlySource } from './util'
 import type {
   FilterNodeMethod,
   LabelClassName,
@@ -8,6 +8,7 @@ import type {
   TreeLoadFunction,
   TreeNodeData,
   TreeOptionProps,
+  DropType,
 } from '../../../types'
 
 export interface TreeStoreOptions {
@@ -41,6 +42,12 @@ export interface TreeStoreOptions {
   checkStrictly?: boolean
   /** 初始勾选的节点 key 数组（需 node-key，创建期生效） */
   defaultCheckedKeys?: TreeKey[] | null
+  /** 拖拽调整层级：节点可拖到目标节点的 prev / inner / next */
+  draggable?: boolean
+  /** 拖拽规则钩子：返回 false 禁止拖动该节点 */
+  allowDrag?: ((node: TreeNode) => boolean) | null
+  /** 放置规则钩子：返回 false 禁止该放置位置；OKR 跨左右树默认禁止，返回 true 可放开 */
+  allowDrop?: ((draggingNode: TreeNode, dropNode: TreeNode, type: DropType) => boolean) | null
 }
 
 /** 字段映射默认值（导出供 OkrTree 运行时同步 props 合并使用） */
@@ -80,6 +87,9 @@ export class TreeStore {
   showCheckbox = false
   checkStrictly = false
   defaultCheckedKeys?: TreeKey[] | null = undefined
+  draggable = false
+  allowDrag: ((node: TreeNode) => boolean) | null = null
+  allowDrop: ((draggingNode: TreeNode, dropNode: TreeNode, type: DropType) => boolean) | null = null
   /**
    * 懒加载展开完成后由组件设置的通知钩子（同步 v-model:expanded-keys）；
    * reject 时不会触发（展开集合未变化）。
@@ -460,6 +470,91 @@ export class TreeStore {
       if (!set.has(String(node.key))) return
       node.setChecked(true, leafOnly ? false : !this.checkStrictly)
     })
+  }
+
+  /** target 是否在 node 的子树内（含 node 自身） */
+  contains(node: TreeNode, target: TreeNode): boolean {
+    if (node === target) return true
+    return node.childNodes.some((child) => this.contains(child, target))
+  }
+
+  /** 跨左右树移动时递归切换 isLeftChild 标记并把整棵子树迁到另一侧注册表 */
+  private reassignSide(node: TreeNode, toLeft: boolean) {
+    const walk = (n: TreeNode) => {
+      const oldMap = n.isLeftChild ? this.leftNodesMap : this.nodesMap
+      const k = n.key
+      if (k !== undefined && oldMap[k as string] === n) delete oldMap[k as string]
+      n.isLeftChild = toLeft
+      this.registerNode(n)
+      n.childNodes.forEach(walk)
+    }
+    walk(node)
+  }
+
+  /** 递归重新注册子树（removeChild 已注销，insertChild 的 Node 实例路径不会重新注册） */
+  private reRegisterSubtree(node: TreeNode) {
+    this.registerNode(node)
+    node.childNodes.forEach((child) => this.reRegisterSubtree(child))
+  }
+
+  private fixLevels(node: TreeNode) {
+    node.level = node.parent ? node.parent.level + 1 : 0
+    node.childNodes.forEach((child) => this.fixLevels(child))
+  }
+
+  /**
+   * 移动节点到目标节点的 prev（同级之前）/ inner（成为子节点）/ next（同级之后），
+   * 同步修改源数据（与 append / remove 语义一致；冻结数据下跳过写入并警告）。
+   * 硬性校验：不可放到自身或自己的子树内；OKR 跨左右树在此不做限制（由组件层 allow-drop 决定）。
+   * 返回是否完成移动。inner 时目标节点会自动展开（懒加载目标视为已加载）。
+   */
+  moveNode(
+    data: TreeNode | TreeKey | TreeNodeData,
+    target: TreeNode | TreeKey | TreeNodeData,
+    type: DropType
+  ): boolean {
+    const node = this.getNode(data)
+    const to = this.getNode(target)
+    if (!node || !to || node === to || !node.parent) return false
+    if (this.contains(node, to)) return false
+
+    const crossTree = node.isLeftChild !== to.isLeftChild
+    // removeChild 会同步从源数据 children 删除并注销子树注册表
+    node.parent.removeChild(node)
+
+    if (crossTree) this.reassignSide(node, to.isLeftChild)
+
+    if (type === 'inner') {
+      const children = to.getChildren(true)
+      if (children) {
+        try {
+          children.push(node.data)
+        } catch {
+          warnReadonlySource('moveNode（写入 children）')
+        }
+      }
+      to.insertChild(node)
+      to.loaded = true
+      to.expand(false)
+    } else {
+      const parent = to.parent!
+      const children = parent.getChildren(true)
+      let index = -1
+      if (children) {
+        index = children.indexOf(to.data)
+        index = type === 'prev' ? index : index + 1
+        try {
+          children.splice(index < 0 ? children.length : index, 0, node.data)
+        } catch {
+          warnReadonlySource('moveNode（写入 children）')
+        }
+      }
+      parent.insertChild(node, index < 0 ? undefined : index)
+    }
+
+    this.fixLevels(node)
+    this.reRegisterSubtree(node)
+    return true
   }
 
   /** 当前处于展开态的节点 key 列表（需 node-key；左右两树去重） */

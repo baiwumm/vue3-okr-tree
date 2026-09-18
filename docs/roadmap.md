@@ -7,19 +7,20 @@
 
 ## 进度总览
 
-| 版本  | 主题                                                                             | 状态            |
-| ----- | -------------------------------------------------------------------------------- | --------------- |
-| 1.0.0 | Vue 3 完整复刻 + 6 项原版缺陷修复                                                | ✅ 已发布到仓库 |
-| 1.1.0 | CSS 变量主题化 + 六套内置主题                                                    | ✅              |
-| 1.2.0 | 受控状态、扩展方法、插槽、开发期警告、CI                                         | ✅              |
-| 1.3.0 | OkrTreeGroup 根对齐、键盘可访问性、node-component、类型化                        | ✅              |
-| 1.4.0 | 懒加载 + 画布组件                                                                | ✅              |
-| 1.5.0 | 文档站 + 发布流程                                                                | ✅ 发布待维护者 |
-| 1.6.0 | 健壮性与运行时行为补齐                                                           | ✅              |
-| 1.7.0 | 2.x #13 低风险档 + Logo 接入 + CI/视觉回归转绿修复                               | ✅ 发布待维护者 |
-| 1.8.0 | 2.x #13 交互档（accordion / expand-on-click-node）+ SSR 冒烟 + peer 收紧 vue≥3.3 | ✅ 发布待维护者 |
-| 1.9.0 | 2.x #14 复选框选择模式（联动/半选/strictly/事件/方法/OKR 语义）                  | ✅ 发布待维护者 |
-| 2.x   | 拖拽、SVG 连接线、虚拟滚动、更多布局（复选框已于 1.9.0 完成）                    | ⬜ 视需求       |
+| 版本   | 主题                                                                              | 状态            |
+| ------ | --------------------------------------------------------------------------------- | --------------- |
+| 1.0.0  | Vue 3 完整复刻 + 6 项原版缺陷修复                                                 | ✅ 已发布到仓库 |
+| 1.1.0  | CSS 变量主题化 + 六套内置主题                                                     | ✅              |
+| 1.2.0  | 受控状态、扩展方法、插槽、开发期警告、CI                                          | ✅              |
+| 1.3.0  | OkrTreeGroup 根对齐、键盘可访问性、node-component、类型化                         | ✅              |
+| 1.4.0  | 懒加载 + 画布组件                                                                 | ✅              |
+| 1.5.0  | 文档站 + 发布流程                                                                 | ✅ 发布待维护者 |
+| 1.6.0  | 健壮性与运行时行为补齐                                                            | ✅              |
+| 1.7.0  | 2.x #13 低风险档 + Logo 接入 + CI/视觉回归转绿修复                                | ✅ 发布待维护者 |
+| 1.8.0  | 2.x #13 交互档（accordion / expand-on-click-node）+ SSR 冒烟 + peer 收紧 vue≥3.3  | ✅ 发布待维护者 |
+| 1.9.0  | 2.x #14 复选框选择模式（联动/半选/strictly/事件/方法/OKR 语义）                   | ✅ 发布待维护者 |
+| 1.10.0 | 2.x #10 拖拽调整层级（draggable / allow 钩子 / 6 事件 / moveNode / OKR 跨树规则） | ✅ 发布待维护者 |
+| 2.x    | SVG 连接线、虚拟滚动、更多布局（复选框 1.9.0、拖拽 1.10.0 已完成）                | ⬜ 视需求       |
 
 ---
 
@@ -119,12 +120,12 @@
 
 ### 10. 拖拽调整层级（L）
 
-- [ ] `draggable` prop；HTML5 DnD，节点可拖到目标节点的「前 / 后 / 内」
-- [ ] `allow-drag(node)` / `allow-drop(dragNode, dropNode, type)` 规则钩子
-- [ ] 事件：`node-drag-start` / `node-drag-enter` / `node-drag-leave` / `node-drag-over` / `node-drag-end` / `node-drop`
-- [ ] 放置指示线样式（走 `--okr-*` 变量）；OKR 模式跨左右树拖动的规则（默认禁止，`allow-drop` 可放开）
-- [ ] store 增加 `moveNode(node, target, type)`，同步修改源数据
-- **验收**：拖拽后 `data` 与视图一致，`v-model:expanded-keys` 正确回写。
+- [x] `draggable` prop；HTML5 DnD，节点可拖到目标节点的「前 / 后 / 内」
+- [x] `allow-drag(node)` / `allow-drop(dragNode, dropNode, type)` 规则钩子
+- [x] 事件：`node-drag-start` / `node-drag-enter` / `node-drag-leave` / `node-drag-over` / `node-drag-end` / `node-drop`
+- [x] 放置指示线样式（走 `--okr-*` 变量，新增 `--okr-drop-color`）；OKR 模式跨左右树拖动的规则（默认禁止，`allow-drop` 可放开，放开后子树 isLeftChild 与注册表迁移）
+- [x] store 增加 `moveNode(node, target, type)`，同步修改源数据（并修正子树 level、重注册节点）
+- **验收**：拖拽后 `data` 与视图一致，`v-model:expanded-keys` 正确回写。✅ 2026-09-19 完成（11 个专项测试）
 
 ### 11. SVG 连接线模式（L）
 
@@ -191,7 +192,7 @@
 | 2026-09-18 | 1.4.0 | `lazy`/`load` 懒加载、`OkrTreeViewport` 画布（缩放/平移/导出）、`getNodeEl` 方法、Demo +2                                                                      | `498e9cc` `3ea31cd` |
 | 2026-09-18 | 1.7.0 | #13 低风险档（reduced-motion 直切、`aria-setsize`/`aria-posinset`、`show-node-num` 只计可见、未知 `theme` 警告、死代码清理）、Logo 接入、CI 与视觉回归红灯修复 | `6830337` `698aec4` |
 | 2026-09-18 | 1.8.0 | #13 交互档（`accordion` 手风琴、`expand-on-click-node`）、SSR `renderToString` 冒烟测试、peer 实测收紧 `vue>=3.3.0` + CI peer-matrix、Demo +2                  | `e531e0c`           |
-| 2026-09-19 | 1.9.0 | #14 复选框选择模式（联动/半选/strictly、check/check-change、六方法、OKR 语义、键盘/a11y）、Demo +1、ESM 预算上调 22 kB                                              | `a14c0cc`           |
+| 2026-09-19 | 1.9.0 | #14 复选框选择模式（联动/半选/strictly、check/check-change、六方法、OKR 语义、键盘/a11y）、Demo +1、ESM 预算上调 22 kB                                         | `a14c0cc`           |
 
 ## 已决定不做
 

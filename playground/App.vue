@@ -70,6 +70,8 @@
     <BaseNodeClick />
     <!-- 22 复选框选择模式（1.9.0 新增） -->
     <BaseCheckbox />
+    <!-- 23 拖拽调整层级（1.10.0 新增） -->
+    <BaseDraggable />
     <!-- 17-20 API 文档表格 -->
     <Attributes />
     <Props />
@@ -106,6 +108,7 @@ import Base11 from './components/demos/Base11.vue'
 import BaseAccordion from './components/demos/BaseAccordion.vue'
 import BaseNodeClick from './components/demos/BaseNodeClick.vue'
 import BaseCheckbox from './components/demos/BaseCheckbox.vue'
+import BaseDraggable from './components/demos/BaseDraggable.vue'
 import Attributes from './components/api/Attributes.vue'
 import Props from './components/api/Props.vue'
 import Events from './components/api/Events.vue'
@@ -149,6 +152,7 @@ const nav = [
   { id: 'demo-accordion', text: '手风琴' },
   { id: 'demo-node-click-expand', text: '点击展开' },
   { id: 'demo-checkbox', text: '复选框' },
+  { id: 'demo-draggable', text: '拖拽' },
   { id: 'api-attributes', text: 'Attributes' },
   { id: 'api-props', text: 'Props' },
   { id: 'api-events', text: 'Events API' },

@@ -89,6 +89,9 @@ export interface TreeCheckInfo {
   halfCheckedKeys: TreeKey[]
 }
 
+/** 拖拽放置位置：目标节点前 / 内部（成为子节点）/ 后（对齐 el-tree） */
+export type DropType = 'prev' | 'inner' | 'next'
+
 export type { TreeNode }
 
 /** createTypedOkrTree<T> 返回组件的插槽类型：作用域中的 data 为 T */

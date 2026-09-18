@@ -11,6 +11,7 @@ export { clampZoom, computeFit, renderToDataUrl, loadHtmlToImage } from './okr-t
 export type { ExportImageOptions, ViewportOffset, ViewportWheelBehavior } from './okr-tree/viewport'
 export type {
   AnimateName,
+  DropType,
   ExpandBtnSlotScope,
   FilterNodeMethod,
   LabelClassName,

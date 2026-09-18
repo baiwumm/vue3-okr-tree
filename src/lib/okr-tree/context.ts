@@ -1,10 +1,22 @@
 import type { ComponentPublicInstance, InjectionKey, ShallowRef } from 'vue'
+import type { DropType } from '../../types'
 import type { TreeStore } from './model/tree-store'
 import type { TreeNode } from './model/node'
 import type { ViewportTreeApi } from './viewport'
 
 export type OkrTreeEventName =
-  'node-click' | 'node-expand' | 'node-collapse' | 'node-contextmenu' | 'check' | 'check-change'
+  | 'node-click'
+  | 'node-expand'
+  | 'node-collapse'
+  | 'node-contextmenu'
+  | 'check'
+  | 'check-change'
+  | 'node-drag-start'
+  | 'node-drag-enter'
+  | 'node-drag-leave'
+  | 'node-drag-over'
+  | 'node-drag-end'
+  | 'node-drop'
 
 /** OkrTree 通过 provide 向递归节点组件提供的上下文（替代原 $parent.isTree 探测与 okrEventBus） */
 export interface OkrTreeContext {
@@ -34,6 +46,12 @@ export interface OkrTreeContext {
   moveFocus: (from: HTMLElement | null, step: 1 | -1 | 'first' | 'last') => void
   /** 聚焦父节点（左树顶层节点的父节点为 OKR 根节点） */
   focusParent: (node: TreeNode, isLeftChildNode: boolean) => void
+  /** 拖拽中（dragstart → dragend 之间）的源节点 */
+  draggingNode: ShallowRef<TreeNode | null>
+  /** 拖拽指示：当前悬停的目标节点 */
+  dragOverNode: ShallowRef<TreeNode | null>
+  /** 拖拽指示：当前放置位置（prev / inner / next） */
+  dragOverType: ShallowRef<DropType | null>
 }
 
 export const OKR_TREE_INJECTION_KEY: InjectionKey<OkrTreeContext> = Symbol('okr-tree')

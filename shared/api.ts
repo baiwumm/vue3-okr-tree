@@ -109,6 +109,27 @@ export const attributesSection: ApiSection = {
       '—',
     ],
     [
+      'draggable',
+      '<strong>Vue 3 版新增（1.10.0）。</strong>拖拽调整层级：HTML5 DnD，节点卡片可拖到目标节点的 prev / inner / next（水平模式按纵向 25%/50%/25% 分区，垂直模式按横向）。移动同步修改源数据 children，inner 时目标自动展开。硬性禁止放到自身或自己的子树内；OKR 模式跨左右树默认禁止',
+      'boolean',
+      '—',
+      'false',
+    ],
+    [
+      'allow-drag',
+      '<strong>Vue 3 版新增（1.10.0）。</strong>拖拽规则钩子：返回 false 禁止拖动该节点（disabled 节点始终不可拖）',
+      'Function(node)',
+      '—',
+      '—',
+    ],
+    [
+      'allow-drop',
+      '<strong>Vue 3 版新增（1.10.0）。</strong>放置规则钩子：返回 false 禁止该放置位置；OKR 模式跨左右树默认禁止，返回 true 可放开',
+      'Function(draggingNode, dropNode, type)',
+      "type: 'prev' / 'inner' / 'next'",
+      '—',
+    ],
+    [
       'show-node-num',
       '折叠时在圆形按钮内显示子节点数（只计未被 <code>filter</code> 隐藏的可见子节点）',
       'boolean',
@@ -289,6 +310,36 @@ export const eventsSection: ApiSection = {
       '<strong>Vue 3 版新增（1.9.0）。</strong>节点勾选状态变化时触发（仅 show-checkbox；每个受影响节点各触发一次，含联动与 setCheckedKeys 批量变更）',
       '(data, checked, indeterminate)',
     ],
+    [
+      'node-drag-start',
+      '<strong>Vue 3 版新增（1.10.0）。</strong>节点开始拖拽时触发（仅 draggable）',
+      '(node, event)',
+    ],
+    [
+      'node-drag-enter',
+      '<strong>Vue 3 版新增（1.10.0）。</strong>拖拽进入某一节点时触发',
+      '(draggingNode, dropNode, event)',
+    ],
+    [
+      'node-drag-leave',
+      '<strong>Vue 3 版新增（1.10.0）。</strong>拖拽离开某一节点时触发',
+      '(draggingNode, dropNode, event)',
+    ],
+    [
+      'node-drag-over',
+      '<strong>Vue 3 版新增（1.10.0）。</strong>拖拽悬停在某一节点的有效放置区内时触发',
+      '(draggingNode, dropNode, event)',
+    ],
+    [
+      'node-drag-end',
+      '<strong>Vue 3 版新增（1.10.0）。</strong>拖拽结束时触发；未完成放置时 dropNode / dropType 为 null',
+      '(draggingNode, dropNode | null, dropType | null, event)',
+    ],
+    [
+      'node-drop',
+      '<strong>Vue 3 版新增（1.10.0）。</strong>完成放置时触发（源数据已在 moveNode 中同步）',
+      '(draggingNode, dropNode, dropType, event)',
+    ],
   ],
 }
 
@@ -405,6 +456,11 @@ export const methodsSection: ApiSection = {
       'isChecked',
       '<strong>Vue 3 版新增（1.9.0）。</strong>判断节点当前是否被勾选',
       '(data) key、data 对象或 Node 实例',
+    ],
+    [
+      'moveNode',
+      '<strong>Vue 3 版新增（1.10.0）。</strong>移动节点到目标节点的 prev / inner / next，同步修改源数据并保持视图一致；inner 时目标自动展开。硬性禁止放到自身或自己的子树内。成功返回 true',
+      '(data, target, type) 均支持 key / data 对象 / Node 实例',
     ],
   ],
 }

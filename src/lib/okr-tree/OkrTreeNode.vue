@@ -51,7 +51,14 @@
       </div>
     </transition>
 
-    <div class="org-chart-node-label" :class="labelWrapperClass">
+    <div
+      class="org-chart-node-label"
+      :class="labelWrapperClass"
+      @dragenter="handleDragEnter"
+      @dragleave="handleDragLeave"
+      @dragover="handleDragOver"
+      @drop="handleDrop"
+    >
       <div
         v-if="showNodeLeftBtn && leftChildNodes.length > 0"
         class="org-chart-node-left-btn"
@@ -78,7 +85,10 @@
         class="org-chart-node-label-inner"
         :class="computeLabelClass"
         :style="computeLabelStyle"
+        :draggable="isDraggable ? 'true' : 'false'"
         @click="handleNodeClick"
+        @dragstart="handleDragStart"
+        @dragend="handleDragEnd"
       >
         <span
           v-if="store.showCheckbox"
@@ -178,7 +188,12 @@ import { NodeContent, NodeBtnContent } from './node-content'
 import { getNodeKey as _getNodeKey } from './model/util'
 import { usePrefersReducedMotion } from './use-reduced-motion'
 import type { TreeNode } from './model/node'
-import type { ExpandBtnSlotScope, NodeBtnContentFunction, RenderContentFunction } from '../../types'
+import type {
+  DropType,
+  ExpandBtnSlotScope,
+  NodeBtnContentFunction,
+  RenderContentFunction,
+} from '../../types'
 
 defineOptions({ name: 'OkrTreeNode' })
 
@@ -391,6 +406,10 @@ const labelWrapperClass = computed(() => ({
   'is-root-label': node.value.level === 1,
   'is-not-right-child': node.value.level === 1 && node.value.childNodes.length <= 0,
   'is-not-left-child': node.value.level === 1 && leftChildNodes.value.length <= 0,
+  // 拖拽放置指示（draggable）：drop-prev / drop-inner / drop-next
+  'drop-prev': tree!.dragOverNode.value === node.value && tree!.dragOverType.value === 'prev',
+  'drop-inner': tree!.dragOverNode.value === node.value && tree!.dragOverType.value === 'inner',
+  'drop-next': tree!.dragOverNode.value === node.value && tree!.dragOverType.value === 'next',
 }))
 
 /** 节点的宽高 */
@@ -624,6 +643,109 @@ function handleBtnClick(side: 'left' | 'right') {
     tree!.onExpandChange()
     tree!.emit('node-expand', current.data, current, instance?.proxy)
   }
+}
+
+// ---- 拖拽调整层级（draggable，HTML5 DnD）----
+const isDraggable = computed(
+  () =>
+    !!store.draggable &&
+    !node.value.disabled &&
+    !(store.allowDrag && store.allowDrag(node.value) === false)
+)
+
+/**
+ * 放置分区（对齐 el-tree 的 25% / 50% / 25%）：按布局方向选轴——
+ * horizontal（同级上下排列）按 Y 轴：上 prev / 中 inner / 下 next；
+ * vertical（同级左右排列）按 X 轴：左 prev / 中 inner / 右 next。
+ */
+function calcDropType(event: DragEvent): DropType | null {
+  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
+  const horizontal = store.direction === 'horizontal'
+  const size = horizontal ? rect.height : rect.width
+  const offset = horizontal ? event.clientY - rect.top : event.clientX - rect.left
+  const ratio = size > 0 ? offset / size : 0.5
+  if (ratio < 0.25) return 'prev'
+  if (ratio > 0.75) return 'next'
+  return 'inner'
+}
+
+/** 放置校验：自身 / 自身子树内硬性禁止；跨左右树默认禁止（allow-drop 返回 true 放开） */
+function dropValid(dragged: TreeNode, type: DropType): boolean {
+  if (dragged === node.value || store.contains(dragged, node.value)) return false
+  if (dragged.isLeftChild !== node.value.isLeftChild) {
+    return store.allowDrop?.(dragged, node.value, type) === true
+  }
+  return store.allowDrop ? store.allowDrop(dragged, node.value, type) !== false : true
+}
+
+function handleDragStart(event: DragEvent) {
+  if (!isDraggable.value) {
+    event.preventDefault()
+    return
+  }
+  tree!.draggingNode.value = node.value
+  event.dataTransfer?.setData('text/plain', String(node.value.key ?? node.value.id))
+  if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move'
+  tree!.emit('node-drag-start', node.value, event)
+}
+
+function handleDragEnd(event: DragEvent) {
+  if (tree!.draggingNode.value !== node.value) return
+  const dropNode = tree!.dragOverNode.value
+  const dropType = tree!.dragOverType.value
+  tree!.draggingNode.value = null
+  tree!.dragOverNode.value = null
+  tree!.dragOverType.value = null
+  tree!.emit('node-drag-end', node.value, dropNode, dropType, event)
+}
+
+function handleDragEnter(event: DragEvent) {
+  const dragged = tree!.draggingNode.value
+  if (dragged) tree!.emit('node-drag-enter', dragged, node.value, event)
+}
+
+function handleDragOver(event: DragEvent) {
+  const dragged = tree!.draggingNode.value
+  if (!dragged) return
+  const type = calcDropType(event)
+  if (!type || !dropValid(dragged, type)) {
+    if (tree!.dragOverNode.value === node.value) {
+      tree!.dragOverNode.value = null
+      tree!.dragOverType.value = null
+    }
+    return
+  }
+  event.preventDefault()
+  if (event.dataTransfer) event.dataTransfer.dropEffect = 'move'
+  tree!.dragOverNode.value = node.value
+  tree!.dragOverType.value = type
+  tree!.emit('node-drag-over', dragged, node.value, event)
+}
+
+function handleDragLeave(event: DragEvent) {
+  if (!tree!.draggingNode.value) return
+  // 移动到本节点的子元素上时 relatedTarget 仍在本元素内，不算离开
+  const related = event.relatedTarget as Node | null
+  if (related && (event.currentTarget as HTMLElement).contains(related)) return
+  if (tree!.dragOverNode.value === node.value) {
+    tree!.dragOverNode.value = null
+    tree!.dragOverType.value = null
+  }
+  tree!.emit('node-drag-leave', tree!.draggingNode.value, node.value, event)
+}
+
+function handleDrop(event: DragEvent) {
+  const dragged = tree!.draggingNode.value
+  const type = tree!.dragOverType.value
+  if (!dragged || !type || tree!.dragOverNode.value !== node.value) return
+  event.preventDefault()
+  const ok = store.moveNode(dragged, node.value, type)
+  tree!.dragOverNode.value = null
+  tree!.dragOverType.value = null
+  if (!ok) return
+  // inner 放置在 moveNode 内已展开目标；同步受控展开态并通知
+  tree!.onExpandChange()
+  tree!.emit('node-drop', dragged, node.value, type, event)
 }
 
 function handleContextMenu(event: MouseEvent) {

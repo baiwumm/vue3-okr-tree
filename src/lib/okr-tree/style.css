@@ -37,6 +37,8 @@
  *   --okr-current-color   选中文字            默认 #fff
  * 禁用态
  *   --okr-disabled-opacity 禁用节点透明度     默认 0.6
+ * 拖拽放置指示（draggable）
+ *   --okr-drop-color      指示线 / inner 描边颜色  默认取 --okr-current-bg
  *
  * 内置主题：default（不加类，与 vue-okr-tree 一致）/ feishu / dark / auto / minimal / colorful
  * 也可以使用任意自定义名字并自行编写 .okr-theme-{name} { --okr-*: ... }。
@@ -705,6 +707,67 @@
 .org-chart-container .org-chart-node-checkbox.is-disabled {
   opacity: var(--okr-disabled-opacity, 0.6);
   cursor: not-allowed;
+}
+
+/* ======================= 拖拽放置指示（draggable，Vue 3 版内建） ======================= */
+/*
+ * 指示画在 .org-chart-node-label-inner 上（label 自身的 ::before/::after 已被连接线占用）。
+ * drop-inner 为虚线描边；drop-prev / drop-next 为指示线，按布局方向换轴——
+ * horizontal 同级上下排列：prev 上、next 下；vertical 同级左右排列：prev 左、next 右。
+ * 颜色可用 --okr-drop-color 定制（默认取选中态 --okr-current-bg）。
+ */
+.org-chart-container .org-chart-node-label.drop-prev .org-chart-node-label-inner,
+.org-chart-container .org-chart-node-label.drop-next .org-chart-node-label-inner,
+.org-chart-container .org-chart-node-label.drop-inner .org-chart-node-label-inner {
+  position: relative;
+}
+.org-chart-container .org-chart-node-label.drop-inner .org-chart-node-label-inner {
+  outline: 2px dashed var(--okr-drop-color, var(--okr-current-bg, #3370ff));
+  outline-offset: -2px;
+}
+.org-chart-container .org-chart-node-label.drop-prev .org-chart-node-label-inner::before,
+.org-chart-container .org-chart-node-label.drop-next .org-chart-node-label-inner::after {
+  content: '';
+  position: absolute;
+  background: var(--okr-drop-color, var(--okr-current-bg, #3370ff));
+  border-radius: 1px;
+  z-index: 11;
+}
+.org-chart-container .vertical .org-chart-node-label.drop-prev .org-chart-node-label-inner::before,
+.org-chart-container .vertical .org-chart-node-label.drop-next .org-chart-node-label-inner::after {
+  top: 0;
+  bottom: 0;
+  width: 2px;
+}
+.org-chart-container .vertical .org-chart-node-label.drop-prev .org-chart-node-label-inner::before {
+  left: -4px;
+}
+.org-chart-container .vertical .org-chart-node-label.drop-next .org-chart-node-label-inner::after {
+  right: -4px;
+}
+.org-chart-container
+  .horizontal
+  .org-chart-node-label.drop-prev
+  .org-chart-node-label-inner::before,
+.org-chart-container
+  .horizontal
+  .org-chart-node-label.drop-next
+  .org-chart-node-label-inner::after {
+  left: 0;
+  right: 0;
+  height: 2px;
+}
+.org-chart-container
+  .horizontal
+  .org-chart-node-label.drop-prev
+  .org-chart-node-label-inner::before {
+  top: -4px;
+}
+.org-chart-container
+  .horizontal
+  .org-chart-node-label.drop-next
+  .org-chart-node-label-inner::after {
+  bottom: -4px;
 }
 
 /* ======================= 内置主题 ======================= */

@@ -2,6 +2,18 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## 1.10.0
+
+### 新增
+
+- **拖拽调整层级（2.x #10）**：`draggable` / `allow-drag(node)` / `allow-drop(draggingNode, dropNode, type)` 三 prop + `node-drag-start / enter / leave / over / end / drop` 六事件 + `moveNode(data, target, type)` 方法。要点——
+  - 放置分区对齐 el-tree 的 25%/50%/25%，并按布局方向换轴：horizontal（同级上下排列）按 Y 轴 prev 上 / inner 中 / next 下；vertical（同级左右排列）按 X 轴 prev 左 / inner 中 / next 右。指示线画在节点卡片上（prev/next 指示线、inner 虚线描边），颜色用 `--okr-drop-color`（默认取 `--okr-current-bg`）定制；
+  - `moveNode` 同步修改源数据 children（与 append / remove 语义一致，冻结数据下跳过写入并警告）；跨节点移动后修正整棵子树的 `level` 并重注册节点注册表；inner 放置目标自动展开（懒加载目标视为已加载）；
+  - 硬性规则：不可拖放到自身或自己的子树内（`contains` 校验，`allow-drop` 不能越过）；disabled 节点不可拖；
+  - OKR 模式跨左右树拖动默认禁止，`allow-drop` 明确返回 true 放开——放开后整棵子树的 `isLeftChild` 标记与 nodesMap / leftNodesMap 注册表随之迁移；
+  - 事件签名：`node-drag-start(node, event)`、`node-drag-enter/leave/over(draggingNode, dropNode, event)`、`node-drag-end(draggingNode, dropNode | null, dropType | null, event)`、`node-drop(draggingNode, dropNode, dropType, event)`；未完成放置时 `node-drop` 不触发、`node-drag-end` 的后两参为 null。
+- 测试 +11（三种放置与源数据同步、防自嵌套、allow 钩子、moveNode 层级修正、OKR 默认禁止与放开后的注册表迁移），全量 207 通过；Demo / 文档站新增「拖拽」交互用例。
+
 ## 1.9.0
 
 ### 新增

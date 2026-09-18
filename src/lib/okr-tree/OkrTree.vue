@@ -70,6 +70,7 @@ import {
 import type { TreeNode } from './model/node'
 import type {
   AnimateName,
+  DropType,
   ExpandBtnSlotScope,
   FilterNodeMethod,
   LabelClassName,
@@ -121,6 +122,24 @@ const props = defineProps({
    * 运行时变更会先清空再按新列表重新应用；data 重建后不恢复（与 default-expanded-keys 一致）。
    */
   defaultCheckedKeys: { type: Array as PropType<TreeKey[]>, default: undefined },
+  /**
+   * 拖拽调整层级（Vue 3 版 1.10.0 新增）：HTML5 DnD，节点可拖到目标节点的 prev / inner / next。
+   * 移动会同步修改源数据 children；inner 时目标自动展开。硬性规则：不可放到自身或自己的子树内；
+   * OKR 模式跨左右树默认禁止，allow-drop 明确返回 true 可放开。
+   */
+  draggable: { type: Boolean, default: false },
+  /** 拖拽规则钩子：返回 false 禁止拖动该节点（disabled 节点始终不可拖） */
+  allowDrag: {
+    type: Function as PropType<(node: TreeNode) => boolean>,
+    default: undefined,
+  },
+  /** 放置规则钩子：返回 false 禁止该放置位置；跨左右树默认禁止，返回 true 可放开 */
+  allowDrop: {
+    type: Function as PropType<
+      (draggingNode: TreeNode, dropNode: TreeNode, type: DropType) => boolean
+    >,
+    default: undefined,
+  },
   /** 飞书 OKR 模式：子树在根节点左右两侧展开 */
   onlyBothTree: { type: Boolean, default: false },
   /** 树节点的内容区的渲染 Function (h, node) */
@@ -221,6 +240,24 @@ const emit = defineEmits<{
   (e: 'update:currentKey', key: TreeKey | null): void
   (e: 'check', data: TreeNodeData, checkInfo: TreeCheckInfo): void
   (e: 'check-change', data: TreeNodeData, checked: boolean, indeterminate: boolean): void
+  (e: 'node-drag-start', node: TreeNode, event: DragEvent): void
+  (e: 'node-drag-enter', draggingNode: TreeNode, dropNode: TreeNode, event: DragEvent): void
+  (e: 'node-drag-leave', draggingNode: TreeNode, dropNode: TreeNode, event: DragEvent): void
+  (e: 'node-drag-over', draggingNode: TreeNode, dropNode: TreeNode, event: DragEvent): void
+  (
+    e: 'node-drag-end',
+    draggingNode: TreeNode,
+    dropNode: TreeNode | null,
+    dropType: DropType | null,
+    event: DragEvent
+  ): void
+  (
+    e: 'node-drop',
+    draggingNode: TreeNode,
+    dropNode: TreeNode,
+    dropType: DropType,
+    event: DragEvent
+  ): void
 }>()
 
 defineSlots<{
@@ -291,6 +328,9 @@ const rawStore = new TreeStore({
   showCheckbox: props.showCheckbox,
   checkStrictly: props.checkStrictly,
   defaultCheckedKeys: props.defaultCheckedKeys,
+  draggable: props.draggable,
+  allowDrag: props.allowDrag,
+  allowDrop: props.allowDrop,
   currentNodeKey: props.currentNodeKey,
   defaultExpandAll: props.defaultExpandAll,
   filterNodeMethod: props.filterNodeMethod,
@@ -395,6 +435,11 @@ function focusParent(node: TreeNode, isLeftChildNode: boolean) {
   focusNode(parent)
 }
 
+// ---- 拖拽调整层级（draggable）：跨节点组件共享的指示状态 ----
+const draggingNode = shallowRef<TreeNode | null>(null)
+const dragOverNode = shallowRef<TreeNode | null>(null)
+const dragOverType = shallowRef<DropType | null>(null)
+
 provide(OKR_TREE_INJECTION_KEY, {
   store,
   root,
@@ -424,6 +469,9 @@ provide(OKR_TREE_INJECTION_KEY, {
   focusNode,
   moveFocus,
   focusParent,
+  draggingNode,
+  dragOverNode,
+  dragOverType,
 })
 
 // ---- OkrTreeGroup：成员变化时请求重新测量 ----
@@ -500,6 +548,19 @@ watch(
 watch(
   () => props.defaultCheckedKeys,
   (v) => store.setDefaultCheckedKeys(v)
+)
+// draggable / allowDrag / allowDrop：拖拽配置，运行时变更直接生效
+watch(
+  () => props.draggable,
+  (v) => (store.draggable = v)
+)
+watch(
+  () => props.allowDrag,
+  (v) => (store.allowDrag = v ?? null)
+)
+watch(
+  () => props.allowDrop,
+  (v) => (store.allowDrop = v ?? null)
 )
 // defaultExpandAll：同步到 store，影响后续新建（重建）的节点；不追溯改变现有展开态
 watch(
@@ -727,6 +788,18 @@ function isChecked(data: TreeNode | TreeKey | TreeNodeData): boolean {
 }
 
 /**
+ * 移动节点到目标节点的 prev（同级之前）/ inner（成为子节点）/ next（同级之后），
+ * 同步修改源数据并保持视图一致；成功返回 true。inner 时目标节点自动展开。
+ */
+function moveNode(
+  data: TreeNode | TreeKey | TreeNodeData,
+  target: TreeNode | TreeKey | TreeNodeData,
+  type: DropType
+): boolean {
+  return store.moveNode(data, target, type)
+}
+
+/**
  * 滚动到指定节点：默认先展开其全部祖先使其可见，再 scrollIntoView（居中、平滑）。
  * 返回是否找到节点并完成滚动。
  */
@@ -799,6 +872,7 @@ defineExpose({
   getHalfCheckedKeys,
   setCheckedKeys,
   isChecked,
+  moveNode,
 })
 </script>
 
