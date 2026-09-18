@@ -191,6 +191,7 @@
 | 2026-09-18 | 1.4.0 | `lazy`/`load` 懒加载、`OkrTreeViewport` 画布（缩放/平移/导出）、`getNodeEl` 方法、Demo +2                                                                      | `498e9cc` `3ea31cd` |
 | 2026-09-18 | 1.7.0 | #13 低风险档（reduced-motion 直切、`aria-setsize`/`aria-posinset`、`show-node-num` 只计可见、未知 `theme` 警告、死代码清理）、Logo 接入、CI 与视觉回归红灯修复 | `6830337` `698aec4` |
 | 2026-09-18 | 1.8.0 | #13 交互档（`accordion` 手风琴、`expand-on-click-node`）、SSR `renderToString` 冒烟测试、peer 实测收紧 `vue>=3.3.0` + CI peer-matrix、Demo +2                  | `e531e0c`           |
+| 2026-09-19 | 1.9.0 | #14 复选框选择模式（联动/半选/strictly、check/check-change、六方法、OKR 语义、键盘/a11y）、Demo +1、ESM 预算上调 22 kB                                              | `a14c0cc`           |
 
 ## 已决定不做
 
