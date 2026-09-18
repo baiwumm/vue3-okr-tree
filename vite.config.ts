@@ -53,5 +53,17 @@ export default defineConfig({
     globals: true,
     include: ['tests/**/*.spec.ts'],
     css: false,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'lcov'],
+      include: ['src/lib/**'],
+      // 初始阈值（roadmap 1.5.0 #7）：当前基线 statements ≈ 90%，门槛 80%
+      thresholds: {
+        statements: 80,
+        branches: 75,
+        functions: 80,
+        lines: 80,
+      },
+    },
   },
 })

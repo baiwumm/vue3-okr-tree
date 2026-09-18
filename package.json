@@ -39,9 +39,14 @@
   "jsdelivr": "./dist/vue3-okr-tree.umd.js",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/vue3-okr-tree.es.js",
-      "require": "./dist/vue3-okr-tree.cjs",
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/vue3-okr-tree.es.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/vue3-okr-tree.cjs"
+      },
       "default": "./dist/vue3-okr-tree.es.js"
     },
     "./dist/style.css": "./dist/style.css",
@@ -53,7 +58,7 @@
   ],
   "scripts": {
     "dev": "vite --config vite.playground.config.ts",
-    "build": "vite build",
+    "build": "vite build && node scripts/post-build.mjs",
     "verify:dist": "node scripts/verify-dist.mjs",
     "build:check": "pnpm build && pnpm verify:dist",
     "build:playground": "vite build --config vite.playground.config.ts",
@@ -65,17 +70,23 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "bench": "node scripts/benchmark.mjs"
+    "bench": "node scripts/benchmark.mjs",
+    "test:coverage": "vitest run --coverage",
+    "verify:package": "publint && attw --pack . --exclude-entrypoints ./style.css ./dist/style.css",
+    "size": "size-limit"
   },
   "peerDependencies": {
     "vue": ">=3.0.0"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
     "@eslint/js": "^9.39.5",
     "@microsoft/api-extractor": "^7.59.1",
+    "@size-limit/file": "^14.0.0",
     "@types/node": "^24.13.5",
     "@types/prismjs": "^1.26.6",
     "@vitejs/plugin-vue": "^6.0.9",
+    "@vitest/coverage-v8": "^5.0.1",
     "@vue/test-utils": "^2.5.1",
     "eslint": "^9.39.5",
     "eslint-plugin-vue": "^10.11.0",
@@ -84,6 +95,8 @@
     "jsdom": "^30.0.1",
     "prettier": "^3.9.7",
     "prismjs": "^1.30.0",
+    "publint": "^0.3.24",
+    "size-limit": "^14.0.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.70.0",
     "vite": "^7.3.6",
@@ -94,5 +107,25 @@
   },
   "engines": {
     "node": ">=18.0.0"
-  }
+  },
+  "size-limit": [
+    {
+      "name": "ESM (vue3-okr-tree.es.js)",
+      "path": "dist/vue3-okr-tree.es.js",
+      "gzip": true,
+      "limit": "19 kB"
+    },
+    {
+      "name": "样式 (style.css)",
+      "path": "dist/style.css",
+      "gzip": true,
+      "limit": "3.6 kB"
+    },
+    {
+      "name": "UMD (vue3-okr-tree.umd.js)",
+      "path": "dist/vue3-okr-tree.umd.js",
+      "gzip": true,
+      "limit": "19.5 kB"
+    }
+  ]
 }

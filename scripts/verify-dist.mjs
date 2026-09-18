@@ -12,8 +12,9 @@ const distEs = resolve(root, 'dist/vue3-okr-tree.es.js')
 const distUmd = resolve(root, 'dist/vue3-okr-tree.umd.js')
 const distCss = resolve(root, 'dist/style.css')
 const distDts = resolve(root, 'dist/index.d.ts')
+const distDcts = resolve(root, 'dist/index.d.cts')
 
-for (const f of [distEs, distUmd, distCss, distDts]) {
+for (const f of [distEs, distUmd, distCss, distDts, distDcts]) {
   if (!existsSync(f)) {
     console.error(`[verify:dist] 缺少产物: ${f}`)
     process.exit(1)
@@ -133,5 +134,10 @@ assert(
   'index.d.ts 含导出声明'
 )
 assert(!/from '\.\.?\//.test(dts), 'index.d.ts 无未打包的相对路径引用')
+const dcts = readFileSync(distDcts, 'utf8')
+assert(
+  dcts === dts || (dcts.includes('export declare const VueOkrTree') && !/from '\.\.?\//.test(dcts)),
+  'index.d.cts 与 index.d.ts 内容一致（CJS require 类型条件）'
+)
 
 console.log('[verify:dist] ALL PASSED')

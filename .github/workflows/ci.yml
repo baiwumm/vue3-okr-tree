@@ -43,11 +43,20 @@ jobs:
       - name: Unit & component tests
         run: pnpm test
 
+      - name: Coverage (thresholds in vite.config.ts)
+        run: pnpm test:coverage
+
       - name: Build library
         run: pnpm build
 
       - name: Verify dist
         run: pnpm verify:dist
+
+      - name: Package checks (publint + attw)
+        run: pnpm verify:package
+
+      - name: Size budget (size-limit)
+        run: pnpm size
 
       - name: Build playground against dist
         run: PLAYGROUND_USE_DIST=1 pnpm build:playground

@@ -1,0 +1,37 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":semanticCommits"],
+  "rangeStrategy": "bump",
+  "labels": ["dependencies"],
+  "timezone": "Asia/Shanghai",
+  "schedule": ["before 6am on monday"],
+  "packageRules": [
+    {
+      "description": "minor / patch 版本分组，CI 通过后自动合并",
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "minor/patch 依赖",
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true,
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "description": "major 版本单独 PR，人工评审",
+      "matchUpdateTypes": ["major"],
+      "groupName": "major 依赖",
+      "automerge": false
+    },
+    {
+      "description": "vue 与构建链工具升级不自动合并（peer 影响面大）",
+      "matchPackageNames": [
+        "vue",
+        "vite",
+        "typescript",
+        "vite-plugin-dts",
+        "@vitejs/plugin-vue",
+        "vue-tsc"
+      ],
+      "automerge": false
+    }
+  ]
+}
