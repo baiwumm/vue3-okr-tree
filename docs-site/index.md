@@ -1,0 +1,41 @@
+---
+layout: home
+
+hero:
+  name: vue3-okr-tree
+  text: Vue 3 组织架构树 / OKR 树组件
+  tagline: 根节点左右双向展开 · 纯 CSS 连接线 · CSS 变量主题化 · 懒加载 · 画布缩放与导出
+  actions:
+    - theme: brand
+      text: 快速开始
+      link: /guide/quick-start
+    - theme: alt
+      text: 可交互 Demo
+      link: /guide/demos
+    - theme: alt
+      text: API
+      link: /api/
+    - theme: alt
+      text: GitHub
+      link: https://github.com/baiwumm/vue3-okr-tree
+
+features:
+  - icon: 🌳
+    title: OKR 左右双向展开
+    details: 类似飞书 OKR 的根节点双向布局，内建 align-root 根对齐，展开/收起不位移；OkrTreeGroup 支持多树对齐。
+  - icon: 🎨
+    title: CSS 变量主题化
+    details: 23+ 个 --okr-* 变量，内置 default / feishu / dark / auto / minimal / colorful 六套主题，也支持自定义主题名。
+  - icon: ⚡
+    title: 大数据量友好
+    details: lazy + load 按需加载子节点、updateChildren 逐层脏检查、deep-watch 开关，2000 节点首渲染 < 300ms。
+  - icon: 🖱️
+    title: 画布缩放与导出
+    details: OkrTreeViewport 提供滚轮缩放、拖拽平移、适应窗口与 PNG / SVG 导出，不侵入树本体。
+  - icon: ⌨️
+    title: WAI-ARIA 可访问性
+    details: role=tree / treeitem、漫游 tabindex、完整方向键导航，OKR 左树镜像。
+  - icon: 📦
+    title: 发布就绪
+    details: ESM / CJS / UMD + style.css + 单文件 d.ts；publint / attw 零错误，CI 全链路校验。
+---

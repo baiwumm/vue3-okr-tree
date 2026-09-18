@@ -59,7 +59,8 @@ test.describe('六套主题（作用于基础用法用例）', () => {
 
   for (const theme of themes) {
     test(`主题 ${theme}`, async ({ page }) => {
-      await page.goto('/', { colorScheme: 'light' }) // auto 主题固定浅色，保证确定性
+      await page.emulateMedia({ colorScheme: 'light' }) // auto 主题固定浅色，保证确定性
+      await page.goto('/')
       await page.locator('.demo-theme-bar').scrollIntoViewIfNeeded()
       await page.locator('.demo-theme-bar .demo-btn', { hasText: theme }).click()
       await settle(page, 'demo-1')

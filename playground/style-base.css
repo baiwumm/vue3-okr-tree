@@ -1,0 +1,21 @@
+/* Demo 站基础 reset（仅 playground 使用；文档站不引入，避免覆盖 VitePress 主题） */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji';
+  font-size: 16px;
+  line-height: 1.5;
+  color: #24292f;
+  background: #fff;
+  -webkit-font-smoothing: antialiased;
+}

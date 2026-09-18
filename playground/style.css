@@ -1,25 +1,4 @@
-/* Demo 站全局样式（对应原 VueOkrTreeDeom.vue 的排版样式 + github-markdown-css 的基础字体） */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-html,
-body {
-  margin: 0;
-  padding: 0;
-}
-body {
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif,
-    'Apple Color Emoji', 'Segoe UI Emoji';
-  font-size: 16px;
-  line-height: 1.5;
-  color: #24292f;
-  background: #fff;
-  -webkit-font-smoothing: antialiased;
-}
-
+/* Demo 站排版样式（类作用域，文档站 docs-site 复用同一份） */
 .vue-okr-tree-demo {
   max-width: 1000px;
   margin: 0 auto;

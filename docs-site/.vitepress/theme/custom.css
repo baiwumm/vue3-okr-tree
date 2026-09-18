@@ -1,0 +1,10 @@
+/* 文档站对默认主题的少量补充（Demo 复用样式的协调） */
+.VPDoc .docs-demo-block {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 12px 0;
+}
+.api-doc-section table {
+  width: 100%;
+}

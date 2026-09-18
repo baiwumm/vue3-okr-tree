@@ -31,3 +31,7 @@ coverage/
 # local env
 .env.local
 .env.*.local
+
+# VitePress 文档站构建产物
+docs-site/.vitepress/dist
+docs-site/.vitepress/cache

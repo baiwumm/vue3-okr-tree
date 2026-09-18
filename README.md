@@ -388,99 +388,116 @@ const DeptTree = createTypedOkrTree<Dept>()
 | `--okr-disabled-opacity`  | 禁用节点透明度                    | `0.6`                           |
 | `--okr-anim-duration`     | 展开/收起过渡时长（由 prop 写入） | `200ms`                         |
 
+<!-- API-DOC-BEGIN（本段由 pnpm gen:readme 从 shared/api.ts 生成，勿手改） -->
+
 ## API
 
 ### Attributes
 
-| 参数                       | 说明                                                                                                                                                               | 类型                   | 默认值               |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------- | -------------------- |
-| `data`                     | 展示数据（数组，支持多根）                                                                                                                                         | array                  | 必填                 |
-| `direction`                | 展开方向：`vertical` / `horizontal`                                                                                                                                | string                 | `vertical`           |
-| `onlyBothTree`             | 飞书 OKR 模式：子树在根节点左右两侧展开，需 `direction="horizontal"` 且提供 `leftData`                                                                             | boolean                | `false`              |
-| `leftData`                 | 左子树数据                                                                                                                                                         | array                  | —                    |
-| `label-width`              | 节点宽度。number → px；string → 直接作为 `style.width`                                                                                                             | string / number        | auto                 |
-| `label-height`             | 节点高度，规则同上                                                                                                                                                 | string / number        | auto                 |
-| `label-class-name`         | 节点 className，`Function(node)` 或字符串。`node` 为内部 Node 实例                                                                                                 | Function / string      | —                    |
-| `current-lable-class-name` | 选中节点 className（保留原拼写）                                                                                                                                   | Function / string      | —                    |
-| `show-collapsable`         | 是否显示 +/- 展开按钮。为 `false` 时组件强制全部展开                                                                                                               | boolean                | `false`              |
-| `show-node-num`            | 折叠时在按钮内显示子节点数                                                                                                                                         | boolean                | `false`              |
-| `default-expand-all`       | 默认展开全部（仅 `show-collapsable` 为 true 时有意义）                                                                                                             | boolean                | `false`              |
-| `render-content`           | 节点内容渲染函数 `(h, node)`                                                                                                                                       | Function               | —                    |
-| `node-btn-content`         | 展开按钮内容渲染函数 `(h, node)`                                                                                                                                   | Function               | —                    |
-| `node-component`           | **新增。** 节点内容组件，以 `{ node, data }` 为 props 渲染。优先级：`#default` 插槽 > `node-component` > `render-content`                                          | Component              | —                    |
-| `props`                    | 字段映射，见下表                                                                                                                                                   | object                 | —                    |
-| `node-key`                 | 节点唯一标识字段名                                                                                                                                                 | string                 | —                    |
-| `default-expanded-keys`    | 默认展开的 key 数组（需 `node-key`）；OKR 模式下对左右两树同时生效                                                                                                 | array                  | —                    |
-| `current-node-key`         | 初始选中节点 key（需 `node-key`）                                                                                                                                  | string / number        | —                    |
-| `filter-node-method`       | 过滤方法 `(value, data, node)`，返回 false 隐藏。`filter('')` 时同样会被调用，需对空值返回 true                                                                    | Function               | —                    |
-| `animate`                  | 是否开启展开/收起过渡动画                                                                                                                                          | boolean                | `false`              |
-| `animate-name`             | `okr-fade-in-linear` / `okr-fade-in` / `okr-zoom-in-center` / `okr-zoom-in-top` / `okr-zoom-in-bottom` / `okr-zoom-in-left`                                        | string                 | `okr-zoom-in-center` |
-| `animate-duration`         | 过渡时长（ms）                                                                                                                                                     | number                 | `200`                |
-| `align-root`               | **新增。** OKR 模式下自动根对齐                                                                                                                                    | boolean                | `true`               |
-| `theme`                    | **新增。** 内置主题：`default` / `feishu` / `dark` / `auto` / `minimal` / `colorful`，或自定义名字（自行编写 `.okr-theme-{name}` 变量），见「主题与样式定制」      | string                 | `default`            |
-| `expanded-keys`            | **新增。** 受控展开态（`v-model:expanded-keys`，需 `node-key`）：列表内节点展开、其余收起；变化时触发 `update:expandedKeys`。未传为非受控                          | array                  | —                    |
-| `current-key`              | **新增。** 受控选中态（`v-model:current-key`，需 `node-key`）：`null` 表示无选中；变化时触发 `update:currentKey`                                                   | string / number / null | —                    |
-| `lazy`                     | **新增。** 懒加载子节点：初始 data 中没有 children（或为空数组）的节点首次展开时调用 `load`，见「懒加载子节点」                                                    | boolean                | `false`              |
-| `load`                     | **新增。** 懒加载取数函数 `(node, resolve, reject)`；resolve 后子节点写入源数据 children 并展开，reject / 抛错时回到折叠态可重试。`node.isLeftChild` 区分 OKR 左树 | Function               | —                    |
+与 vue-okr-tree 完全对齐；`align-root` 起为 Vue 3 版新增。
 
-### props 配置
+| 参数                     | 说明                                                                                                                                                                                                | 类型                                                                                                                              | 默认值             |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| data                     | 展示数据（数组，支持多根）                                                                                                                                                                          | array                                                                                                                             | — (必填)           |
+| direction                | 树的展开方向                                                                                                                                                                                        | string（可选值：horizontal / vertical）                                                                                           | vertical           |
+| onlyBothTree             | 飞书 OKR 模式：子树在根节点左右两边展开，该模式只有在 `direction` 为 horizontal 时有效，且必须提供 leftData 数据                                                                                    | boolean                                                                                                                           | false              |
+| leftData                 | 展示左子树的数据，仅在 onlyBothTree 模式启用                                                                                                                                                        | array                                                                                                                             | —                  |
+| label-width              | 节点的宽度，默认为自动宽度。number 类型单位 px；string 类型直接作为节点的 style.width                                                                                                               | string / number                                                                                                                   | auto               |
+| label-height             | 节点的高度，默认为自动高度。number 类型单位 px；string 类型直接作为节点的 style.height                                                                                                              | string / number                                                                                                                   | auto               |
+| label-class-name         | 节点 className 的回调方法，也可以使用字符串为所有节点设置固定 className。函数参数为内部 Node 实例（源数据在 `node.data`）                                                                           | Function(node) / string                                                                                                           | —                  |
+| current-lable-class-name | 当前选中节点的样式（保留原拼写）                                                                                                                                                                    | Function(node) / string                                                                                                           | —                  |
+| show-collapsable         | 节点是否可被展开（显示 +/- 圆形按钮）。为 false 时组件强制全部展开                                                                                                                                  | boolean                                                                                                                           | false              |
+| show-node-num            | 折叠时在圆形按钮内显示子节点数                                                                                                                                                                      | boolean                                                                                                                           | false              |
+| default-expand-all       | 默认展开全部，仅在 show-collapsable 为 true 时有意义                                                                                                                                                | boolean                                                                                                                           | false              |
+| render-content           | 树节点内容区的渲染 Function。`h` 由组件从 vue 导入后传入；`node` 为内部 Node 实例（源数据在 `node.data`，文本在 `node.label`），与 element-ui 的 `(h, { data })` 不同                               | Function(h, node)                                                                                                                 | —                  |
+| node-btn-content         | 展开按钮内容渲染函数，参数约定同上                                                                                                                                                                  | Function(h, node)                                                                                                                 | —                  |
+| node-component           | **Vue 3 版新增。**节点内容组件，以 `{ node, data }` 为 props 渲染。优先级：`#default` 插槽 > node-component > render-content                                                                        | Component                                                                                                                         | —                  |
+| props                    | 配置选项，具体看下表                                                                                                                                                                                | object                                                                                                                            | —                  |
+| node-key                 | 每个树节点用来作为唯一标识的属性，整棵树应该是唯一的                                                                                                                                                | string                                                                                                                            | —                  |
+| default-expanded-keys    | 默认展开的节点的 key 数组（必须设置 node-key）。OKR 模式下对左右两棵树同时生效                                                                                                                      | array                                                                                                                             | —                  |
+| current-node-key         | 初始选中节点的 key（需 node-key）                                                                                                                                                                   | string / number                                                                                                                   | —                  |
+| filter-node-method       | 对树节点进行筛选时执行的方法，返回 true 表示节点可以显示，返回 false 隐藏。调用 `filter('')` 时同样会执行，需对空值返回 true 以恢复全部显示                                                         | Function(value, data, node)                                                                                                       | —                  |
+| animate                  | 是否开启节点展开的过渡动画                                                                                                                                                                          | boolean                                                                                                                           | false              |
+| animate-name             | 过渡动画名称                                                                                                                                                                                        | string（可选值：okr-fade-in-linear / okr-fade-in / okr-zoom-in-center / okr-zoom-in-top / okr-zoom-in-bottom / okr-zoom-in-left） | okr-zoom-in-center |
+| animate-duration         | 过渡动画时长（ms）。原版声明但未生效，Vue 3 版已修复                                                                                                                                                | number                                                                                                                            | 200                |
+| align-root               | **Vue 3 版新增。**OKR 模式下自动按左右子树对齐根节点（纯 CSS），展开/收起不改变根节点位置；设为 false 恢复原始行为                                                                                  | boolean                                                                                                                           | true               |
+| theme                    | **Vue 3 版新增。**内置主题：default / feishu / dark / auto / minimal / colorful，或自定义名字（自行编写 `.okr-theme-{name}` 变量）。全部外观取值可通过 `--okr-*` CSS 变量覆盖                       | string（可选值：default / feishu / dark / auto / minimal / colorful）                                                             | default            |
+| expanded-keys            | **Vue 3 版新增。**受控展开态（支持 `v-model:expanded-keys`，需 node-key）：传入后列表内节点展开、其余收起；用户点击 +/- 或调用展开/收起方法后触发 `update:expandedKeys`。未传时为非受控（原版行为） | array                                                                                                                             | —                  |
+| current-key              | **Vue 3 版新增。**受控选中态（支持 `v-model:current-key`，需 node-key）：`null` 表示无选中；点击节点或调用 setCurrentKey / setCurrentNode 后触发 `update:currentKey`                                | string / number / null                                                                                                            | —                  |
+| lazy                     | **Vue 3 版新增（1.4.0）。**懒加载子节点：初始 data 中没有 children（或为空数组）的节点视为未加载，首次展开时调用 `load`                                                                             | boolean                                                                                                                           | false              |
+| load                     | **Vue 3 版新增（1.4.0）。**懒加载取数函数。`resolve(children)` 后子节点同步写入源数据 children 并展开；`reject()` 或抛错时节点回到折叠态、可重试。`node.isLeftChild` 可区分 OKR 左树节点            | Function(node, resolve, reject?)                                                                                                  | —                  |
+| deep-watch               | **Vue 3 版新增（1.5.0，创建期生效）。**data 深度侦听开关：默认 true（原地变更触发增量更新）；false 只响应 data 引用变化，超大数据量且不依赖原地变更时降低 watch 开销                                | boolean                                                                                                                           | true               |
 
-| 参数       | 说明                                                                                          | 类型                            | 默认值     |
-| ---------- | --------------------------------------------------------------------------------------------- | ------------------------------- | ---------- |
-| `label`    | 节点文本字段                                                                                  | string / `function(data, node)` | `label`    |
-| `children` | 子节点字段                                                                                    | string                          | `children` |
-| `disabled` | 禁用字段。禁用节点带 `is-disabled` 类，点击不选中、不触发 `node-click`（Vue 3 版实现）        | string / `function(data, node)` | `disabled` |
-| `isLeaf`   | **新增。** 叶子字段：`lazy` 模式下未加载节点的 isLeaf 取该字段，标记为叶子的节点不触发 `load` | string / `function(data, node)` | —          |
+### Props（props 属性的字段映射配置）
+
+通过 `props` 属性传入的字段映射配置。
+
+| 参数     | 说明                                                                                                               | 类型                          | 默认值   |
+| -------- | ------------------------------------------------------------------------------------------------------------------ | ----------------------------- | -------- |
+| label    | 指定节点文本为节点对象的某个属性值，或由函数返回                                                                   | string / function(data, node) | label    |
+| children | 指定子树为节点对象的某个属性值                                                                                     | string                        | children |
+| disabled | 指定禁用字段（Vue 3 版实现真实禁用：禁用节点带 `is-disabled` 类，点击不选中、不触发 node-click）                   | string / function(data, node) | disabled |
+| isLeaf   | 指定叶子字段（Vue 3 版新增）：lazy 模式下未加载节点的 isLeaf 取该字段，标记为叶子的节点不显示展开按钮、不触发 load | string / function(data, node) | —        |
 
 ### Events
 
-| 事件                  | 说明                                                     | 回调参数                             |
-| --------------------- | -------------------------------------------------------- | ------------------------------------ |
-| `node-click`          | 节点被点击（同时设置选中态）                             | `(data, node, nodeComponent)`        |
-| `node-expand`         | 节点展开                                                 | `(data, node, nodeComponent)`        |
-| `node-collapse`       | 节点收起                                                 | `(data, node, nodeComponent)`        |
-| `node-contextmenu`    | 节点右键。仅当外部监听了该事件时才阻止浏览器默认右键菜单 | `(event, data, node, nodeComponent)` |
-| `update:expandedKeys` | **新增。** 受控展开态变化（仅传入 `expanded-keys` 时）   | `(keys: TreeKey[])`                  |
-| `update:currentKey`   | **新增。** 受控选中态变化（仅传入 `current-key` 时）     | `(key: TreeKey \| null)`             |
+`node` 均为内部 Node 实例，`nodeComponent` 为递归节点组件实例。
+
+| 事件名称            | 说明                                                                                   | 回调参数                           |
+| ------------------- | -------------------------------------------------------------------------------------- | ---------------------------------- |
+| node-click          | 节点被点击时的回调（同时设置当前选中态）                                               | (data, node, nodeComponent)        |
+| node-expand         | 节点被展开时触发的事件                                                                 | (data, node, nodeComponent)        |
+| node-collapse       | 节点被关闭时触发的事件                                                                 | (data, node, nodeComponent)        |
+| node-contextmenu    | 当某一节点被鼠标右键点击时会触发该事件。仅当外部绑定了该事件时才阻止浏览器默认右键菜单 | (event, data, node, nodeComponent) |
+| update:expandedKeys | **Vue 3 版新增。**受控展开态变化时触发（仅传入 expanded-keys 时）                      | (keys: TreeKey[])                  |
+| update:currentKey   | **Vue 3 版新增。**受控选中态变化时触发（仅传入 current-key 时）                        | (key: TreeKey \| null)             |
 
 ### Methods（通过 ref 调用）
 
-| 方法                                    | 说明                                                                                                                                                                                              |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `filter(value)`                         | 过滤；OKR 模式下同时过滤左右子树。未设置 `filter-node-method` 时抛错                                                                                                                              |
-| `updateKeyChildren(key, data)`          | 用新数据替换 key 节点的全部子节点。需 `node-key`，缺失抛错                                                                                                                                        |
-| `getNode(data)`                         | 按 Node 实例 / key / data 对象获取内部 Node。OKR 模式右树优先，右树不存在时回退左树                                                                                                               |
-| `setCurrentNode(node)`                  | 设置选中（Node 实例）。需 `node-key`，缺失抛错                                                                                                                                                    |
-| `setCurrentKey(key)`                    | 按 key 设置选中；`null` 取消高亮。需 `node-key`，缺失抛错                                                                                                                                         |
-| `getCurrentKey()`                       | 当前选中 key，无则 `null`。需 `node-key`，缺失抛错                                                                                                                                                |
-| `getCurrentNode()`                      | 当前选中节点的 data，无则 `null`                                                                                                                                                                  |
-| `remove(data)`                          | 删除节点（Node / key / data）。**需 `node-key`，未设置时静默无效**                                                                                                                                |
-| `append(data, parentNode)`              | 追加子节点；`parentNode` 支持 key / data / Node，省略则追加为根                                                                                                                                   |
-| `insertBefore(data, refNode)`           | 在 refNode 前插入                                                                                                                                                                                 |
-| `insertAfter(data, refNode)`            | 在 refNode 后插入                                                                                                                                                                                 |
-| `expandAll()`                           | **新增。** 展开全部节点（OKR 模式含左右两树）；`lazy` 模式下未加载节点先触发加载、完成后再展开                                                                                                    |
-| `collapseAll()`                         | **新增。** 收起全部节点                                                                                                                                                                           |
-| `expandNode(data, expandParent = true)` | **新增。** 展开指定节点（key / data / Node），默认连同祖先展开；OKR 根节点同时展开左右两侧；`lazy` 下先加载再展开。返回 Node 或 null                                                              |
-| `collapseNode(data)`                    | **新增。** 收起指定节点；OKR 根节点同时收起左右两侧                                                                                                                                               |
-| `scrollToNode(data, options?)`          | **新增。** 先展开祖先使其可见，再 `scrollIntoView`（居中、平滑）。`options` 为 `ScrollIntoViewOptions & { expand?: boolean }`，返回 `Promise<boolean>`；`lazy` 下等待路径上的节点加载完成后再滚动 |
-| `getNodeEl(data)`                       | **新增（1.4.0）。** 按 Node / key / data 获取节点对应的 DOM 元素（`OkrTreeViewport` 的 centerNode 也基于它定位）                                                                                  |
+通过组件 `ref` 调用。增删类方法会同步修改传入的源数据（与 vue-okr-tree 一致）。
+
+| 方法名            | 说明                                                                                                                                                              | 参数                                                                                             |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| filter            | 对树节点进行筛选操作；onlyBothTree 模式下同时过滤左右子树。未设置 filter-node-method 时抛错                                                                       | (value) 在 filter-node-method 中作为第一个参数                                                   |
+| updateKeyChildren | 通过 key 设置节点的子元素，使用此方法必须设置 node-key 属性（缺失抛错）                                                                                           | (key, data) 1. 节点的 key 2. 子节点数据                                                          |
+| getNode           | 根据 data / key / Node 实例获取内部 Node。OKR 模式下右树优先，右树不存在时回退到左树                                                                              | (data) 要获得 node 的 key、data 对象或 Node 实例                                                 |
+| setCurrentNode    | 通过 node 设置某个节点的当前选中状态，必须设置 node-key（缺失抛错）                                                                                               | (node) 待被选节点的 Node 实例                                                                    |
+| setCurrentKey     | 通过 key 设置某个节点的当前选中状态，必须设置 node-key（缺失抛错）                                                                                                | (key) 待被选节点的 key，若为 null 则取消当前高亮                                                 |
+| getCurrentKey     | 获取当前被选中节点的 key，若没有节点被选中则返回 null。必须设置 node-key（缺失抛错）                                                                              | —                                                                                                |
+| getCurrentNode    | 获取当前被选中节点的 data，若没有节点被选中则返回 null                                                                                                            | —                                                                                                |
+| remove            | 删除 Tree 中的一个节点，使用此方法必须设置 node-key（未设置时静默无效）。会同步删除源数据中的对应项                                                               | (data) 要删除的节点的 data、key 或 Node 实例                                                     |
+| append            | 为 Tree 中的一个节点追加一个子节点。会同步写入源数据的 children                                                                                                   | (data, parentNode) 1. 要追加的子节点的 data 2. 父节点的 data、key 或 Node 实例（省略则追加为根） |
+| insertBefore      | 为 Tree 的一个节点的前面增加一个节点。会同步写入源数据                                                                                                            | (data, refNode) 1. 要增加的节点的 data 2. 参考节点的 data、key 或 Node 实例                      |
+| insertAfter       | 为 Tree 的一个节点的后面增加一个节点。会同步写入源数据                                                                                                            | (data, refNode) 1. 要增加的节点的 data 2. 参考节点的 data、key 或 Node 实例                      |
+| expandAll         | **Vue 3 版新增。**展开全部节点（OKR 模式含左右两树）；lazy 模式下未加载节点先触发加载、完成后再展开                                                               | —                                                                                                |
+| collapseAll       | **Vue 3 版新增。**收起全部节点                                                                                                                                    | —                                                                                                |
+| expandNode        | **Vue 3 版新增。**展开指定节点，默认连同祖先一起展开；OKR 根节点会同时展开左右两侧；lazy 下先加载再展开。返回 Node 或 null                                        | (data, expandParent = true) data 为 key、data 对象或 Node 实例                                   |
+| collapseNode      | **Vue 3 版新增。**收起指定节点；OKR 根节点会同时收起左右两侧                                                                                                      | (data)                                                                                           |
+| scrollToNode      | **Vue 3 版新增。**滚动到指定节点：默认先展开其全部祖先使其可见，再 `scrollIntoView`（居中、平滑）。返回 Promise<boolean>；lazy 下等待路径上的节点加载完成后再滚动 | (data, options?) options 为 ScrollIntoViewOptions，另含 `expand`（默认 true）                    |
+| getNodeEl         | **Vue 3 版新增（1.4.0）。**按 Node / key / data 获取节点对应的 DOM 元素（OkrTreeViewport 的 centerNode 也基于它定位）                                             | (data)                                                                                           |
 
 ### Slots
 
-| 插槽         | 说明                                                                    | 作用域参数                                                                                                                   |
-| ------------ | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `default`    | 节点内容（替代 `render-content`）                                       | `{ node, data }`                                                                                                             |
-| `expand-btn` | 展开按钮内容（替代 `node-btn-content`；`show-node-num` 开启时数字优先） | `{ node, data, expanded, side, loading }`，`side` 为 `right`（常规/右子树）或 `left`（OKR 左子树），`loading` 为懒加载进行中 |
-| `empty`      | `data` 为空数组时在容器内渲染                                           | —                                                                                                                            |
+Vue 3 版新增的插槽。`#default` 与 `render-content`、`#expand-btn` 与 `node-btn-content` 二者任选其一，插槽优先。
 
-### 需要注意的行为
+| 插槽名     | 说明                                                         | 作用域参数                                                                                                               |
+| ---------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| default    | 节点内容                                                     | `{ node, data }`，node 为内部 Node 实例                                                                                  |
+| expand-btn | 展开按钮内容；`show-node-num` 开启时折叠态的数字优先于该插槽 | `{ node, data, expanded, side, loading }`，side 为 `right`（常规/右子树）或 `left`（OKR 左子树），loading 为懒加载进行中 |
+| empty      | `data` 为空数组时在容器内渲染                                | —                                                                                                                        |
 
-- **增删方法会同步修改传入的源数据**：`append` / `insertBefore` / `insertAfter` 会把新数据写入父节点源数据的 `children` 数组，`remove` / `updateKeyChildren` 会从源数据中删除。这与 `vue-okr-tree` 一致，也是让 `data` 与视图保持一致的方式。
-- 依赖 `node-key` 的方法：`setCurrentNode` / `setCurrentKey` / `getCurrentKey` / `updateKeyChildren` 缺少 `node-key` 时抛出 `[Tree] nodeKey is required in xxx`；`remove` / `append(key)` 等按 key 查找的方法在未设置 `node-key` 时查不到节点、静默无效。传 data 对象时可依赖内部隐藏标记 `$treeNodeId` 查找。
-- `data` 为响应式对象时，原地 `push` / `splice` 会被侦听并增量更新视图（保留已展开状态）；替换引用则整棵重建。
-- 组件导出了 `TreeStore` / `TreeNode` / `createNode` 与全部类型，方便扩展。
-- 组件导出 `OkrTreeGroup`、`createTypedOkrTree`，插件方式注册时会同时注册 `<okr-tree-group>`。
-- 开发环境（`process.env.NODE_ENV !== "production"`）下会对常见配置错误输出一次性 `console.warn`：重复 `node-key`、`onlyBothTree` 但 `direction` 非 `horizontal`、传了 `leftData` 未开 `onlyBothTree`、受控 prop 缺 `node-key`。通过 CDN 直接引用 UMD 时不输出。
+### OkrTreeGroup 与键盘导航
+
+Vue 3 版新增。`OkrTreeGroup` 包裹多棵 OKR 模式的树，使组内根节点水平坐标一致（原版需在业务层手动测量 DOM）；需成员树开启 `align-root`（默认）。键盘导航为所有树内置。
+
+| 名称                | 类型               | 说明                                                                                                                                                                                                                                                                                 |
+| ------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| align（prop）       | boolean，默认 true | 是否对齐；为 false 时各树独立排布                                                                                                                                                                                                                                                    |
+| default（slot）     | —                  | 放置若干 `<vue-okr-tree only-both-tree>`                                                                                                                                                                                                                                             |
+| refresh()（method） | —                  | 手动重新测量（字体加载完成、外部样式变化等场景；组件已自动响应成员挂载/更新与尺寸变化）                                                                                                                                                                                              |
+| 键盘导航            | —                  | Tab 进入，↑/↓ 在可见节点间移动，→ 展开或进入子节点，← 收起或回到父节点，Enter/Space 选中，Home/End 首尾；OKR 根节点 ← 进入左子树，左树节点镜像。节点带 `role=treeitem` / `aria-expanded` / `aria-selected` / `aria-level`，焦点环可用 `--okr-focus-color` / `--okr-focus-width` 定制 |
+
+<!-- API-DOC-END -->
 
 ## 与 vue-okr-tree 的差异（迁移说明）
 
