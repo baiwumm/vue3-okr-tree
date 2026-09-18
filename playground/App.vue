@@ -64,6 +64,10 @@
     <Base10 />
     <!-- 19 画布组件（1.4.0 新增） -->
     <Base11 />
+    <!-- 20 手风琴模式（1.8.0 新增） -->
+    <BaseAccordion />
+    <!-- 21 点击节点内容展开（1.8.0 新增） -->
+    <BaseNodeClick />
     <!-- 17-20 API 文档表格 -->
     <Attributes />
     <Props />
@@ -97,6 +101,8 @@ import BaseEventsOkr from './components/demos/BaseEventsOkr.vue'
 import Base09 from './components/demos/Base09.vue'
 import Base10 from './components/demos/Base10.vue'
 import Base11 from './components/demos/Base11.vue'
+import BaseAccordion from './components/demos/BaseAccordion.vue'
+import BaseNodeClick from './components/demos/BaseNodeClick.vue'
 import Attributes from './components/api/Attributes.vue'
 import Props from './components/api/Props.vue'
 import Events from './components/api/Events.vue'
@@ -137,6 +143,8 @@ const nav = [
   { id: 'demo-17', text: '受控状态与方法' },
   { id: 'demo-18', text: '懒加载' },
   { id: 'demo-19', text: '画布缩放' },
+  { id: 'demo-accordion', text: '手风琴' },
+  { id: 'demo-node-click-expand', text: '点击展开' },
   { id: 'api-attributes', text: 'Attributes' },
   { id: 'api-props', text: 'Props' },
   { id: 'api-events', text: 'Events API' },

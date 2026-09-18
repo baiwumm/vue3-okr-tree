@@ -540,6 +540,12 @@ function handleNodeClick() {
   if (node.value.disabled) return
   store.setCurrentNode(node.value)
   tree!.onCurrentChange()
+  // expand-on-click-node：与 el-tree 一致，先切换展开再触发 node-click；叶子节点不切换。
+  // OKR 根节点点击内容只切换右侧子树（左侧有自己的按钮），左树节点切换自身子树。
+  if (store.expandOnClickNode) {
+    const hasKids = props.isLeftChildNode ? hasLeftChildren.value : hasRightChildren.value
+    if (hasKids) handleBtnClick(props.isLeftChildNode ? 'left' : 'right')
+  }
   tree!.emit('node-click', node.value.data, node.value, instance?.proxy)
 }
 
@@ -567,6 +573,8 @@ function handleBtnClick(side: 'left' | 'right') {
     tree!.emit('node-collapse', current.data, current, instance?.proxy)
   } else {
     current.expand()
+    // accordion：用户交互展开时收起同级兄弟（与 el-tree 一致，仅作用于交互路径）
+    if (store.accordion) store.collapseSiblings(current)
     tree!.onExpandChange()
     tree!.emit('node-expand', current.data, current, instance?.proxy)
   }

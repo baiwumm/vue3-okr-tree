@@ -66,3 +66,44 @@ jobs:
 
       - name: Pack (dry run)
         run: npm pack --dry-run
+
+  peer-matrix:
+    name: Unit tests on vue ${{ matrix.vue }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # roadmap #16：peer 范围实测（defineSlots 需要编译器 ≥3.3，已声明 vue >=3.3.0）。
+        # 矩阵腿用 pnpm overrides 钉 vue 与 @vue/test-utils 的兼容组合：
+        # test-utils ≥2.4 依赖 vue ≥3.5 的 app.onUnmount，vue <3.5 的腿必须配 test-utils ~2.3。
+        include:
+          - vue: '~3.3.0'
+            test-utils: '~2.3.2'
+          - vue: '~3.4.0'
+            test-utils: '~2.3.2'
+          - vue: '~3.5.0'
+            test-utils: '~2.5.1'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Pin vue@${{ matrix.vue }} + @vue/test-utils@${{ matrix.test-utils }}
+        run: |
+          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.pnpm={...p.pnpm,overrides:{...((p.pnpm||{}).overrides||{}),vue:'${{ matrix.vue }}','@vue/test-utils':'${{ matrix.test-utils }}'}};fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n')"
+
+      - name: Install
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Assert resolved versions
+        run: node -e "console.log('vue', require('vue/package.json').version, '| @vue/test-utils', require('@vue/test-utils/package.json').version)"
+
+      - name: Unit & component tests
+        run: pnpm test

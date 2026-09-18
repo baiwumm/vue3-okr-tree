@@ -31,7 +31,7 @@ pnpm add vue3-okr-tree
 npm i vue3-okr-tree
 ```
 
-Peer 依赖：`vue >= 3.0.0`。
+Peer 依赖：`vue >= 3.3.0`（CI 在 vue 3.3 / 3.4 / 3.5 三档矩阵下跑全量单测）。
 
 ## 快速开始
 
@@ -415,6 +415,8 @@ const DeptTree = createTypedOkrTree<Dept>()
 | label-class-name         | 节点 className 的回调方法，也可以使用字符串为所有节点设置固定 className。函数参数为内部 Node 实例（源数据在 `node.data`）                                                                                         | Function(node) / string                                                                                                           | —                  |
 | current-lable-class-name | 当前选中节点的样式（保留原拼写）                                                                                                                                                                                  | Function(node) / string                                                                                                           | —                  |
 | show-collapsable         | 节点是否可被展开（显示 +/- 圆形按钮）。为 false 时组件强制全部展开                                                                                                                                                | boolean                                                                                                                           | false              |
+| accordion                | **Vue 3 版新增。**手风琴模式：用户展开某节点时自动收起其同级兄弟。与 el-tree 语义一致，只作用于交互展开（点击 +/- 按钮、点击节点内容、键盘操作）；`expandNode` 等程序化方法与受控 `expanded-keys` 不受互斥限制    | boolean                                                                                                                           | false              |
+| expand-on-click-node     | **Vue 3 版新增。**点击节点内容时切换该节点的展开 / 收起（默认 false 保持原版行为）。叶子节点点击只选中不切换；选中态与 `node-click` 照常触发。OKR 模式根节点点击内容只切换右侧子树                                | boolean                                                                                                                           | false              |
 | show-node-num            | 折叠时在圆形按钮内显示子节点数（只计未被 `filter` 隐藏的可见子节点）                                                                                                                                              | boolean                                                                                                                           | false              |
 | default-expand-all       | 默认展开全部，仅在 show-collapsable 为 true 时有意义                                                                                                                                                              | boolean                                                                                                                           | false              |
 | render-content           | 树节点内容区的渲染 Function。`h` 由组件从 vue 导入后传入；`node` 为内部 Node 实例（源数据在 `node.data`，文本在 `node.label`），与 element-ui 的 `(h, { data })` 不同                                             | Function(h, node)                                                                                                                 | —                  |

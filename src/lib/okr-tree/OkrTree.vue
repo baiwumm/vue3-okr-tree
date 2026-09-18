@@ -95,6 +95,17 @@ const props = defineProps({
   direction: { type: String as PropType<TreeDirection>, default: 'vertical' },
   /** 子节点是否可折叠 */
   showCollapsable: { type: Boolean, default: false },
+  /**
+   * 手风琴模式（Vue 3 版新增）：用户展开某节点时自动收起其同级兄弟。
+   * 与 el-tree 语义一致，只作用于交互展开（点击 +/- 按钮、点击节点内容、键盘操作）；
+   * expandNode 等程序化方法与受控 expanded-keys 不受互斥限制。
+   */
+  accordion: { type: Boolean, default: false },
+  /**
+   * 点击节点内容时切换展开/收起（Vue 3 版新增，默认 false 保持原版）。
+   * 叶子节点不切换；仍会设置选中态并触发 node-click。OKR 模式根节点点击内容只切换右侧子树。
+   */
+  expandOnClickNode: { type: Boolean, default: false },
   /** 飞书 OKR 模式：子树在根节点左右两侧展开 */
   onlyBothTree: { type: Boolean, default: false },
   /** 树节点的内容区的渲染 Function (h, node) */
@@ -255,6 +266,8 @@ const rawStore = new TreeStore({
   props: props.props,
   defaultExpandedKeys: props.defaultExpandedKeys,
   showCollapsable: props.showCollapsable,
+  accordion: props.accordion,
+  expandOnClickNode: props.expandOnClickNode,
   currentNodeKey: props.currentNodeKey,
   defaultExpandAll: props.defaultExpandAll,
   filterNodeMethod: props.filterNodeMethod,
@@ -440,6 +453,15 @@ watch(
 watch(
   () => props.showCollapsable,
   (v) => (store.showCollapsable = v)
+)
+// accordion / expandOnClickNode：只影响交互行为，运行时变更直接生效
+watch(
+  () => props.accordion,
+  (v) => (store.accordion = v)
+)
+watch(
+  () => props.expandOnClickNode,
+  (v) => (store.expandOnClickNode = v)
 )
 // defaultExpandAll：同步到 store，影响后续新建（重建）的节点；不追溯改变现有展开态
 watch(

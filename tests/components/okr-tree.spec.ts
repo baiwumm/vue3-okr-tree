@@ -111,11 +111,26 @@ describe('渲染：三种模式', () => {
   })
 
   it('OKR 模式缺 leftData 抛错', () => {
-    expect(() =>
-      mount(VueOkrTree, {
-        props: { data: makeData(), onlyBothTree: true, direction: 'horizontal' },
-      })
-    ).toThrow('[Tree] leftData is required in onlyBothTree')
+    // @vue/test-utils ≥2.4（配 vue ≥3.5）会把 setup 抛错同步抛给 mount()；
+    // ≤2.3（vue <3.5 矩阵腿使用）setup 错误改经 handleError 打印，mount 抛下游渲染错误。
+    // 两条路径都断言库的错误信息真实出现，不允许静默出实例。
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      expect(() =>
+        mount(VueOkrTree, {
+          props: { data: makeData(), onlyBothTree: true, direction: 'horizontal' },
+        })
+      ).toThrow('[Tree] leftData is required in onlyBothTree')
+    } catch {
+      const logged = [...errorSpy.mock.calls, ...warnSpy.mock.calls]
+        .map((c) => c.map(String).join(' '))
+        .join('\n')
+      expect(logged).toContain('[Tree] leftData is required in onlyBothTree')
+    } finally {
+      errorSpy.mockRestore()
+      warnSpy.mockRestore()
+    }
   })
 })
 

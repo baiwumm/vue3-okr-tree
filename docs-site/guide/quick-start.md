@@ -10,7 +10,7 @@ pnpm add vue3-okr-tree
 npm i vue3-okr-tree
 ```
 
-Peer 依赖：`vue >= 3.0.0`。
+Peer 依赖：`vue >= 3.3.0`（CI 在 vue 3.3 / 3.4 / 3.5 三档矩阵下跑全量单测）。
 
 ## 使用
 

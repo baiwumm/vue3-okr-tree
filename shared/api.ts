@@ -74,6 +74,20 @@ export const attributesSection: ApiSection = {
       'false',
     ],
     [
+      'accordion',
+      '<strong>Vue 3 版新增。</strong>手风琴模式：用户展开某节点时自动收起其同级兄弟。与 el-tree 语义一致，只作用于交互展开（点击 +/- 按钮、点击节点内容、键盘操作）；<code>expandNode</code> 等程序化方法与受控 <code>expanded-keys</code> 不受互斥限制',
+      'boolean',
+      '—',
+      'false',
+    ],
+    [
+      'expand-on-click-node',
+      '<strong>Vue 3 版新增。</strong>点击节点内容时切换该节点的展开 / 收起（默认 false 保持原版行为）。叶子节点点击只选中不切换；选中态与 <code>node-click</code> 照常触发。OKR 模式根节点点击内容只切换右侧子树',
+      'boolean',
+      '—',
+      'false',
+    ],
+    [
       'show-node-num',
       '折叠时在圆形按钮内显示子节点数（只计未被 <code>filter</code> 隐藏的可见子节点）',
       'boolean',

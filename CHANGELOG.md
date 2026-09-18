@@ -2,6 +2,16 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## 1.8.0
+
+### 新增
+
+- **`accordion` 手风琴模式**：用户展开某节点时自动收起同级兄弟，交互入口含 +/- 按钮、点击节点内容（需 `expand-on-click-node`）与键盘方向键。语义与 el-tree 对齐——只作用于**交互展开**，`expandNode` 等程序化方法与受控 `expanded-keys` 不经互斥（受控列表始终是唯一事实来源，传多个同级 key 全部生效）。
+- **`expand-on-click-node`**：点击节点内容切换该节点展开 / 收起（默认 false 保持原版）。叶子节点点击只选中不切换；选中态与 `node-click` 照常触发。与 el-tree 一致：先切换展开、再触发 node-click。OKR 模式根节点点击内容只切换右侧子树，左侧仍由左侧按钮控制。
+- **SSR 兼容坐实**：新增 `tests/ssr` 冒烟测试（Node 环境无 DOM，`vue/server-renderer`），覆盖三种模式、OKR 左树、受控 props、`#default` / `#empty` 插槽与 OkrTreeGroup / OkrTreeViewport 包裹；确认 setup 与渲染阶段不访问 `window` / `document`，浏览器专属能力均在挂载后且带 `typeof` 守卫。
+- **peer 范围实测收紧：`vue >= 3.3.0`**（此前声明 `>=3.0.0`）。`defineSlots` 是 3.3 引入的编译宏，3.0–3.2 的 SFC 编译器无法构建使用本库的项目。CI 新增 `peer-matrix` job：用 pnpm overrides 在 vue 3.3 / 3.4 / 3.5 三档跑全量单测（183 用例，实测三档全部通过）。矩阵腿需成对钉 `@vue/test-utils`——test-utils ≥2.4 依赖 vue 3.5 的 `app.onUnmount`，vue <3.5 的腿配 `~2.3.2`，该组合下「缺 leftData 抛错」用例改为同时接受同步抛错与 `handleError` 打印两种 harness 行为。
+- Demo / 文档站新增「手风琴」「点击节点内容展开」两个交互用例；API 表（`shared/api.ts` 单一来源）补两行。
+
 ## 1.7.0
 
 ### 新增

@@ -23,6 +23,8 @@
 <Base09 />
 <Base10 />
 <Base11 />
+<BaseAccordion />
+<BaseNodeClick />
 
 </DemoBlock>
 
@@ -47,4 +49,6 @@ import BaseEventsOkr from '../../playground/components/demos/BaseEventsOkr.vue'
 import Base09 from '../../playground/components/demos/Base09.vue'
 import Base10 from '../../playground/components/demos/Base10.vue'
 import Base11 from '../../playground/components/demos/Base11.vue'
+import BaseAccordion from '../../playground/components/demos/BaseAccordion.vue'
+import BaseNodeClick from '../../playground/components/demos/BaseNodeClick.vue'
 </script>

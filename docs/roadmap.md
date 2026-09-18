@@ -7,17 +7,18 @@
 
 ## 进度总览
 
-| 版本  | 主题                                                      | 状态            |
-| ----- | --------------------------------------------------------- | --------------- |
-| 1.0.0 | Vue 3 完整复刻 + 6 项原版缺陷修复                         | ✅ 已发布到仓库 |
-| 1.1.0 | CSS 变量主题化 + 六套内置主题                             | ✅              |
-| 1.2.0 | 受控状态、扩展方法、插槽、开发期警告、CI                  | ✅              |
-| 1.3.0 | OkrTreeGroup 根对齐、键盘可访问性、node-component、类型化 | ✅              |
-| 1.4.0 | 懒加载 + 画布组件                                         | ✅              |
-| 1.5.0 | 文档站 + 发布流程                                         | ✅ 发布待维护者 |
-| 1.6.0 | 健壮性与运行时行为补齐                                    | ✅              |
-| 1.7.0 | 2.x #13 低风险档 + Logo 接入 + CI/视觉回归转绿修复        | ✅ 发布待维护者 |
-| 2.x   | 拖拽、SVG 连接线、复选框、虚拟滚动、更多布局              | ⬜ 视需求       |
+| 版本  | 主题                                                                             | 状态            |
+| ----- | -------------------------------------------------------------------------------- | --------------- |
+| 1.0.0 | Vue 3 完整复刻 + 6 项原版缺陷修复                                                | ✅ 已发布到仓库 |
+| 1.1.0 | CSS 变量主题化 + 六套内置主题                                                    | ✅              |
+| 1.2.0 | 受控状态、扩展方法、插槽、开发期警告、CI                                         | ✅              |
+| 1.3.0 | OkrTreeGroup 根对齐、键盘可访问性、node-component、类型化                        | ✅              |
+| 1.4.0 | 懒加载 + 画布组件                                                                | ✅              |
+| 1.5.0 | 文档站 + 发布流程                                                                | ✅ 发布待维护者 |
+| 1.6.0 | 健壮性与运行时行为补齐                                                           | ✅              |
+| 1.7.0 | 2.x #13 低风险档 + Logo 接入 + CI/视觉回归转绿修复                               | ✅ 发布待维护者 |
+| 1.8.0 | 2.x #13 交互档（accordion / expand-on-click-node）+ SSR 冒烟 + peer 收紧 vue≥3.3 | ✅ 发布待维护者 |
+| 2.x   | 拖拽、SVG 连接线、复选框、虚拟滚动、更多布局                                     | ⬜ 视需求       |
 
 ---
 
@@ -139,12 +140,12 @@
 
 ### 13. 其他小项（S，随手可做）
 
-- [ ] `expand-on-click-node`：点击节点内容也切换展开（默认 false，保持原版）
-- [ ] `accordion`：同级只允许一个展开
+- [x] `expand-on-click-node`：点击节点内容也切换展开（默认 false，保持原版；语义对齐 el-tree：先切换展开再触发 node-click，叶子不切换）
+- [x] `accordion`：同级只允许一个展开（对齐 el-tree：只作用于交互展开，程序化方法与受控 expanded-keys 不受互斥限制）
 - [ ] `unstyled` prop：只输出布局与连接线，不带卡片外观，供 Tailwind / 自有设计系统接管
 - [ ] `getVisibleNodes()` / `getNodePath(key)` 辅助方法
 - [ ] `node-key` 缺失时的默认 key 策略文档化（`$treeNodeId`）
-- [ ] SSR/Nuxt 冒烟（当前 setup 不访问 window，理论兼容；补一个 `renderToString` 测试）
+- [x] SSR/Nuxt 冒烟（当前 setup 不访问 window，理论兼容；补一个 `renderToString` 测试）
 - [x] `prefers-reduced-motion: reduce` 时禁用展开/收起过渡动画（`transition.css` 加媒体查询，动画关、状态直切）
 - [x] `aria-setsize` / `aria-posinset` 补全 treeitem 语义
 - [x] 过滤后 `show-node-num` 的计数应只统计可见子节点（当前 `node.childNodes.length` 包含被过滤隐藏的节点，左右按钮同）
@@ -173,7 +174,7 @@
 
 - [ ] Vue Devtools 插件（dev only）：面板查看节点注册表、展开/选中状态
 - [ ] 双语 README（README.en 与中文主文档互链，API 表以一份为准）
-- [ ] peerDependencies 实测：`defineSlots` 等编译宏需要 vue ≥ 3.3，当前声明 `>=3.0.0` 偏宽 → CI 用 pnpm overrides 在 vue@3.3 / 3.4 / 3.5 矩阵跑单测，按结果收紧 peer 范围
+- [x] peerDependencies 实测：`defineSlots` 等编译宏需要 vue ≥ 3.3，当前声明 `>=3.0.0` 偏宽 → CI 用 pnpm overrides 在 vue@3.3 / 3.4 / 3.5 矩阵跑单测，按结果收紧 peer 范围（已收紧为 `>=3.3.0`；注意 vue <3.5 矩阵腿需配 `@vue/test-utils` ~2.3，≥2.4 依赖 vue 3.5 的 `app.onUnmount`）
 - **验收**：Vue Devtools 可见树状态；英文用户可读文档；peer 范围与实测一致。
 
 ---

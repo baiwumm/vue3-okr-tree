@@ -31,6 +31,10 @@ export interface TreeStoreOptions {
   lazy?: boolean
   /** 懒加载取数函数（配合 lazy 使用） */
   load?: TreeLoadFunction | null
+  /** 手风琴模式：用户展开某节点时自动收起其同级兄弟 */
+  accordion?: boolean
+  /** 点击节点内容时切换展开/收起 */
+  expandOnClickNode?: boolean
 }
 
 /** 字段映射默认值（导出供 OkrTree 运行时同步 props 合并使用） */
@@ -65,6 +69,8 @@ export class TreeStore {
   animateDuration = 200
   lazy = false
   load: TreeLoadFunction | null = null
+  accordion = false
+  expandOnClickNode = false
   /**
    * 懒加载展开完成后由组件设置的通知钩子（同步 v-model:expanded-keys）；
    * reject 时不会触发（展开集合未变化）。
@@ -326,6 +332,21 @@ export class TreeStore {
     else node.expanded = false
     if (this.onlyBothTree && node.level === 1 && !node.isLeftChild) node.leftExpanded = false
     return node
+  }
+
+  /**
+   * accordion（手风琴）：收起 node 的同级兄弟。
+   * 语义与 el-tree 一致——只在用户交互展开（点击 +/-、点击节点内容、键盘操作）时由组件层调用，
+   * expandNode 等程序化方法与受控 expanded-keys 不经此路径，不受互斥限制。
+   */
+  collapseSiblings(node: TreeNode) {
+    const parent = node.parent
+    if (!parent) return
+    parent.childNodes.forEach((child) => {
+      if (child === node) return
+      if (child.isLeftChild) child.leftExpanded = false
+      else child.expanded = false
+    })
   }
 
   /** 当前处于展开态的节点 key 列表（需 node-key；左右两树去重） */
