@@ -1,5 +1,5 @@
 <template>
-  <div class="org-chart-container" :class="[themeClass, connectorClass]">
+  <div class="org-chart-container" :class="[themeClass, connectorClass, unstyledClass]">
     <svg v-if="connector === 'svg'" class="okr-connector-svg" aria-hidden="true">
       <path v-for="edge in connectorEdges" :key="edge.id" :d="edge.d" />
     </svg>
@@ -155,6 +155,12 @@ const props = defineProps({
     type: String as PropType<'curve' | 'orthogonal' | 'straight'>,
     default: 'curve',
   },
+  /**
+   * 去掉卡片外观（背景 / 边框 / 圆角 / 阴影），只保留布局与连接线，
+   * 供 Tailwind 或自有设计系统接管。内边距、字号与文字色不动——它们属于排版，
+   * 且改动会影响节点盒尺寸与连接线几何；需要调整请用 --okr-node-* 变量或 label-class-name。
+   */
+  unstyled: { type: Boolean, default: false },
   /** 飞书 OKR 模式：子树在根节点左右两侧展开 */
   onlyBothTree: { type: Boolean, default: false },
   /** 树节点的内容区的渲染 Function (h, node) */
@@ -470,6 +476,7 @@ const dragOverType = shallowRef<DropType | null>(null)
 // 这里只测量可见节点卡片的位置并生成路径；线色/线宽走 --okr-line-* 变量。
 const connectorEdges = shallowRef<{ id: string; d: string }[]>([])
 const connectorClass = computed(() => (props.connector === 'svg' ? 'connector-svg' : ''))
+const unstyledClass = computed(() => (props.unstyled ? 'okr-unstyled' : ''))
 
 interface CardRect {
   left: number

@@ -76,6 +76,30 @@
   border-radius: var(--okr-node-radius, 0);
 }
 
+/*
+ * unstyled：中和卡片外观（背景 / 边框 / 圆角 / 阴影），布局与连接线原样保留。
+ * 刻意不动 padding、font-size、color —— 它们属于排版，改 padding 会移动节点盒、
+ * 牵动连接线的伪元素几何；需要调整请继续用 --okr-node-* 变量或 label-class-name。
+ * 选择器必须带上 .org-chart-node 一层凑够 5 个类：方向专属规则
+ * `.org-chart-container .{vertical,horizontal} .org-chart-node-label .org-chart-node-label-inner`
+ * 是 4 个类且位于本块之后，同特异度时后者胜（:hover 态同理需 5 类 + 伪类才能压过）。
+ */
+.org-chart-container.okr-unstyled
+  .org-chart-node
+  .org-chart-node-label
+  .org-chart-node-label-inner {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+.org-chart-container.okr-unstyled
+  .org-chart-node
+  .org-chart-node-label
+  .org-chart-node-label-inner:hover {
+  box-shadow: none;
+}
+
 /* ======================= 垂直模式 ======================= */
 .org-chart-container .vertical .org-chart-node-children {
   position: relative;

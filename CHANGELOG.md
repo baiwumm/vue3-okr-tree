@@ -2,6 +2,14 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## 1.13.0
+
+### 新增
+
+- **`unstyled` prop（2.x #13）**：去掉节点卡片的外观（背景 / 边框 / 圆角 / 阴影，含 `:hover` 态），只保留布局与连接线，供 Tailwind 或自有设计系统接管——此前唯一的退路是覆写全部 `--okr-node-*` 变量，而主题类会重新填回这些值。内边距、字号与文字色刻意不动：改 `padding` 会移动节点盒并牵动连接线的伪元素几何，需要调整请继续用 `--okr-node-*` 变量或 `label-class-name`。
+  - 实现上是一个 `okr-unstyled` 容器类 + 一小段中和规则；选择器需要 5 个类才能压过方向专属规则（`.org-chart-container .vertical .org-chart-node-label .org-chart-node-label-inner` 同为特异度且位于其后，同特异度时后者胜）。Visual 套件补了一条计算样式断言同时校验「阴影被清掉」与「节点盒尺寸不变」——写第一版时正因漏了 `.org-chart-node` 一层而被该断言当场抓到。
+  - 样式 gzip 3.83 → 3.88 kB（预算 4 kB，余量约 3%）。
+
 ## 1.12.0
 
 ### 新增

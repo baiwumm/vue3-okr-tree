@@ -144,6 +144,13 @@ export const attributesSection: ApiSection = {
       'curve',
     ],
     [
+      'unstyled',
+      '<strong>Vue 3 版新增（1.12.0）。</strong>去掉卡片外观（背景 / 边框 / 圆角 / 阴影），只保留布局与连接线，供 Tailwind 或自有设计系统接管。内边距、字号与文字色不受影响——改 padding 会移动节点盒并牵动连接线几何，需要调整请用 <code>--okr-node-*</code> 变量或 <code>label-class-name</code>',
+      'boolean',
+      '—',
+      'false',
+    ],
+    [
       'show-node-num',
       '折叠时在圆形按钮内显示子节点数（只计未被 <code>filter</code> 隐藏的可见子节点）',
       'boolean',

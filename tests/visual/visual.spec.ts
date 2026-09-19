@@ -113,4 +113,20 @@ test.describe('1.4.0 新能力', () => {
     await expect(toolbar).toBeHidden()
     expect(await label.evaluate((el) => getComputedStyle(el).boxShadow)).toBe('none')
   })
+
+  test('unstyled：中和卡片外观但不改节点盒尺寸', async ({ page }) => {
+    await page.goto('/')
+    const card = demoCard(page, 'demo-1')
+    await card.scrollIntoViewIfNeeded()
+    const label = card.locator('.org-chart-node-label-inner').first()
+    const shadow = () => label.evaluate((el) => getComputedStyle(el).boxShadow)
+    const height = () => label.evaluate((el) => Math.round(el.getBoundingClientRect().height))
+
+    expect(await shadow()).not.toBe('none')
+    const h0 = await height()
+    // 直接挂类名即可验证选择器优先级压过了方向专属规则（vertical 的 box-shadow 在更后面）
+    await card.locator('.org-chart-container').evaluate((el) => el.classList.add('okr-unstyled'))
+    expect(await shadow()).toBe('none')
+    expect(await height()).toBe(h0)
+  })
 })

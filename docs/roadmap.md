@@ -158,7 +158,7 @@
 
 - [x] `expand-on-click-node`：点击节点内容也切换展开（默认 false，保持原版；语义对齐 el-tree：先切换展开再触发 node-click，叶子不切换）
 - [x] `accordion`：同级只允许一个展开（对齐 el-tree：只作用于交互展开，程序化方法与受控 expanded-keys 不受互斥限制）
-- [ ] `unstyled` prop：只输出布局与连接线，不带卡片外观，供 Tailwind / 自有设计系统接管
+- [x] `unstyled` prop：只输出布局与连接线，不带卡片外观，供 Tailwind / 自有设计系统接管
 - [x] `getVisibleNodes()` / `getNodePath(key)` 辅助方法
 - [x] `node-key` 缺失时的默认 key 策略文档化（`$treeNodeId`）
 - [x] SSR/Nuxt 冒烟（当前 setup 不访问 window，理论兼容；补一个 `renderToString` 测试）

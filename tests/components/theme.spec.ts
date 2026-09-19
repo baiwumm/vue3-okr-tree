@@ -25,6 +25,13 @@ describe('theme prop', () => {
     expect(classes.some((c) => c.startsWith('okr-theme-'))).toBe(false)
   })
 
+  it('unstyled 切换 okr-unstyled 类（卡片外观的中和由样式表负责）', () => {
+    const plain = mount(VueOkrTree, { props: { data } })
+    expect(plain.find('.org-chart-container').classes()).not.toContain('okr-unstyled')
+    const bare = mount(VueOkrTree, { props: { data, unstyled: true } })
+    expect(bare.find('.org-chart-container').classes()).toContain('okr-unstyled')
+  })
+
   it('节点带 data-level 属性（colorful 主题按层级着色用）', () => {
     const wrapper = mount(VueOkrTree, { props: { data } })
     const nodes = wrapper.findAll('.org-chart-node')
