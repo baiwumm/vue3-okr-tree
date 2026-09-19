@@ -482,32 +482,34 @@ const DeptTree = createTypedOkrTree<Dept>()
 
 通过组件 `ref` 调用。增删类方法会同步修改传入的源数据（与 vue-okr-tree 一致）。
 
-| 方法名              | 说明                                                                                                                                                                    | 参数                                                                                             |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| filter              | 对树节点进行筛选操作；onlyBothTree 模式下同时过滤左右子树。未设置 filter-node-method 时抛错                                                                             | (value) 在 filter-node-method 中作为第一个参数                                                   |
-| updateKeyChildren   | 通过 key 设置节点的子元素，使用此方法必须设置 node-key 属性（缺失抛错）                                                                                                 | (key, data) 1. 节点的 key 2. 子节点数据                                                          |
-| getNode             | 根据 data / key / Node 实例获取内部 Node。OKR 模式下右树优先，右树不存在时回退到左树                                                                                    | (data) 要获得 node 的 key、data 对象或 Node 实例                                                 |
-| setCurrentNode      | 通过 node 设置某个节点的当前选中状态，必须设置 node-key（缺失抛错）                                                                                                     | (node) 待被选节点的 Node 实例                                                                    |
-| setCurrentKey       | 通过 key 设置某个节点的当前选中状态，必须设置 node-key（缺失抛错）                                                                                                      | (key) 待被选节点的 key，若为 null 则取消当前高亮                                                 |
-| getCurrentKey       | 获取当前被选中节点的 key，若没有节点被选中则返回 null。必须设置 node-key（缺失抛错）                                                                                    | —                                                                                                |
-| getCurrentNode      | 获取当前被选中节点的 data，若没有节点被选中则返回 null                                                                                                                  | —                                                                                                |
-| remove              | 删除 Tree 中的一个节点，使用此方法必须设置 node-key（未设置时静默无效）。会同步删除源数据中的对应项                                                                     | (data) 要删除的节点的 data、key 或 Node 实例                                                     |
-| append              | 为 Tree 中的一个节点追加一个子节点。会同步写入源数据的 children                                                                                                         | (data, parentNode) 1. 要追加的子节点的 data 2. 父节点的 data、key 或 Node 实例（省略则追加为根） |
-| insertBefore        | 为 Tree 的一个节点的前面增加一个节点。会同步写入源数据                                                                                                                  | (data, refNode) 1. 要增加的节点的 data 2. 参考节点的 data、key 或 Node 实例                      |
-| insertAfter         | 为 Tree 的一个节点的后面增加一个节点。会同步写入源数据                                                                                                                  | (data, refNode) 1. 要增加的节点的 data 2. 参考节点的 data、key 或 Node 实例                      |
-| expandAll           | **Vue 3 版新增。**展开全部节点（OKR 模式含左右两树）；lazy 模式下未加载节点先触发加载、完成后再展开                                                                     | —                                                                                                |
-| collapseAll         | **Vue 3 版新增。**收起全部节点                                                                                                                                          | —                                                                                                |
-| expandNode          | **Vue 3 版新增。**展开指定节点，默认连同祖先一起展开；OKR 根节点会同时展开左右两侧；lazy 下先加载再展开。返回 Node 或 null                                              | (data, expandParent = true) data 为 key、data 对象或 Node 实例                                   |
-| collapseNode        | **Vue 3 版新增。**收起指定节点；OKR 根节点会同时收起左右两侧                                                                                                            | (data)                                                                                           |
-| scrollToNode        | **Vue 3 版新增。**滚动到指定节点：默认先展开其全部祖先使其可见，再 `scrollIntoView`（居中、平滑）。返回 Promise<boolean>；lazy 下等待路径上的节点加载完成后再滚动       | (data, options?) options 为 ScrollIntoViewOptions，另含 `expand`（默认 true）                    |
-| getNodeEl           | **Vue 3 版新增（1.4.0）。**按 Node / key / data 获取节点对应的 DOM 元素（OkrTreeViewport 的 centerNode 也基于它定位）                                                   | (data)                                                                                           |
-| getCheckedKeys      | **Vue 3 版新增（1.9.0）。**获取勾选节点 key 列表（需 node-key；OKR 模式左右两树合并去重）                                                                               | (leafOnly = false) leafOnly 为 true 时只计叶子节点                                               |
-| getCheckedNodes     | **Vue 3 版新增（1.9.0）。**获取勾选节点 Node 实例列表                                                                                                                   | (leafOnly = false)                                                                               |
-| setCheckedKeys      | **Vue 3 版新增（1.9.0）。**以 key 列表整体设置勾选态（先清空再勾选；非 checkStrictly 时带父子联动，OKR 模式左右同 key 同时生效）                                        | (keys, leafOnly = false)                                                                         |
-| getHalfCheckedKeys  | **Vue 3 版新增（1.9.0）。**获取半选节点 key 列表（子树部分选中的父节点）                                                                                                | —                                                                                                |
-| getHalfCheckedNodes | **Vue 3 版新增（1.9.0）。**获取半选节点 Node 实例列表                                                                                                                   | —                                                                                                |
-| isChecked           | **Vue 3 版新增（1.9.0）。**判断节点当前是否被勾选                                                                                                                       | (data) key、data 对象或 Node 实例                                                                |
-| moveNode            | **Vue 3 版新增（1.10.0）。**移动节点到目标节点的 prev / inner / next，同步修改源数据并保持视图一致；inner 时目标自动展开。硬性禁止放到自身或自己的子树内。成功返回 true | (data, target, type) 均支持 key / data 对象 / Node 实例                                          |
+| 方法名              | 说明                                                                                                                                                                               | 参数                                                                                             |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| filter              | 对树节点进行筛选操作；onlyBothTree 模式下同时过滤左右子树。未设置 filter-node-method 时抛错                                                                                        | (value) 在 filter-node-method 中作为第一个参数                                                   |
+| updateKeyChildren   | 通过 key 设置节点的子元素，使用此方法必须设置 node-key 属性（缺失抛错）                                                                                                            | (key, data) 1. 节点的 key 2. 子节点数据                                                          |
+| getNode             | 根据 data / key / Node 实例获取内部 Node。OKR 模式下右树优先，右树不存在时回退到左树                                                                                               | (data) 要获得 node 的 key、data 对象或 Node 实例                                                 |
+| setCurrentNode      | 通过 node 设置某个节点的当前选中状态，必须设置 node-key（缺失抛错）                                                                                                                | (node) 待被选节点的 Node 实例                                                                    |
+| setCurrentKey       | 通过 key 设置某个节点的当前选中状态，必须设置 node-key（缺失抛错）                                                                                                                 | (key) 待被选节点的 key，若为 null 则取消当前高亮                                                 |
+| getCurrentKey       | 获取当前被选中节点的 key，若没有节点被选中则返回 null。必须设置 node-key（缺失抛错）                                                                                               | —                                                                                                |
+| getCurrentNode      | 获取当前被选中节点的 data，若没有节点被选中则返回 null                                                                                                                             | —                                                                                                |
+| remove              | 删除 Tree 中的一个节点，使用此方法必须设置 node-key（未设置时静默无效）。会同步删除源数据中的对应项                                                                                | (data) 要删除的节点的 data、key 或 Node 实例                                                     |
+| append              | 为 Tree 中的一个节点追加一个子节点。会同步写入源数据的 children                                                                                                                    | (data, parentNode) 1. 要追加的子节点的 data 2. 父节点的 data、key 或 Node 实例（省略则追加为根） |
+| insertBefore        | 为 Tree 的一个节点的前面增加一个节点。会同步写入源数据                                                                                                                             | (data, refNode) 1. 要增加的节点的 data 2. 参考节点的 data、key 或 Node 实例                      |
+| insertAfter         | 为 Tree 的一个节点的后面增加一个节点。会同步写入源数据                                                                                                                             | (data, refNode) 1. 要增加的节点的 data 2. 参考节点的 data、key 或 Node 实例                      |
+| expandAll           | **Vue 3 版新增。**展开全部节点（OKR 模式含左右两树）；lazy 模式下未加载节点先触发加载、完成后再展开                                                                                | —                                                                                                |
+| collapseAll         | **Vue 3 版新增。**收起全部节点                                                                                                                                                     | —                                                                                                |
+| expandNode          | **Vue 3 版新增。**展开指定节点，默认连同祖先一起展开；OKR 根节点会同时展开左右两侧；lazy 下先加载再展开。返回 Node 或 null                                                         | (data, expandParent = true) data 为 key、data 对象或 Node 实例                                   |
+| collapseNode        | **Vue 3 版新增。**收起指定节点；OKR 根节点会同时收起左右两侧                                                                                                                       | (data)                                                                                           |
+| scrollToNode        | **Vue 3 版新增。**滚动到指定节点：默认先展开其全部祖先使其可见，再 `scrollIntoView`（居中、平滑）。返回 Promise<boolean>；lazy 下等待路径上的节点加载完成后再滚动                  | (data, options?) options 为 ScrollIntoViewOptions，另含 `expand`（默认 true）                    |
+| getNodeEl           | **Vue 3 版新增（1.4.0）。**按 Node / key / data 获取节点对应的 DOM 元素（OkrTreeViewport 的 centerNode 也基于它定位）                                                              | (data)                                                                                           |
+| getCheckedKeys      | **Vue 3 版新增（1.9.0）。**获取勾选节点 key 列表（需 node-key；OKR 模式左右两树合并去重）                                                                                          | (leafOnly = false) leafOnly 为 true 时只计叶子节点                                               |
+| getCheckedNodes     | **Vue 3 版新增（1.9.0）。**获取勾选节点 Node 实例列表                                                                                                                              | (leafOnly = false)                                                                               |
+| setCheckedKeys      | **Vue 3 版新增（1.9.0）。**以 key 列表整体设置勾选态（先清空再勾选；非 checkStrictly 时带父子联动，OKR 模式左右同 key 同时生效）                                                   | (keys, leafOnly = false)                                                                         |
+| getHalfCheckedKeys  | **Vue 3 版新增（1.9.0）。**获取半选节点 key 列表（子树部分选中的父节点）                                                                                                           | —                                                                                                |
+| getHalfCheckedNodes | **Vue 3 版新增（1.9.0）。**获取半选节点 Node 实例列表                                                                                                                              | —                                                                                                |
+| isChecked           | **Vue 3 版新增（1.9.0）。**判断节点当前是否被勾选                                                                                                                                  | (data) key、data 对象或 Node 实例                                                                |
+| moveNode            | **Vue 3 版新增（1.10.0）。**移动节点到目标节点的 prev / inner / next，同步修改源数据并保持视图一致；inner 时目标自动展开。硬性禁止放到自身或自己的子树内。成功返回 true            | (data, target, type) 均支持 key / data 对象 / Node 实例                                          |
+| getVisibleNodes     | **Vue 3 版新增（1.12.0）。**返回当前真正可见的节点实例（含 OKR 左树）：自身通过过滤且各级祖先均已展开到它。折叠的子树仍挂载在 DOM 中，因此结果不等于 DOM 里的节点数                | —                                                                                                |
+| getNodePath         | **Vue 3 版新增（1.12.0）。**返回从顶层节点到目标节点的链路（含目标自身），未命中返回空数组。OKR 左树节点的链路留在左树内（顶层为根节点的左侧镜像，与右树根同 key），不跨接到右树根 | (data) key、data 对象或 Node 实例                                                                |
 
 ### Slots
 
@@ -531,6 +533,32 @@ Vue 3 版新增。`OkrTreeGroup` 包裹多棵 OKR 模式的树，使组内根节
 | 键盘导航            | —                  | Tab 进入，↑/↓ 在可见节点间移动，→ 展开或进入子节点，← 收起或回到父节点，Enter/Space 选中，Home/End 首尾；OKR 根节点 ← 进入左子树，左树节点镜像。节点带 `role=treeitem` / `aria-expanded` / `aria-selected` / `aria-level`，焦点环可用 `--okr-focus-color` / `--okr-focus-width` 定制 |
 
 <!-- API-DOC-END -->
+
+## 需要注意的行为
+
+### 未设置 node-key 时的默认 key 策略
+
+不配 `node-key` 也能正常渲染与交互：组件会在每个节点的源数据对象上写入一个**不可枚举**的
+`$treeNodeId` 内部 id，作为 `v-for` 的 key。源数据被冻结或只读、写不进去时，降级到内部 WeakMap
+记录同样的 id，行为不变（不抛错）。
+
+代价是：**未配 `node-key` 时节点注册表是空的**，凡是按 key 或按 data 对象定位节点的入参都查不到
+节点——`getNode(data 对象)` 返回 `null`，`getExpandedKeys` / `getCheckedKeys` 返回空数组，
+`v-model:expanded-keys` / `default-expanded-keys` / `current-key` / `default-checked-keys` /
+`updateKeyChildren` / `setCheckedKeys` 均不生效（开发期会给出警告）。仍然可用的是**传 Node 实例**：
+`#default` 插槽作用域里的 `node`、各事件回调的节点参数，以及不依赖注册表的 `getVisibleNodes()`、
+`expandAll` / `collapseAll` / `filter` 等。
+
+另外，深拷贝源数据（`JSON.parse(JSON.stringify(data))`、部分状态库的快照恢复）会丢掉这个不可枚举
+标记，克隆出的对象会被分配新的内部 id、被当作不同节点，展开态随之丢失。需要持久化、跨拷贝定位节点
+或使用上述按 key 的能力，请配置 `node-key`。
+
+### 冻结 / 只读源数据
+
+渲染、展开收起、过滤、勾选等只读操作在 `Object.freeze` 或外部 store 的 readonly 数据上完全正常。
+但 `append` / `insertBefore` / `insertAfter` / `remove` / `updateKeyChildren` 以及懒加载 `resolve`
+会同步修改源数据的 `children` 数组，冻结数据下这些操作会跳过并输出开发期警告（不会静默失败）。
+需要在这类数据上做增删，请改为更新上层状态、让 `data` 引用变化后由组件重建。
 
 ## 与 vue-okr-tree 的差异（迁移说明）
 

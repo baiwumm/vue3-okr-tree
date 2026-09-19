@@ -641,6 +641,23 @@
   }
 }
 
+/*
+ * 打印：展开按钮与画布工具栏在纸上点不动，只是噪声；卡片与工具栏的 box-shadow 会被
+ * 部分打印引擎渲染成灰块、也费墨，一并去掉。折叠的子树按屏幕原样输出（is-hidden 靠
+ * opacity / visibility 收起，不会在纸上凭空多出内容），要整树打印请先调 expandAll。
+ */
+@media print {
+  .org-chart-container .org-chart-node-btn,
+  .org-chart-container .org-chart-node-left-btn,
+  .okr-viewport-toolbar {
+    display: none !important;
+  }
+  .org-chart-container .org-chart-node-label-inner,
+  .okr-viewport {
+    box-shadow: none !important;
+  }
+}
+
 /* ======================= 键盘焦点样式 ======================= */
 .org-chart-container .org-chart-node:focus {
   outline: none;

@@ -276,6 +276,47 @@ export class TreeStore {
     return this.nodesMap[key as string] || this.leftNodesMap[key as string] || null
   }
 
+  /**
+   * 当前真正可见的节点（含左右两树）：自身通过过滤，且各级祖先的展开态覆盖到它。
+   * 折叠的子树仍挂载在 DOM 里（靠 is-hidden 类收起），所以不能按 DOM 是否存在来判断。
+   * 门控与 OkrTreeNode 的渲染分支一致：右节点的 childNodes 看 expanded，
+   * 左子树（右节点的 leftChildNodes、左节点的 childNodes）看 leftExpanded。
+   */
+  getVisibleNodes(): TreeNode[] {
+    const nodes: TreeNode[] = []
+    const walk = (list: TreeNode[]) => {
+      list.forEach((node) => {
+        if (!node.visible) return
+        nodes.push(node)
+        if (node.isLeftChild) {
+          if (node.leftExpanded) walk(node.childNodes)
+        } else {
+          if (node.expanded) walk(node.childNodes)
+          if (node.leftExpanded) walk(node.leftChildNodes)
+        }
+      })
+    }
+    // 左树由 setLeftData 挂到右树首节点的 leftChildNodes 上，从右树根即可覆盖两棵树
+    walk(this.root.childNodes)
+    return nodes
+  }
+
+  /**
+   * 从顶层节点到目标节点的链路（含目标自身，不含虚拟根）；未命中返回空数组。
+   * OKR 左树节点沿左树父链上溯、留在左树内（顶层为根节点的左侧镜像），不跨接到右树根。
+   */
+  getNodePath(data: TreeNode | TreeKey | TreeNodeData): TreeNode[] {
+    const node = this.getNode(data)
+    if (!node) return []
+    const path: TreeNode[] = []
+    let current: TreeNode | null = node
+    while (current && current.level > 0) {
+      path.unshift(current)
+      current = current.parent
+    }
+    return path
+  }
+
   setDefaultExpandedKeys(keys?: TreeKey[] | null) {
     keys = keys || []
     this.defaultExpandedKeys = keys

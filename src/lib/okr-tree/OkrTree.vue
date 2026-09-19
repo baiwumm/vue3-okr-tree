@@ -1006,6 +1006,22 @@ function moveNode(
 }
 
 /**
+ * 当前真正可见的节点实例列表（含 OKR 左树）：自身通过过滤，且各级祖先均已展开到它。
+ * 折叠子树仍挂载在 DOM 中，因此结果不等于 DOM 里存在的节点数。
+ */
+function getVisibleNodes(): TreeNode[] {
+  return store.getVisibleNodes()
+}
+
+/**
+ * 从顶层节点到目标节点的链路（含目标自身）；未命中返回空数组。
+ * 入参可为 Node 实例 / key / 源数据对象。OKR 左树节点的链路留在左树内（顶层为根节点的左侧镜像），不跨接到右树根。
+ */
+function getNodePath(data: TreeNode | TreeKey | TreeNodeData): TreeNode[] {
+  return store.getNodePath(data)
+}
+
+/**
  * 滚动到指定节点：默认先展开其全部祖先使其可见，再 scrollIntoView（居中、平滑）。
  * 返回是否找到节点并完成滚动。
  */
@@ -1079,6 +1095,8 @@ defineExpose({
   setCheckedKeys,
   isChecked,
   moveNode,
+  getVisibleNodes,
+  getNodePath,
 })
 </script>
 

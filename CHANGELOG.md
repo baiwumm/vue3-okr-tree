@@ -2,6 +2,21 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## 1.12.0
+
+### 新增
+
+- **查询辅助方法（2.x #13）**：`getVisibleNodes()` 返回当前真正可见的节点实例——自身通过 `filter` 且各级祖先均已展开到它；折叠的子树仍挂载在 DOM 中（靠 `is-hidden` 收起），因此结果不等于 DOM 里的节点数，OKR 左子树按 `leftExpanded` 计入。`getNodePath(key | data | node)` 返回从顶层节点到目标节点的链路（含目标自身，不含虚拟根），未命中返回空数组；OKR 左树节点的链路留在左树内（顶层为根节点的左侧镜像），不跨接到右树根。两者均不依赖 `node-key` 之外的新配置。测试 +6。
+- **`@media print` 打印样式（2.x #13）**：打印时隐藏展开按钮与画布工具栏（纸上点不动的交互件），并去掉节点卡片与画布的 `box-shadow`（部分打印引擎会把阴影渲染成灰块且费墨）。折叠的子树按屏幕原样输出，需要整树打印请先调 `expandAll`。Visual 套件补一条 `emulateMedia({ media: 'print' })` 的计算样式断言（不新增截图基线）——这是唯一能覆盖该规则的门禁，其余检查都只看屏幕媒体。
+
+### 文档
+
+- **node-key 缺失策略文档化（2.x #13）**：README 新增「需要注意的行为」一节——此前 `append` 等回写类方法的只读数据警告就指向该节名，但章节并不存在。现说明：未配 `node-key` 时组件只在源数据对象上写入不可枚举的 `$treeNodeId` 作为 `v-for` key，**节点注册表是空的**，所以 `getNode(data 对象)` 返回 `null`、`getExpandedKeys` / `getCheckedKeys` 返回空数组、受控与按 key 的方法均不生效，只有传 Node 实例以及 `getVisibleNodes` / `expandAll` / `filter` 这类不依赖注册表的接口可用；深拷贝源数据会丢掉该标记、被当作不同节点。同时补写冻结 / 只读源数据下回写类方法的行为。
+
+### 修复
+
+- 视觉回归门禁的半像素误报（`39d8b08`）与 CI Linux 基线缺失（`be50ee0`）：demo 导航 `.demo-nav` 显式取整行高，`tests/visual/snap.ts` 在截图尺寸不符时补出可定位真因的提示，并补齐 20 张 `*-chromium-linux.png` 基线使 Visual job 首次转绿。仅测试与 CI 侧，无运行时影响。
+
 ## 1.11.0
 
 ### 新增

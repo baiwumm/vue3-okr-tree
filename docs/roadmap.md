@@ -158,14 +158,14 @@
 - [x] `expand-on-click-node`：点击节点内容也切换展开（默认 false，保持原版；语义对齐 el-tree：先切换展开再触发 node-click，叶子不切换）
 - [x] `accordion`：同级只允许一个展开（对齐 el-tree：只作用于交互展开，程序化方法与受控 expanded-keys 不受互斥限制）
 - [ ] `unstyled` prop：只输出布局与连接线，不带卡片外观，供 Tailwind / 自有设计系统接管
-- [ ] `getVisibleNodes()` / `getNodePath(key)` 辅助方法
-- [ ] `node-key` 缺失时的默认 key 策略文档化（`$treeNodeId`）
+- [x] `getVisibleNodes()` / `getNodePath(key)` 辅助方法
+- [x] `node-key` 缺失时的默认 key 策略文档化（`$treeNodeId`）
 - [x] SSR/Nuxt 冒烟（当前 setup 不访问 window，理论兼容；补一个 `renderToString` 测试）
 - [x] `prefers-reduced-motion: reduce` 时禁用展开/收起过渡动画（`transition.css` 加媒体查询，动画关、状态直切）
 - [x] `aria-setsize` / `aria-posinset` 补全 treeitem 语义
 - [x] 过滤后 `show-node-num` 的计数应只统计可见子节点（当前 `node.childNodes.length` 包含被过滤隐藏的节点，左右按钮同）
 - [x] 死代码清理：`util.objectAssign`、`TreeNode.hasLeftChild()` 无调用方；`TreeNode.expand(callback)` 的回调为同步即时调用，评估移除参数
-- [ ] `@media print` 打印样式（隐藏展开按钮与滚动阴影）或在文档站给出导出图片的替代方案
+- [x] `@media print` 打印样式（隐藏展开按钮与滚动阴影）或在文档站给出导出图片的替代方案
 - [x] 未知 `theme` 值的开发期警告（不在内置六套列表时，提示需自行编写 `.okr-theme-{name}` 变量）
 
 ### 14. 复选框选择模式（M–L）

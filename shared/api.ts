@@ -476,6 +476,16 @@ export const methodsSection: ApiSection = {
       '<strong>Vue 3 版新增（1.10.0）。</strong>移动节点到目标节点的 prev / inner / next，同步修改源数据并保持视图一致；inner 时目标自动展开。硬性禁止放到自身或自己的子树内。成功返回 true',
       '(data, target, type) 均支持 key / data 对象 / Node 实例',
     ],
+    [
+      'getVisibleNodes',
+      '<strong>Vue 3 版新增（1.12.0）。</strong>返回当前真正可见的节点实例（含 OKR 左树）：自身通过过滤且各级祖先均已展开到它。折叠的子树仍挂载在 DOM 中，因此结果不等于 DOM 里的节点数',
+      '—',
+    ],
+    [
+      'getNodePath',
+      '<strong>Vue 3 版新增（1.12.0）。</strong>返回从顶层节点到目标节点的链路（含目标自身），未命中返回空数组。OKR 左树节点的链路留在左树内（顶层为根节点的左侧镜像，与右树根同 key），不跨接到右树根',
+      '(data) key、data 对象或 Node 实例',
+    ],
   ],
 }
 

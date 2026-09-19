@@ -1,4 +1,4 @@
-import { test, type Page } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 import { snap } from './snap'
 
 /**
@@ -94,5 +94,23 @@ test.describe('1.4.0 新能力', () => {
     await card.locator('.org-chart-node-btn').first().click()
     await page.waitForTimeout(1400) // 懒加载模拟 800ms + 过渡
     await snap(card, 'demo-viewport.png')
+  })
+
+  test('打印媒体：隐藏展开按钮与画布工具栏、去掉卡片阴影', async ({ page }) => {
+    await page.goto('/')
+    const card = demoCard(page, 'demo-3')
+    await card.scrollIntoViewIfNeeded()
+    const btn = card.locator('.org-chart-node-btn').first()
+    const label = card.locator('.org-chart-node-label-inner').first()
+    const toolbar = demoCard(page, 'demo-19').locator('.okr-viewport-toolbar')
+
+    // 屏幕上展开按钮可见且卡片带阴影
+    await expect(btn).toBeVisible()
+    expect(await label.evaluate((el) => getComputedStyle(el).boxShadow)).not.toBe('none')
+
+    await page.emulateMedia({ media: 'print' })
+    await expect(btn).toBeHidden()
+    await expect(toolbar).toBeHidden()
+    expect(await label.evaluate((el) => getComputedStyle(el).boxShadow)).toBe('none')
   })
 })
