@@ -5,8 +5,6 @@
 
 <h1 align="center">vue3-okr-tree</h1>
 
-<p align="center">中文 · <a href="./README.en.md">English</a></p>
-
 [![npm version](https://img.shields.io/npm/v/vue3-okr-tree.svg)](https://www.npmjs.com/package/vue3-okr-tree)
 [![npm downloads](https://img.shields.io/npm/dm/vue3-okr-tree.svg)](https://www.npmjs.com/package/vue3-okr-tree)
 [![CI](https://github.com/baiwumm/vue3-okr-tree/actions/workflows/ci.yml/badge.svg)](https://github.com/baiwumm/vue3-okr-tree/actions/workflows/ci.yml)

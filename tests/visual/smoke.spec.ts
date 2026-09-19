@@ -1,10 +1,13 @@
 import { expect, test, type Page } from '@playwright/test'
-import { snap } from './snap'
 
 /**
- * 发包门禁终验：真实浏览器打开 Playground，对关键 demo 逐一交互并截图，
- * 断言全程浏览器控制台无报错（console.error / pageerror）。
- * 截图统一走 snap()：尺寸不符时补出可定位真因的提示。
+ * 冒烟守卫：真实浏览器打开 Playground，对关键 demo 逐一交互，断言全程控制台无报错
+ * （console.error / pageerror）。
+ *
+ * 这里刻意不截图。像素级比对全部由 visual.spec.ts 负责；此前本文件另截了 6 张
+ * `final-*.png`，且全部传 `maxDiffPixelRatio: 1`——等于不比像素、只比尺寸，而尺寸恰恰是
+ * 半像素偏移最容易误报的维度，所以它们几乎只产生假警报，却要 win32 / linux 各维护一份基线。
+ * 已移除，改为断言交互结果（渲染出节点、主题类切换生效、懒加载出子节点、zoomIn 改变百分比）。
  */
 
 const demoCard = (page: Page, id: string) => page.locator(`#${id} ~ .base-card-wrapper`)
@@ -15,7 +18,7 @@ async function settle(page: Page, id: string) {
   await page.waitForTimeout(120)
 }
 
-test('关键 demo 截图与控制台零报错', async ({ page }) => {
+test('关键 demo 交互与零控制台报错', async ({ page }) => {
   const errors: string[] = []
   page.on('console', (msg) => {
     if (msg.type() === 'error') errors.push(`[console.error] ${msg.text()}`)
@@ -26,35 +29,34 @@ test('关键 demo 截图与控制台零报错', async ({ page }) => {
   await page.waitForLoadState('networkidle')
   await page.evaluate(() => document.fonts.ready)
 
-  // 1. 垂直模式
-  await settle(page, 'demo-1')
-  await snap(demoCard(page, 'demo-1'), 'final-vertical.png', { maxDiffPixelRatio: 1 })
+  // 1. 三种布局模式均渲染出完整树
+  for (const id of ['demo-1', 'demo-2', 'demo-10']) {
+    await settle(page, id)
+    expect(
+      await demoCard(page, id).locator('.org-chart-node').count(),
+      `${id} 未渲染节点`
+    ).toBeGreaterThan(3)
+  }
 
-  // 2. 水平方向
-  await settle(page, 'demo-2')
-  await snap(demoCard(page, 'demo-2'), 'final-horizontal.png', { maxDiffPixelRatio: 1 })
-
-  // 3. OKR 左右树
-  await settle(page, 'demo-10')
-  await snap(demoCard(page, 'demo-10'), 'final-okr.png', { maxDiffPixelRatio: 1 })
-
-  // 4. 主题切换（切到 dark 再切回 default）
+  // 2. 主题切换：切到 dark 后页面容器带上主题类，再切回 default
+  //    （Playground 的切换器把 okr-theme-* 加在 .vue-okr-tree-demo 上一次性给所有 demo 换肤；
+  //     组件自身的 theme prop 则加在 .org-chart-container 上，由 verify:dist 与 theme.spec.ts 覆盖）
+  await page.locator('.demo-theme-bar').scrollIntoViewIfNeeded()
   await page.locator('.demo-theme-bar .demo-btn', { hasText: 'dark' }).click()
-  await settle(page, 'demo-1')
-  await snap(page.locator('.demo-theme-bar'), 'final-theme-dark.png', { maxDiffPixelRatio: 1 })
+  await page.waitForTimeout(200)
+  await expect(page.locator('.vue-okr-tree-demo.okr-theme-dark')).toBeVisible()
   await page.locator('.demo-theme-bar .demo-btn', { hasText: 'default' }).click()
-  await page.waitForTimeout(150)
+  await page.waitForTimeout(200)
+  await expect(page.locator('.vue-okr-tree-demo:not(.okr-theme-dark)')).toBeVisible()
 
-  // 5. 懒加载：点击展开 → 模拟 800ms 接口 → 子节点渲染
+  // 3. 懒加载：点击展开 → 模拟 800ms 接口 → 子节点渲染出来
   await page.locator('#demo-18').scrollIntoViewIfNeeded()
   const lazyCard = demoCard(page, 'demo-18')
   await lazyCard.locator('.org-chart-node-btn').first().click()
   await page.waitForTimeout(1400)
-  const lazyLabels = await lazyCard.locator('.org-chart-node-label-inner').all()
-  expect(lazyLabels.length).toBeGreaterThan(2) // 根 + 两个懒加载子节点
-  await snap(lazyCard, 'final-lazy.png', { maxDiffPixelRatio: 1 })
+  expect(await lazyCard.locator('.org-chart-node-label-inner').count()).toBeGreaterThan(2)
 
-  // 6. 画布缩放：展开 → 工具栏可见 → zoomIn 生效
+  // 4. 画布：展开 → 工具栏可见 → zoomIn 让缩放百分比变化
   await page.locator('#demo-19').scrollIntoViewIfNeeded()
   const vpCard = demoCard(page, 'demo-19')
   await vpCard.locator('.org-chart-node-btn').first().click()
@@ -63,11 +65,9 @@ test('关键 demo 截图与控制台零报错', async ({ page }) => {
   const zoomBefore = await vpCard.locator('.okr-viewport-toolbar-zoom').textContent()
   await vpCard.locator('.okr-viewport-toolbar-btn[title="放大"]').click()
   await page.waitForTimeout(100)
-  const zoomAfter = await vpCard.locator('.okr-viewport-toolbar-zoom').textContent()
-  expect(zoomAfter).not.toBe(zoomBefore) // 100% → 120%
-  await snap(vpCard, 'final-viewport.png', { maxDiffPixelRatio: 1 })
+  expect(await vpCard.locator('.okr-viewport-toolbar-zoom').textContent()).not.toBe(zoomBefore)
 
-  // 7. 方法调用（受控状态与方法用例）
+  // 5. 受控状态与方法用例正常挂载
   await settle(page, 'demo-17')
   await expect(demoCard(page, 'demo-17')).toBeVisible()
 

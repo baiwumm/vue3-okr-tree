@@ -86,11 +86,15 @@
   > ⚠️ 2026-09-19 更正：本项在 1.5.0 当时**并未真正达标**。Visual job 跑在 ubuntu 上找
   > `*-chromium-linux.png`，而仓库只提交了 win32 基线，缺失基线即判失败（`updateSnapshots: 'missing'`
   > 只写文件仍返回 softError），因此该 job 自建立起连续 9 次全红，「CI 能抓到回归」在 CI 侧不成立。
-  > 现已由 Snapshot Bootstrap 生成并提交 20 张 Linux 基线（`be50ee0`），第 10 次运行首次转绿。
+  > 现已由 Snapshot Bootstrap 生成并提交 Linux 基线（`be50ee0`），第 10 次运行首次转绿。
   > 另修复一处误报源：demo 导航 `.demo-nav` 以 13px 继承 `line-height:1.5` 得 19.5px 行高，加用例后
   > 累计高度落在 .5px 上，其下卡片整体偏移半像素，而 Playwright 元素截图向外取整会多 1 行，
   > 曾使 14 张 win32 基线集体报「尺寸不符」（渲染并无变化，非组件回归）。已取整行高，并新增
   > `tests/visual/snap.ts` 在尺寸不符失败时直接报出元素实际高度与视口顶边坐标。
+  > 2026-09-19 另简化 `smoke.spec.ts`：去掉它额外截的 6 张 `final-*.png`（win32 + linux 共 12 个文件）——
+  > 这些断言全部传 `maxDiffPixelRatio: 1`，等于不比像素只比尺寸，而尺寸正是半像素偏移最容易误报的
+  > 维度，几乎只产生假警报。改为断言交互结果（渲染出节点、主题类切换、懒加载出子节点、zoomIn 改变
+  > 百分比），控制台零报错守卫保留。
 
 ### 6. 性能基线（S）
 
@@ -133,7 +137,7 @@
 ## 2.x — 大功能（视需求排期）
 
 > **进度停点（2026-09-19 收工）**：2.x 已完成 #13 低风险档（1.7.0）→ #13 交互档 + #16 SSR/peer（1.8.0）→ #14 复选框（1.9.0）→ #10 拖拽（1.10.0）→ #11 SVG 连接线（1.11.0）→ #13 查询方法与打印样式（1.12.0）→ #13 unstyled（1.13.0）。全量冒烟已跑通：单测 226 通过、覆盖率 stmts 90.7%、build/verify:dist/size/verify:package 全绿，24 个 Demo 用例浏览器交互零控制台报错，Visual 17 项全绿；`origin/main` 已同步，CI 全绿。仍未打 tag——npm 解封前推 tag 会让 release workflow 直接失败。
-> **下一步顺序**：① #16 剩余两项（双语 README、Vue Devtools 插件）→ ② **等 09-21 发布完成** → ③ #12 更多布局（M–L）→ ④ #15 虚拟滚动先做半天预研 spike（伪元素连接线与虚拟化兼容性），再决定排期。#13 已于 1.13.0 全部完成。
+> **下一步顺序**：① #16 剩余的 Vue Devtools 插件（双语 README 已决定不做，见文末）→ ② **等 09-21 发布完成** → ③ #12 更多布局（M–L）→ ④ #15 虚拟滚动先做半天预研 spike（伪元素连接线与虚拟化兼容性），再决定排期。#13 已于 1.13.0 全部完成。
 > **为什么把 #12 / #15 排在发布之后**：M–L 的功能改动会引入回归面，而首次发布本身就要观察「新包第一次上线」这一件事。两件事叠在一起时，出问题无法归因。发布窗口内只接受零运行时风险的文档类改动。
 > 发布侧：npm 账号 **2026-09-21 14:22（北京时间）** 解封，当天重跑门禁后手动首版 + 配 `NPM_TOKEN`，见 1.5.0 #4 的 ⏸ 注记。
 
@@ -194,9 +198,8 @@
 ### 16. 开发体验（S）
 
 - [ ] Vue Devtools 插件（dev only）：面板查看节点注册表、展开/选中状态
-- [ ] 双语 README（README.en 与中文主文档互链，API 表以一份为准）
 - [x] peerDependencies 实测：`defineSlots` 等编译宏需要 vue ≥ 3.3，当前声明 `>=3.0.0` 偏宽 → CI 用 pnpm overrides 在 vue@3.3 / 3.4 / 3.5 矩阵跑单测，按结果收紧 peer 范围（已收紧为 `>=3.3.0`；注意 vue <3.5 矩阵腿需配 `@vue/test-utils` ~2.3，≥2.4 依赖 vue 3.5 的 `app.onUnmount`）
-- **验收**：Vue Devtools 可见树状态；英文用户可读文档；peer 范围与实测一致。
+- **验收**：Vue Devtools 可见树状态；peer 范围与实测一致。
 
 ---
 
@@ -214,11 +217,12 @@
 | 2026-09-19 | 1.9.0  | #14 复选框选择模式（联动/半选/strictly、check/check-change、六方法、OKR 语义、键盘/a11y）、Demo +1、ESM 预算上调 22 kB                                         | `a14c0cc`           |
 | 2026-09-19 | 1.10.0 | #10 拖拽调整层级（draggable / allow 钩子 / 六事件 / moveNode / 分区指示线 / OKR 跨树规则）、Demo +1、ESM 预算 24 kB、样式 4 kB                                 | `888cf33`           |
 | 2026-09-19 | 1.11.0 | #11 SVG 连接线（connector 双模式 / connector-shape 三形状 / 无残影重绘 / OKR 左树镜像）、ESM 产物压缩修复（gzip 24.2→16.2 kB，预算回 19 kB）、Demo +1          | `90dcc85`           |
-| 2026-09-19 | —      | 视觉门禁修复：`.demo-nav` 行高取整消除半像素误报、`tests/visual/snap.ts` 尺寸不符时补真因提示、补齐 20 张 Linux 基线（Visual job 自建起首次转绿）              | `39d8b08` `be50ee0` |
+| 2026-09-19 | —      | 视觉门禁修复：`.demo-nav` 行高取整消除半像素误报、`tests/visual/snap.ts` 尺寸不符时补真因提示、补齐 Linux 基线（Visual job 自建起首次转绿）                    | `39d8b08` `be50ee0` |
 | 2026-09-19 | 1.12.0 | #13 三项：`getVisibleNodes` / `getNodePath`、`@media print` 打印样式（含 print 媒体断言）、README「需要注意的行为」补 node-key 缺失策略与只读数据边界、单测 +6 | `55f20bc`           |
 | 2026-09-19 | 1.13.0 | #13 收尾：`unstyled` prop（okr-unstyled 中和卡片外观、保留布局与连接线，含计算样式断言），#13 全部完成；样式 gzip 3.88/4 kB                                    | `f02e10c`           |
 
 ## 已决定不做
 
 - **Tailwind CSS 进入组件库本体**：连接线是伪元素像素几何，工具类无法表达；Preflight 会重新引入全局样式污染；主题诉求已由 CSS 变量满足。文档站可用 Tailwind。
+- **双语 README**：只保留中文主文档。英文文档要与中文对等就得两边同步，而本项目的内容里「为什么这样设计」的段落占比很高，双份维护的漂移成本大于收益；API 表已限定单一来源，再出一份翻译表更是直接违背该约定。海外读者由 `shared/api.ts` 生成的类型定义与文档站兜底。
 - **`selectedKey` / `orkstyle` / `props.leftChildren` 等原版死代码**：见 `requirements.md` 2.1。
