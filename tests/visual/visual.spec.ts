@@ -1,9 +1,11 @@
-import { expect, test, type Page } from '@playwright/test'
+import { test, type Page } from '@playwright/test'
+import { snap } from './snap'
 
 /**
- * 视觉回归（roadmap 1.5.0 #5）：Playwright 真实浏览器对 Playground 关键用例截图比对。
+ * 视觉回归（roadmap 1.5.0 #5）：真实浏览器对 Playground 关键用例截图比对。
  * 覆盖：三种布局模式、OKR 对齐、六套主题、动画落定态、懒加载、画布缩放。
  * 快照缺失时自动生成（updateSnapshots: 'missing'），已存在的不一致即失败。
+ * 截图统一走 snap()：尺寸不符时补出可定位真因的提示。
  */
 
 const demoCard = (page: Page, id: string) => page.locator(`#${id} ~ .base-card-wrapper`)
@@ -19,13 +21,13 @@ test.describe('三模式与 OKR 对齐', () => {
   test('基础用法（vertical）', async ({ page }) => {
     await page.goto('/')
     await settle(page, 'demo-1')
-    await expect(demoCard(page, 'demo-1')).toHaveScreenshot('demo-vertical.png')
+    await snap(demoCard(page, 'demo-1'), 'demo-vertical.png')
   })
 
   test('水平方向（horizontal）', async ({ page }) => {
     await page.goto('/')
     await settle(page, 'demo-2')
-    await expect(demoCard(page, 'demo-2')).toHaveScreenshot('demo-horizontal.png')
+    await snap(demoCard(page, 'demo-2'), 'demo-horizontal.png')
   })
 
   test('节点展开（horizontal + collapsable，展开落定态）', async ({ page }) => {
@@ -36,13 +38,13 @@ test.describe('三模式与 OKR 对齐', () => {
     const card = demoCard(page, 'demo-3')
     await card.locator('.org-chart-node-btn').first().click()
     await page.waitForTimeout(150)
-    await expect(card).toHaveScreenshot('demo-horizontal-expand.png')
+    await snap(card, 'demo-horizontal-expand.png')
   })
 
   test('OKR 模式（左右双向 + 根对齐）', async ({ page }) => {
     await page.goto('/')
     await settle(page, 'demo-10')
-    await expect(demoCard(page, 'demo-10')).toHaveScreenshot('demo-okr.png')
+    await snap(demoCard(page, 'demo-10'), 'demo-okr.png')
   })
 
   test('OKR 多树根对齐（OkrTreeGroup）', async ({ page }) => {
@@ -50,7 +52,7 @@ test.describe('三模式与 OKR 对齐', () => {
     await page.locator('#group-demo').scrollIntoViewIfNeeded()
     await page.evaluate(() => document.fonts.ready)
     await page.waitForTimeout(200) // 等 Group 测量完成
-    await expect(page.locator('#group-demo')).toHaveScreenshot('demo-okr-group.png')
+    await snap(page.locator('#group-demo'), 'demo-okr-group.png')
   })
 })
 
@@ -64,8 +66,7 @@ test.describe('六套主题（作用于基础用法用例）', () => {
       await page.locator('.demo-theme-bar').scrollIntoViewIfNeeded()
       await page.locator('.demo-theme-bar .demo-btn', { hasText: theme }).click()
       await settle(page, 'demo-1')
-      const shot = demoCard(page, 'demo-1')
-      await expect(shot).toHaveScreenshot(`theme-${theme}.png`)
+      await snap(demoCard(page, 'demo-1'), `theme-${theme}.png`)
     })
   }
 })
@@ -77,11 +78,11 @@ test.describe('1.4.0 新能力', () => {
     await page.evaluate(() => document.fonts.ready)
     const card = demoCard(page, 'demo-18')
     // 未展开状态（按钮 + 描述里的加载计数为 0）
-    await expect(card).toHaveScreenshot('demo-lazy-before.png')
+    await snap(card, 'demo-lazy-before.png')
     // 点击展开 → 模拟接口 800ms → 加载完成渲染子节点
     await card.locator('.org-chart-node-btn').first().click()
     await page.waitForTimeout(1400)
-    await expect(card).toHaveScreenshot('demo-lazy-loaded.png')
+    await snap(card, 'demo-lazy-loaded.png')
   })
 
   test('画布缩放：展开节点后的画布与工具栏', async ({ page }) => {
@@ -92,6 +93,6 @@ test.describe('1.4.0 新能力', () => {
     // 展开根节点，让画布内容可见（工具栏 + 缩放百分比 + 树）
     await card.locator('.org-chart-node-btn').first().click()
     await page.waitForTimeout(1400) // 懒加载模拟 800ms + 过渡
-    await expect(card).toHaveScreenshot('demo-viewport.png')
+    await snap(card, 'demo-viewport.png')
   })
 })

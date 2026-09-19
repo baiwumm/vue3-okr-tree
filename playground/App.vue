@@ -199,6 +199,9 @@ function goTop() {
   flex-wrap: wrap;
   gap: 6px 14px;
   font-size: 13px;
+  /* 必须取整：继承 body 的 line-height:1.5 会得到 19.5px 行高，使导航高度落在 .5px 上，
+     其下所有用例卡片因此整体偏移半像素，Playwright 元素截图按外扩取整会多出一行，视觉基线集体失配。 */
+  line-height: 20px;
   padding: 12px 16px;
   border: 1px solid #ebebeb;
   border-radius: 4px;
