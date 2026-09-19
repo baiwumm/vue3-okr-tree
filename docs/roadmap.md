@@ -212,7 +212,7 @@
 | 2026-09-19 | 1.11.0 | #11 SVG 连接线（connector 双模式 / connector-shape 三形状 / 无残影重绘 / OKR 左树镜像）、ESM 产物压缩修复（gzip 24.2→16.2 kB，预算回 19 kB）、Demo +1          | `90dcc85`           |
 | 2026-09-19 | —      | 视觉门禁修复：`.demo-nav` 行高取整消除半像素误报、`tests/visual/snap.ts` 尺寸不符时补真因提示、补齐 20 张 Linux 基线（Visual job 自建起首次转绿）              | `39d8b08` `be50ee0` |
 | 2026-09-19 | 1.12.0 | #13 三项：`getVisibleNodes` / `getNodePath`、`@media print` 打印样式（含 print 媒体断言）、README「需要注意的行为」补 node-key 缺失策略与只读数据边界、单测 +6 | `55f20bc`           |
-| 2026-09-19 | 1.13.0 | #13 收尾：`unstyled` prop（okr-unstyled 中和卡片外观、保留布局与连接线，含计算样式断言），#13 全部完成；样式 gzip 3.88/4 kB                                         | `f02e10c`           |
+| 2026-09-19 | 1.13.0 | #13 收尾：`unstyled` prop（okr-unstyled 中和卡片外观、保留布局与连接线，含计算样式断言），#13 全部完成；样式 gzip 3.88/4 kB                                    | `f02e10c`           |
 
 ## 已决定不做
 
