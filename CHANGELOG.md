@@ -81,6 +81,7 @@
 - **`aria-setsize` / `aria-posinset`**：`role="treeitem"` 补齐在兄弟组内的序号与总数，按**可见**节点计数，被 `filter` 隐藏的项不再被读屏播报。
 - **未知 `theme` 值的开发期警告**：`theme` 允许任意自定义名字（用于挂用户自己的 `.okr-theme-{name}`），因此不收紧类型，只在名字不在内置六套清单时提示，避免拼错主题名时毫无视觉变化却找不到原因。内置清单收敛为 `BUILT_IN_THEMES`，`TreeTheme` 类型由它派生。
 - **品牌 Logo 与站点图标**：定稿 Logo，接入 README / 文档站（favicon、apple-touch-icon、`og:image` / `twitter:image`）与 Playground。
+- **文档站部署目标改为 Cloudflare Pages/Workers**：删除原 GitHub Pages workflow（1.5.0 条目里写的「push main 后自动部署到 GitHub Pages」是当时的事实，此后被本条取代），`docs:build:full` 合并 Playground 为 `/playground/` 子路径，域名定为 `vue3-okr-tree.baiwumm.com` 并落地到 README 与 `package.json` 的 `homepage`。
 - **`snapshot-bootstrap.yml`**：手动触发，在真实 runner 上生成 Linux 视觉基线（`*-chromium-linux.png`）并以 artifact 上传，供下载提交。
 
 ### 修复

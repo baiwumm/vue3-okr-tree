@@ -3,7 +3,6 @@ src/
 playground/
 tests/
 docs/
-.workbuddy/
 node_modules/
 coverage/
 *.tgz

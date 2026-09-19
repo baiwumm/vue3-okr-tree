@@ -70,10 +70,13 @@
 
 - [x] 引入 `changesets`（或简化为 `release` workflow：打 tag → 构建 → `npm publish --provenance`）
 - [x] `package.json` 核对：`repository` / `homepage` / `bugs` / `author` / `keywords`；`publishConfig.access: public`
-- [ ] 首次 `npm publish`（此前仅做过 `--dry-run`）
+- [ ] 首次 `npm publish`（此前仅做过 `--dry-run`）——**2026-09-21 14:22 解封后**按 `docs/release-guide.md` 第三节执行，版本号以 `package.json` 为准（当前 1.13.0）
 - [ ] 发布后用一个空 Vite 项目 `pnpm add vue3-okr-tree` 验证：ESM import、`require`、CDN `<script>` 三条路径
+- [ ] 创建 Granular Token（只圈定本包 + 勾 Bypass 2FA）→ GitHub Secrets 配 `NPM_TOKEN`
+- [ ] 配好后打 `v1.13.0` 并 push，验证 release.yml 自动发布链路（tag 校验 → 门禁 → `npm publish --provenance` → GitHub Release）
+- [ ] npm 包页面关联 GitHub 仓库；有条件时把 Trusted Publisher 配为 `baiwumm/vue3-okr-tree` + `release.yml`
 - **验收**：npm 页面可见 1.x，安装后类型提示与样式正常。
-  > ⏸ 2026-09-19 更新：release workflow（tag → 校验 → `npm publish --provenance` → GitHub Release）与 package.json 元信息已就绪；`npm pack` 四条路径已在空 Vite 项目本地验证（见 docs/release-readiness.md）。**等待维护者 npm 账号解封**：先手动发一版 → GitHub 配置 NPM_TOKEN → 之后 push main 并 `git tag v1.11.0 && git push origin v1.11.0` 即自动发布。1.7.0–1.11.0 均未发过 tag，npm 首个线上版本将是 1.11.0（1.8.0 起新增 peer `vue>=3.3.0` 收紧、accordion / expand-on-click-node / 复选框 / 拖拽 / SVG 连接线，详见 CHANGELOG）。真实发布与线上验证由维护者手动执行。
+  > ⏸ 2026-09-19 更新：release workflow（tag → 校验 → `npm publish --provenance` → GitHub Release）与 package.json 元信息已就绪；`npm pack` 四条路径已在空 Vite 项目本地验证（见 docs/release-readiness.md）。**等待维护者 npm 账号解封（2026-09-21 14:22 北京时间）**：先手动发一版 → GitHub 配置 NPM_TOKEN → 之后 push main 并 `git tag v1.13.0 && git push origin v1.13.0` 即自动发布。1.7.0–1.13.0 均未发过 tag，npm 首个线上版本将是 **1.13.0**（1.8.0 起新增 peer `vue>=3.3.0` 收紧、accordion / expand-on-click-node / 复选框 / 拖拽 / SVG 连接线 / 查询方法 / 打印样式 / unstyled，详见 CHANGELOG）。真实发布与线上验证由维护者手动执行。
 
 ### 5. 视觉回归测试（M）
 
@@ -130,7 +133,8 @@
 ## 2.x — 大功能（视需求排期）
 
 > **进度停点（2026-09-19 收工）**：2.x 已完成 #13 低风险档（1.7.0）→ #13 交互档 + #16 SSR/peer（1.8.0）→ #14 复选框（1.9.0）→ #10 拖拽（1.10.0）→ #11 SVG 连接线（1.11.0）→ #13 查询方法与打印样式（1.12.0）→ #13 unstyled（1.13.0）。全量冒烟已跑通：单测 226 通过、覆盖率 stmts 90.7%、build/verify:dist/size/verify:package 全绿，24 个 Demo 用例浏览器交互零控制台报错，Visual 17 项全绿；`origin/main` 已同步，CI 全绿。仍未打 tag——npm 解封前推 tag 会让 release workflow 直接失败。
-> **下一步顺序**：① #16 剩余两项（双语 README、Vue Devtools 插件）→ ② #12 更多布局（M–L）→ ③ #15 虚拟滚动先做半天预研 spike（伪元素连接线与虚拟化兼容性），再决定排期。#13 已于 1.13.0 全部完成。
+> **下一步顺序**：① #16 剩余两项（双语 README、Vue Devtools 插件）→ ② **等 09-21 发布完成** → ③ #12 更多布局（M–L）→ ④ #15 虚拟滚动先做半天预研 spike（伪元素连接线与虚拟化兼容性），再决定排期。#13 已于 1.13.0 全部完成。
+> **为什么把 #12 / #15 排在发布之后**：M–L 的功能改动会引入回归面，而首次发布本身就要观察「新包第一次上线」这一件事。两件事叠在一起时，出问题无法归因。发布窗口内只接受零运行时风险的文档类改动。
 > 发布侧：npm 账号 **2026-09-21 14:22（北京时间）** 解封，当天重跑门禁后手动首版 + 配 `NPM_TOKEN`，见 1.5.0 #4 的 ⏸ 注记。
 
 ### 10. 拖拽调整层级（L）

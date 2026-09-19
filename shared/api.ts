@@ -145,7 +145,7 @@ export const attributesSection: ApiSection = {
     ],
     [
       'unstyled',
-      '<strong>Vue 3 版新增（1.12.0）。</strong>去掉卡片外观（背景 / 边框 / 圆角 / 阴影），只保留布局与连接线，供 Tailwind 或自有设计系统接管。内边距、字号与文字色不受影响——改 padding 会移动节点盒并牵动连接线几何，需要调整请用 <code>--okr-node-*</code> 变量或 <code>label-class-name</code>',
+      '<strong>Vue 3 版新增（1.13.0）。</strong>去掉卡片外观（背景 / 边框 / 圆角 / 阴影），只保留布局与连接线，供 Tailwind 或自有设计系统接管。内边距、字号与文字色不受影响——改 padding 会移动节点盒并牵动连接线几何，需要调整请用 <code>--okr-node-*</code> 变量或 <code>label-class-name</code>',
       'boolean',
       '—',
       'false',

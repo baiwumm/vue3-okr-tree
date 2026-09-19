@@ -1,14 +1,23 @@
 # 发包就绪报告（release-readiness）
 
-> ⚠️ **本文为 1.7.0 时点（2026-09-18）的历史快照，下方表格里的版本号与用例数均已过期，勿据此判断当前门禁状态。**
-> 当前（2026-09-19 复核）：版本 **1.11.0**；单测 **219** 通过、覆盖率 stmts 90.5%；`build` / `verify:dist` /
-> `size`（ESM 16.58/19 kB、样式 3.76/4 kB、UMD 16.45/19.5 kB）/ `verify:package`（publint 零问题 + attw 全绿）
-> 全部通过；`npm pack` 为 **12 文件 / 231.3 kB**（1.11.0 的 ESM 压缩修复移除了错位的 `es.js.map`，故比下表少 1 个）；
-> 24 个 Demo 用例浏览器交互 **0 控制台报错**。`origin/main` 同步至 `be50ee0`，CI 7 项检查全绿。
-> **对下表的一处更正**：`test:visual ✅ 通过` 当时只在 win32 本地成立——仓库缺 `*-chromium-linux.png`，
-> 而 Visual job 跑在 ubuntu 上，该 job 自建立起连续 9 次全红。现已补齐 20 张 Linux 基线并首次转绿；
-> 同时修掉了 `.demo-nav` 半像素行高导致的 14 张 win32 基线集体误报（详见 roadmap #5 更正注记）。
-> 解封日期不变：**2026-09-21 14:22（北京时间）**，当天重跑门禁后按第三节的三步走。
+> ⚠️ **本文正文是 1.7.0 时点（2026-09-18）的历史快照**，下方表格里的版本号与用例数均已过期，勿据此判断门禁状态。
+> 发布当天请以**重跑门禁的实测结果**为准，不要引用本文件里的任何数字。
+
+## 当前状态（2026-09-19 快照，发布前请重跑核对）
+
+- 版本 **1.13.0**，`origin/main` = `cd2b7e5`，CI 7 项全绿，**尚未打过任何 tag**。
+- 门禁实测：单测 **226** 通过 / 覆盖率 stmts 90.69%；`size` ESM 16.75/19 kB、样式 **3.84/4 kB（余量仅 4%）**、
+  UMD 16.62/19.5 kB；`verify:dist` / `verify:package`（publint + attw）全绿；Visual **17** 项全绿；
+  24 个 Demo 用例浏览器交互 0 控制台报错；`npm pack` 12 文件 / 231.3 kB。
+- 发布前唯一待办：`npm publish` 与线上三路径验证（见第三节），阻塞在 npm 账号解封 **2026-09-21 14:22（北京时间）**。
+
+## 对正文表格的两处更正（长期有效的事实，不随版本过期）
+
+1. 下表 `test:visual ✅ 通过` 在 2026-09-18 只在 **win32 本地**成立：仓库缺 `*-chromium-linux.png`，而 Visual job
+   跑在 ubuntu 上，缺失基线即判失败，该 job 自建立起连续 9 次全红。2026-09-19 补齐 20 张 Linux 基线后首次转绿。
+2. 同期修掉一处误报源：`.demo-nav` 以 13px 继承 `line-height:1.5` 得 19.5px 行高，加用例后累计高度落在 .5px 上，
+   其下卡片整体偏移半像素，而 Playwright 元素截图向外取整会多 1 行，曾使 14 张 win32 基线集体报「尺寸不符」
+   （渲染并无变化，非组件回归）。详见 roadmap #5 的更正注记。
 
 > 更新：2026-09-18（终验完成；1.7.0 增补 #13 低风险档 + Logo 接入，同日复跑门禁同样全绿）｜ 当前版本：1.7.0（本地，未发布；1.6.0 从未上线，首发即为 1.7.0）｜ 状态：**✅ 代码侧已达到可发包标准，下一步即可 npm publish（维护者手动执行）**
 
@@ -59,7 +68,7 @@
 
 1. 推送仓库到 GitHub，确认 CI / visual 两条 workflow 绿灯；
 2. Cloudflare 绑定仓库部署文档站，绑定域名 **vue3-okr-tree.baiwumm.com**（README 与 package.json homepage 已写入该域名）；
-3. **npm 账号 2026-09-21 14:22（北京时间）解封后**：本地手动首发**当时的 HEAD 版本号**（写本文时为 1.7.0，实际将是 **1.11.0**——1.8.0 起未发过任何版本，npm 上首个线上版本会跳号到 1.11.0，CHANGELOG 已按版本逐条交代；`pnpm build` → `pnpm verify:package` → `npm publish`）；
+3. **npm 账号 2026-09-21 14:22（北京时间）解封后**：本地手动首发**当时的 HEAD 版本号**（当前为 **1.13.0**；1.7.0 起未发过任何版本，npm 上首个线上版本会跳号到 1.13.0，CHANGELOG 已按版本逐条交代；`pnpm build` → `pnpm verify:package` → `npm publish`）；
 4. 创建 Granular Token（只圈定 vue3-okr-tree、勾 Bypass 2FA）→ GitHub Secrets 配置 `NPM_TOKEN`；
 5. 后续版本：改版本号 + CHANGELOG → `git tag vx.y.z && git push origin vx.y.z` → release.yml 自动发布（带 provenance）。
 

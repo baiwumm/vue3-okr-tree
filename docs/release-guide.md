@@ -1,22 +1,24 @@
 # 发布操作手册（release-guide）
 
 > vue3-okr-tree 首发与后续版本的完整操作步骤。写给维护者本人照着执行。
-> 当前状态（2026-09-18）：1.7.0 已在本地 main 就绪（1.6.0 从未发布过，1.7.0 是首个上线版本），**npm 从未发布过此包**；
-> npm 账号 `baiwumm` 因使用恢复码登录被临时冻结 72 小时，**2026-09-21 14:22（北京时间，UTC 06:22）自动解封**——冻结期间只读（不能发包 / 建 token / 改设置），解封前先做不依赖 npm 的步骤。
+> 当前状态（2026-09-19）：**1.13.0** 已在 `origin/main`（`cd2b7e5`）就绪，CI 7 项全绿；1.6.0–1.13.0 从未发布过，
+> 首个上线版本即 **1.13.0**（发包前请以 `node -p "require('./package.json').version"` 复核，不要照抄本文任何版本号），
+> **npm 从未发布过此包**；npm 账号 `baiwumm` 因使用恢复码登录被临时冻结 72 小时，
+> **2026-09-21 14:22（北京时间，UTC 06:22）自动解封**——冻结期间只读（不能发包 / 建 token / 改设置），解封前先做不依赖 npm 的步骤。
 
 ---
 
 ## 步骤总览
 
-| #   | 步骤                                      | 依赖 npm 解封？                                    |
-| --- | ----------------------------------------- | -------------------------------------------------- |
-| 1   | 推送仓库到 GitHub                         | ❌ 现在就能做                                      |
-| 2   | Cloudflare 绑定 + 部署文档站 + 配置域名   | ❌ 现在就能做                                      |
-| 3   | 手动首发 npm 包 1.7.0                     | ✅ 需解封                                          |
-| 4   | 创建 Granular Token → 配置 GitHub Secrets | ✅ 需解封                                          |
-| 5   | npm 包页面关联 GitHub 仓库                | ✅ 需解封                                          |
-| 6   | 确认 CI workflow 通过                     | ❌（push 后自动跑）                                |
-| 7   | 发布后验证                                | ✅（安装包需要登录态？不需要，安装公开包无需登录） |
+| #   | 步骤                                       | 依赖 npm 解封？                                    |
+| --- | ------------------------------------------ | -------------------------------------------------- |
+| 1   | 推送仓库到 GitHub                          | ❌ 现在就能做                                      |
+| 2   | Cloudflare 绑定 + 部署文档站 + 配置域名    | ❌ 现在就能做                                      |
+| 3   | 手动首发 npm 包（版本号见 `package.json`） | ✅ 需解封                                          |
+| 4   | 创建 Granular Token → 配置 GitHub Secrets  | ✅ 需解封                                          |
+| 5   | npm 包页面关联 GitHub 仓库                 | ✅ 需解封                                          |
+| 6   | 确认 CI workflow 通过                      | ❌（push 后自动跑）                                |
+| 7   | 发布后验证                                 | ✅（安装包需要登录态？不需要，安装公开包无需登录） |
 
 ---
 
@@ -49,19 +51,20 @@ git push origin main        # 首次推送全部本地提交
 
 > 仓库里 `wrangler.jsonc` 已配置静态资产与 404 处理；README 中的文档站链接已写死该域名。
 
-## 3. 手动首发 npm 包 1.7.0（解封后）
+## 3. 手动首发 npm 包（解封后）
 
 ```bash
 # 仓库根目录（确认 git 状态干净、与远端一致）
+node -p "require('./package.json').version"   # 核对要发的版本号（当前 1.13.0）
 pnpm build              # 生成 dist（含 index.d.cts 后处理）
 pnpm verify:package     # publint + attw 体检，应输出 No problems found
 npm login               # 若本地登录态还在可跳过
 npm publish             # 会提示输入 2FA 验证码；access: public 已在 package.json 配好
 ```
 
-验证：https://www.npmjs.com/package/vue3-okr-tree 出现 **1.7.0**；随便找个目录 `npm i vue3-okr-tree` 能装上。
+验证：https://www.npmjs.com/package/vue3-okr-tree 出现该版本号；随便找个目录 `npm i vue3-okr-tree` 能装上。
 
-> 注意：手动发的 1.7.0 不带 provenance 标志（只有 CI 发布能生成），从下一版本起走自动发布即有。
+> 注意：手动发的首版不带 provenance 标志（只有 CI 发布能生成），从下一版本起走自动发布即有。
 
 ## 4. 创建 Token → 配置 GitHub Secrets
 
@@ -91,7 +94,7 @@ npm i vue3-okr-tree
 node -e "const l=require('vue3-okr-tree'); console.log(typeof l.VueOkrTree)"   # object
 ```
 
-再加一条 ESM 检查：`node --input-type=module -e "import('vue3-okr-tree').then(m=>console.log(typeof m.VueOkrTree))"`。页面确认 npm 徽章、README 渲染、1.7.0 版本号。
+再加一条 ESM 检查：`node --input-type=module -e "import('vue3-okr-tree').then(m=>console.log(typeof m.VueOkrTree))"`。页面确认 npm 徽章、README 渲染、版本号与 `package.json` 一致。
 
 ## 7. 后续版本发布（全自动流程）
 

@@ -21,3 +21,10 @@ API 名称与语义完全对齐，直接把 `import { VueOkrTree } from 'vue-okr
 - `<OkrTreeGroup>` 多树根对齐、WAI-ARIA 键盘导航（1.3.0）
 - `lazy` + `load` 懒加载、`<OkrTreeViewport>` 画布缩放与导出、`getNodeEl`（1.4.0）
 - `deep-watch` 性能开关、逐层脏检查增量更新（1.5.0）
+- 冻结 / 只读源数据兼容、运行时 prop 同步与开发期警告（1.6.0）
+- `accordion` 手风琴、`expand-on-click-node` 点击节点展开、SSR 可用、peer 收紧 `vue >= 3.3`（1.7.0 / 1.8.0）
+- 复选框选择模式 `show-checkbox` / `check-strictly` / `default-checked-keys`，父子联动半选、6 个方法、`check` / `check-change` 事件（1.9.0）
+- 拖拽调整层级 `draggable` / `allow-drag` / `allow-drop`、6 个拖拽事件、`moveNode`（1.10.0）
+- SVG 连接线模式 `connector="svg"` 与 `curve` / `orthogonal` / `straight` 三种路径形状（1.11.0）
+- 查询辅助方法 `getVisibleNodes()` / `getNodePath()`、`@media print` 打印样式（1.12.0）
+- `unstyled` prop：去掉卡片外观只留布局与连接线，供 Tailwind / 自有设计系统接管（1.13.0）

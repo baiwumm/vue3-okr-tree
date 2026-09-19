@@ -71,6 +71,10 @@
 | `--okr-current-bg`        | 选中背景（主题内生效）            | `#3370ff`                       |
 | `--okr-current-color`     | 选中文字（主题内生效）            | `#fff`                          |
 | `--okr-disabled-opacity`  | 禁用节点透明度                    | `0.6`                           |
+| `--okr-drop-color`        | 拖拽放置指示线 / inner 描边颜色   | 取 `--okr-current-bg`           |
+| `--okr-focus-color`       | 键盘焦点环颜色                    | `#409eff`                       |
+| `--okr-focus-width`       | 键盘焦点环宽度                    | `2px`                           |
 | `--okr-anim-duration`     | 展开/收起过渡时长（由 prop 写入） | `200ms`                         |
+| `--okr-anim-easing`       | 过渡缓动（按动画名可覆盖）        | `cubic-bezier(.55,0,.1,1)`      |
 
 画布组件 `OkrTreeViewport` 另有一组变量：`--okr-viewport-height`（默认 `420px`）、`--okr-viewport-bg`、`--okr-viewport-border`、`--okr-viewport-radius`、`--okr-viewport-toolbar-bg`、`--okr-viewport-toolbar-shadow`。

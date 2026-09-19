@@ -1,8 +1,11 @@
 <p align="center">
-  <img src="./docs-site/public/logo-512.png" width="112" height="112" alt="vue3-okr-tree Logo" />
+  <!-- 绝对地址：logo 不在 npm 包内（files 只含 dist 与文档），相对路径在 npm 页面上取不到 -->
+  <img src="https://vue3-okr-tree.baiwumm.com/logo-512.png" width="112" height="112" alt="vue3-okr-tree Logo" />
 </p>
 
 <h1 align="center">vue3-okr-tree</h1>
+
+<p align="center">中文 · <a href="./README.en.md">English</a></p>
 
 [![npm version](https://img.shields.io/npm/v/vue3-okr-tree.svg)](https://www.npmjs.com/package/vue3-okr-tree)
 [![npm downloads](https://img.shields.io/npm/dm/vue3-okr-tree.svg)](https://www.npmjs.com/package/vue3-okr-tree)
@@ -394,7 +397,9 @@ const DeptTree = createTypedOkrTree<Dept>()
 | `--okr-current-bg`        | 选中背景（主题内生效）            | `#3370ff`                       |
 | `--okr-current-color`     | 选中文字（主题内生效）            | `#fff`                          |
 | `--okr-disabled-opacity`  | 禁用节点透明度                    | `0.6`                           |
+| `--okr-drop-color`        | 拖拽放置指示线 / inner 描边颜色   | 取 `--okr-current-bg`           |
 | `--okr-anim-duration`     | 展开/收起过渡时长（由 prop 写入） | `200ms`                         |
+| `--okr-anim-easing`       | 过渡缓动（按动画名可覆盖）        | `cubic-bezier(.55,0,.1,1)`      |
 
 <!-- API-DOC-BEGIN（本段由 pnpm gen:readme 从 shared/api.ts 生成，勿手改） -->
 
@@ -425,7 +430,7 @@ const DeptTree = createTypedOkrTree<Dept>()
 | allow-drop               | **Vue 3 版新增（1.10.0）。**放置规则钩子：返回 false 禁止该放置位置；OKR 模式跨左右树默认禁止，返回 true 可放开                                                                                                                                                   | Function(draggingNode, dropNode, type)（可选值：type: 'prev' / 'inner' / 'next'）                                                 | —                  |
 | connector                | **Vue 3 版新增（1.11.0）。**连接线渲染模式：css（默认，伪元素像素几何）/ svg（覆盖层 `<svg>` 路径）。svg 模式布局与 css 模式完全一致，随展开/收起、`animate` 过渡、尺寸变化自动重绘无残影；可与画布缩放、OKR 模式组合                                             | string（可选值：css / svg）                                                                                                       | css                |
 | connector-shape          | **Vue 3 版新增（1.11.0）。**svg 模式的路径形状（仅 `connector="svg"` 时生效）：curve 贝塞尔曲线 / orthogonal 直角折线 / straight 直线                                                                                                                             | string（可选值：curve / orthogonal / straight）                                                                                   | curve              |
-| unstyled                 | **Vue 3 版新增（1.12.0）。**去掉卡片外观（背景 / 边框 / 圆角 / 阴影），只保留布局与连接线，供 Tailwind 或自有设计系统接管。内边距、字号与文字色不受影响——改 padding 会移动节点盒并牵动连接线几何，需要调整请用 `--okr-node-*` 变量或 `label-class-name`           | boolean                                                                                                                           | false              |
+| unstyled                 | **Vue 3 版新增（1.13.0）。**去掉卡片外观（背景 / 边框 / 圆角 / 阴影），只保留布局与连接线，供 Tailwind 或自有设计系统接管。内边距、字号与文字色不受影响——改 padding 会移动节点盒并牵动连接线几何，需要调整请用 `--okr-node-*` 变量或 `label-class-name`           | boolean                                                                                                                           | false              |
 | show-node-num            | 折叠时在圆形按钮内显示子节点数（只计未被 `filter` 隐藏的可见子节点）                                                                                                                                                                                              | boolean                                                                                                                           | false              |
 | default-expand-all       | 默认展开全部，仅在 show-collapsable 为 true 时有意义                                                                                                                                                                                                              | boolean                                                                                                                           | false              |
 | render-content           | 树节点内容区的渲染 Function。`h` 由组件从 vue 导入后传入；`node` 为内部 Node 实例（源数据在 `node.data`，文本在 `node.label`），与 element-ui 的 `(h, { data })` 不同                                                                                             | Function(h, node)                                                                                                                 | —                  |
