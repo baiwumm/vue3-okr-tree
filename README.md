@@ -398,8 +398,31 @@ const DeptTree = createTypedOkrTree<Dept>()
 | `--okr-current-color`     | 选中文字（主题内生效）            | `#fff`                          |
 | `--okr-disabled-opacity`  | 禁用节点透明度                    | `0.6`                           |
 | `--okr-drop-color`        | 拖拽放置指示线 / inner 描边颜色   | 取 `--okr-current-bg`           |
+| `--okr-focus-color`       | 键盘焦点环颜色                    | `#409eff`                       |
+| `--okr-focus-width`       | 键盘焦点环宽度                    | `2px`                           |
 | `--okr-anim-duration`     | 展开/收起过渡时长（由 prop 写入） | `200ms`                         |
 | `--okr-anim-easing`       | 过渡缓动（按动画名可覆盖）        | `cubic-bezier(.55,0,.1,1)`      |
+
+画布组件 `OkrTreeViewport` 另有一组变量：`--okr-viewport-height`（默认 `420px`）、`--okr-viewport-bg`、
+`--okr-viewport-border`、`--okr-viewport-radius`、`--okr-viewport-toolbar-bg`、`--okr-viewport-toolbar-shadow`。
+另有 `--okr-group-left-width` 由 `OkrTreeGroup` 运行时测量写入，不是给用户改的。
+
+### 无样式模式
+
+`unstyled` 只去掉卡片外观（背景 / 边框 / 圆角 / 阴影，含 hover 态），布局与连接线原样保留，
+供 Tailwind 或自有设计系统接管。它**刻意不动** `padding`、`font-size`、`color`：改 `padding` 会移动
+节点盒、牵动连接线的伪元素几何，这三项请继续用 `--okr-node-padding` / `--okr-node-font-size` /
+`--okr-node-color` 或 `label-class-name` 调。
+
+顺带说明为什么样式是手写而不是接 Tailwind：连接线是伪元素上的像素级几何（`::before/::after` 的
+边框与偏移量彼此咬合），工具类表达不了；而 Preflight 会重新引入全局样式污染——那正是原版
+`* { margin:0; padding:0 }` 被诟病的地方。所以组件本体只留 CSS 变量，文档站才随意用 Tailwind。
+
+### 打印
+
+`@media print` 下自动隐藏展开按钮与画布工具栏（纸上点不动的交互件），并去掉卡片与画布的
+`box-shadow`（部分打印引擎会把阴影渲染成灰块、也费墨）。折叠的子树按屏幕原样输出——想让整棵树
+都印出来，先调 `expandAll()`。需要图片版请用画布组件的 `exportImage()`。
 
 <!-- API-DOC-BEGIN（本段由 pnpm gen:readme 从 shared/api.ts 生成，勿手改） -->
 
@@ -549,7 +572,7 @@ Vue 3 版新增。`OkrTreeGroup` 包裹多棵 OKR 模式的树，使组内根节
 记录同样的 id，行为不变（不抛错）。
 
 代价是：**未配 `node-key` 时节点注册表是空的**，凡是按 key 或按 data 对象定位节点的入参都查不到
-节点——`getNode(data 对象)` 返回 `null`，`getExpandedKeys` / `getCheckedKeys` 返回空数组，
+节点——`getNode(data 对象)` 返回 `null`，`getCheckedKeys` / `getHalfCheckedKeys` 返回空数组，
 `v-model:expanded-keys` / `default-expanded-keys` / `current-key` / `default-checked-keys` /
 `updateKeyChildren` / `setCheckedKeys` 均不生效（开发期会给出警告）。仍然可用的是**传 Node 实例**：
 `#default` 插槽作用域里的 `node`、各事件回调的节点参数，以及不依赖注册表的 `getVisibleNodes()`、

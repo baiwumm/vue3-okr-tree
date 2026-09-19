@@ -30,7 +30,7 @@ features:
     details: 类似飞书 OKR 的根节点双向布局，内建 align-root 根对齐，展开/收起不位移；OkrTreeGroup 支持多树对齐。
   - icon: 🎨
     title: CSS 变量主题化
-    details: 23+ 个 --okr-* 变量，内置 default / feishu / dark / auto / minimal / colorful 六套主题，也支持自定义主题名；unstyled 可整体去掉卡片外观，接入 Tailwind 或自有设计系统。
+    details: 30+ 个 --okr-* 变量，内置 default / feishu / dark / auto / minimal / colorful 六套主题，也支持自定义主题名；unstyled 可整体去掉卡片外观，接入 Tailwind 或自有设计系统。
   - icon: ✅
     title: 交互完备
     details: 复选框选择（父子联动 / 半选 / check-strictly）、拖拽调整层级（allow-drop 钩子 + 6 个事件）、accordion 手风琴、点击节点展开，语义对齐 el-tree 的使用习惯。
