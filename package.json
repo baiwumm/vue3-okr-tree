@@ -84,7 +84,13 @@
     "docs:preview:full": "pnpm docs:build:full && pnpm docs:preview"
   },
   "peerDependencies": {
+    "html-to-image": "^1.11.0",
     "vue": ">=3.3.0"
+  },
+  "peerDependenciesMeta": {
+    "html-to-image": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",

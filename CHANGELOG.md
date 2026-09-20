@@ -10,6 +10,11 @@
   - 实现上是一个 `okr-unstyled` 容器类 + 一小段中和规则；选择器需要 5 个类才能压过方向专属规则（`.org-chart-container .vertical .org-chart-node-label .org-chart-node-label-inner` 同为特异度且位于其后，同特异度时后者胜）。Visual 套件补了一条计算样式断言同时校验「阴影被清掉」与「节点盒尺寸不变」——写第一版时正因漏了 `.org-chart-node` 一层而被该断言当场抓到。
   - 样式 gzip 3.83 → 3.88 kB（预算 4 kB，余量约 3%）。
 
+### 变更
+
+- **`html-to-image` 以可选 peerDependency 声明**（`^1.11.0` + `peerDependenciesMeta.optional`）：`exportImage` 的这项外部依赖此前只写在文档和运行时报错里，包管理器侧没有任何声明可循；仍不进 `dependencies`，用不到导出能力的消费者不会被拖进来。
+- **视觉门禁端口可覆盖**（`OKR_VISUAL_PORT`，默认仍是 4173）：Windows 的 TCP 排除端口区间（`netsh int ipv4 show excludedportrange protocol=tcp`）会把 4173 整段保留，`vite preview` 直接 EACCES，此前在这类机器上无法本地复现视觉门禁。
+
 ## 1.12.0
 
 ### 新增

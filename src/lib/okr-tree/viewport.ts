@@ -61,7 +61,8 @@ export interface ExportImageOptions {
 }
 
 /**
- * html-to-image 为可选依赖：不进入 npm 依赖，也不应被打包进库产物。
+ * html-to-image 为可选依赖：以 optional peerDependency 声明，不进入 dependencies，
+ * 也不应被打包进库产物。
  * 说明符经变量传递（打包器无法静态分析），否则构建工具会把仓库内的可选依赖
  * 解析并内联成额外 chunk，随包发布。
  */

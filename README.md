@@ -262,7 +262,7 @@ function loadNode(
 | `centerNode(key)`        | 先展开目标节点的祖先，再把视口中心对准该节点（key / data / Node） |
 | `exportImage(options?)`  | 导出画布内容为 PNG / SVG 并触发下载，返回 dataURL                 |
 
-`exportImage` 基于 [html-to-image](https://github.com/bubkoo/html-to-image)：默认按需 `import('html-to-image')`（未安装时抛出带安装指引的错误）；在打包器下动态导入裸包名不可靠时，可通过 `options.toPng / toSvg` 直接传入渲染函数（签名与 html-to-image 一致）。选项：`type`（`'png' | 'svg'`，默认 png）、`scale`（像素密度，默认 2）、`background`（背景色，如 `'#ffffff'`）。
+`exportImage` 基于 [html-to-image](https://github.com/bubkoo/html-to-image)：以可选 peerDependency 声明（`^1.11.0`，不进 `dependencies`），用到导出能力时自行 `npm i html-to-image`；默认按需 `import('html-to-image')`，未安装时抛出带安装指引的错误。在打包器下动态导入裸包名不可靠时，可通过 `options.toPng / toSvg` 直接传入渲染函数（签名与 html-to-image 一致）。选项：`type`（`'png' | 'svg'`，默认 png）、`scale`（像素密度，默认 2）、`background`（背景色，如 `'#ffffff'`）。
 
 `OkrTreeGroup` 可以放在 Viewport 内组合使用；配合树的新方法 `getNodeEl(key)` 可获取节点 DOM 元素。
 
@@ -619,7 +619,7 @@ pnpm verify:package   # publint + attw 包发布体检
 pnpm size             # size-limit 体积预算
 pnpm test:coverage    # 覆盖率（阈值见 vite.config.ts）
 pnpm build:playground # Demo 站构建（PLAYGROUND_USE_DIST=1 时引用 dist 产物）
-pnpm test:visual      # Playwright 视觉回归 + 浏览器性能基线（先 build 与 build:playground）
+pnpm test:visual      # Playwright 视觉回归 + 浏览器性能基线（先 build 与 build:playground；端口默认 4173，被系统保留时用 OKR_VISUAL_PORT 覆盖）
 pnpm bench            # 2000 节点性能基准（jsdom，先 build）
 pnpm gen:readme       # 从 shared/api.ts 重新生成 README 的 API 段落
 ```

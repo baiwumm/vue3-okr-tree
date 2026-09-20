@@ -31,7 +31,7 @@
 
 ## 导出
 
-`exportImage` 基于 [html-to-image](https://github.com/bubkoo/html-to-image)：默认按需 `import('html-to-image')`（未安装时抛出带安装指引的错误）；在打包器下动态导入裸包名不可靠时，可通过 `options.toPng / toSvg` 直接传入渲染函数（签名与 html-to-image 一致）。选项：`type`（`'png' | 'svg'`，默认 png）、`scale`（像素密度，默认 2）、`background`（背景色）。
+`exportImage` 基于 [html-to-image](https://github.com/bubkoo/html-to-image)：以可选 peerDependency 声明（`^1.11.0`，不进 `dependencies`），用到导出能力时自行 `npm i html-to-image`；默认按需 `import('html-to-image')`，未安装时抛出带安装指引的错误。在打包器下动态导入裸包名不可靠时，可通过 `options.toPng / toSvg` 直接传入渲染函数（签名与 html-to-image 一致）。选项：`type`（`'png' | 'svg'`，默认 png）、`scale`（像素密度，默认 2）、`background`（背景色）。
 
 ## 与 OkrTreeGroup 组合
 
