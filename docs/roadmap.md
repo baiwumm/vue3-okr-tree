@@ -73,10 +73,10 @@
 - [ ] 首次 `npm publish`（此前仅做过 `--dry-run`）——**2026-09-21 14:22 解封后**按 `docs/release-guide.md` 第三节执行，版本号以 `package.json` 为准（当前 1.13.0）
 - [ ] 发布后用一个空 Vite 项目 `pnpm add vue3-okr-tree` 验证：ESM import、`require`、CDN `<script>` 三条路径
 - [ ] 创建 Granular Token（只圈定本包 + 勾 Bypass 2FA）→ GitHub Secrets 配 `NPM_TOKEN`
-- [ ] 配好后打 `v1.13.0` 并 push，验证 release.yml 自动发布链路（tag 校验 → 门禁 → `npm publish --provenance` → GitHub Release）
+- [ ] 配好 token 后**不要用 `v1.13.0` 验证自动发布链路**：该版本已由手动首发，而 `release.yml` 的 publish 步骤没有「版本已存在则跳过」的守卫，推这个 tag 会 EPUBLISHCONFLICT 直接红。改用下一个新版本（1.13.1 / 1.14.0）走 `git tag && git push origin tag` 验证完整链路（tag 校验 → 门禁 → `npm publish --provenance` → GitHub Release）；1.13.0 的 GitHub Release 手写一条
 - [ ] npm 包页面关联 GitHub 仓库；有条件时把 Trusted Publisher 配为 `baiwumm/vue3-okr-tree` + `release.yml`
 - **验收**：npm 页面可见 1.x，安装后类型提示与样式正常。
-  > ⏸ 2026-09-19 更新：release workflow（tag → 校验 → `npm publish --provenance` → GitHub Release）与 package.json 元信息已就绪；`npm pack` 四条路径已在空 Vite 项目本地验证（见 docs/release-readiness.md）。**等待维护者 npm 账号解封（2026-09-21 14:22 北京时间）**：先手动发一版 → GitHub 配置 NPM_TOKEN → 之后 push main 并 `git tag v1.13.0 && git push origin v1.13.0` 即自动发布。1.7.0–1.13.0 均未发过 tag，npm 首个线上版本将是 **1.13.0**（1.8.0 起新增 peer `vue>=3.3.0` 收紧、accordion / expand-on-click-node / 复选框 / 拖拽 / SVG 连接线 / 查询方法 / 打印样式 / unstyled，详见 CHANGELOG）。真实发布与线上验证由维护者手动执行。
+  > ⏸ 2026-09-19 更新：release workflow（tag → 校验 → `npm publish --provenance` → GitHub Release）与 package.json 元信息已就绪；`npm pack` 四条路径已在空 Vite 项目本地验证（见 docs/release-readiness.md）。**等待维护者 npm 账号解封（2026-09-21 14:22 北京时间）**：先手动发一版 → GitHub 配置 NPM_TOKEN → 之后 push main，**但 `v1.13.0` 这个 tag 不要推**（见上一条：手动发过的版本再走 workflow 会 EPUBLISHCONFLICT），自动发布链路留给下一个版本号验证。1.7.0–1.13.0 均未发过 tag，npm 首个线上版本将是 **1.13.0**（1.8.0 起新增 peer `vue>=3.3.0` 收紧、accordion / expand-on-click-node / 复选框 / 拖拽 / SVG 连接线 / 查询方法 / 打印样式 / unstyled，详见 CHANGELOG）。真实发布与线上验证由维护者手动执行。
 
 ### 5. 视觉回归测试（M）
 

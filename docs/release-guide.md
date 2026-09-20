@@ -120,7 +120,8 @@ node -e "const l=require('vue3-okr-tree'); console.log(typeof l.VueOkrTree)"   #
 - [x] 推送仓库（`main` 已推到 origin，含 1.7.0 全部提交；本地不再领先远端）
 - [x] Cloudflare 部署 + 域名绑定（`https://vue3-okr-tree.baiwumm.com/` 与 `/playground/`、`/api/`、`/theme/`、`/guide/*` 均 200；Workers Builds 在 `cb38701` success）
 - [x] CI 红灯根因修复（2026-09-18）：`ci.yml` 矩阵 Node 20 → 22/24（pnpm 11 需 `node:sqlite`，Node ≥ 22.5）、加 `fail-fast: false`；`visual.yml` runner 固定 `ubuntu-24.04`（`ubuntu-latest` 2026-10-19 迁移 Ubuntu 26 会使基线集体失配）；新增 `snapshot-bootstrap.yml`
-- [ ] Linux 视觉基线提交：Actions 手动跑一次 **Snapshot Bootstrap** → 下载 `linux-snapshots` artifact → 仓库根目录 `tar -xzf linux-snapshots.tgz` → 提交 `*-chromium-linux.png`，Visual Regression 即转绿
-- [ ] npm 首发手动 1.7.0（等 2026-09-21 解封）
+- [x] Linux 视觉基线提交（`be50ee0`，Snapshot Bootstrap 生成后入库），Visual Regression 已转绿；win32 侧现可本地复现：预览端口被 Windows 的 TCP 排除区间占住时用 `OKR_VISUAL_PORT=4500 pnpm test:visual`
+- [ ] npm 解封后手动首发 **1.13.0**（2026-09-21 14:22 北京时间；先 `node -p "require('./package.json').version"` 复核）
 - [ ] NPM_TOKEN 配置
-- [ ] 发布后验证
+- [ ] ⚠️ 手动发过的 `v1.13.0` **不要再打 tag 推 origin**：`release.yml` 的 publish 步骤没有「版本已存在则跳过」的守卫，会 EPUBLISHCONFLICT。自动链路留给下一个版本号（1.13.1 / 1.14.0）验证，1.13.0 的 GitHub Release 手写一条
+- [ ] 发布后验证（第三节末 + 第六节：ESM / require / CDN 三路径；另留意 `pnpm add` 是否会因 `auto-install-peers` 自动装上可选 peer `html-to-image`）
