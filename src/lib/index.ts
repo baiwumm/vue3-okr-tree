@@ -9,6 +9,8 @@ export type { TreeStoreOptions } from './okr-tree/model/tree-store'
 export { NODE_KEY, getNodeKey, markNodeData } from './okr-tree/model/util'
 export { clampZoom, computeFit, renderToDataUrl, loadHtmlToImage } from './okr-tree/viewport'
 export type { ExportImageOptions, ViewportOffset, ViewportWheelBehavior } from './okr-tree/viewport'
+/** 内置主题名清单；此前只在内部用于 theme 校验告警，未从入口导出（react-okr-tree 侧导出了） */
+export { BUILT_IN_THEMES } from '../types'
 export type {
   AnimateName,
   ConnectorMode,

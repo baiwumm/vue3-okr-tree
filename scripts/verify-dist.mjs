@@ -1,20 +1,23 @@
 /**
- * 发布产物冒烟验证：直接引入 dist/vue3-okr-tree.es.js，在 jsdom 中挂载三种模式并断言渲染结果。
+ * 发布产物冒烟验证：直接引入 dist/vue3-okr-tree.es.js，在 jsdom 中挂载三种模式并断言渲染结果；
+ * 末尾另用 createRequire 加载 dist/vue3-okr-tree.cjs，验证 CJS 解析路径（Q9）。
  * 用法：pnpm build && pnpm verify:dist
  */
 import { JSDOM } from 'jsdom'
 import { readFileSync, existsSync } from 'node:fs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import { createRequire } from 'node:module'
 import { dirname, resolve } from 'node:path'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const distEs = resolve(root, 'dist/vue3-okr-tree.es.js')
 const distUmd = resolve(root, 'dist/vue3-okr-tree.umd.js')
+const distCjs = resolve(root, 'dist/vue3-okr-tree.cjs')
 const distCss = resolve(root, 'dist/style.css')
 const distDts = resolve(root, 'dist/index.d.ts')
 const distDcts = resolve(root, 'dist/index.d.cts')
 
-for (const f of [distEs, distUmd, distCss, distDts, distDcts]) {
+for (const f of [distEs, distUmd, distCjs, distCss, distDts, distDcts]) {
   if (!existsSync(f)) {
     console.error(`[verify:dist] 缺少产物: ${f}`)
     process.exit(1)
@@ -138,6 +141,23 @@ const dcts = readFileSync(distDcts, 'utf8')
 assert(
   dcts === dts || (dcts.includes('export declare const VueOkrTree') && !/from '\.\.?\//.test(dcts)),
   'index.d.cts 与 index.d.ts 内容一致（CJS require 类型条件）'
+)
+
+// Q9：本包是 "type": "module"，Node 会把 .umd.js 按 ESM 解析，require() 只能走 .cjs 这份。
+// 此前该路径全靠人工验证，一旦构建端把 .cjs 的 exports 条件写坏，发包后才会被用户发现。
+const req = createRequire(import.meta.url)
+const cjs = req(distCjs)
+assert(
+  cjs.VueOkrTree && cjs.OkrTree === cjs.VueOkrTree,
+  '.cjs 可被 require() 且组件导出指向同一实现'
+)
+assert(
+  Array.isArray(cjs.BUILT_IN_THEMES) && cjs.BUILT_IN_THEMES.length === 6,
+  '.cjs 导出 BUILT_IN_THEMES（6 个内置主题，与 react-okr-tree 导出面对齐）'
+)
+assert(
+  typeof cjs.createTypedOkrTree === 'function' && typeof cjs.TreeStore === 'function',
+  '.cjs 导出含类型收窄工具与 TreeStore'
 )
 
 console.log('[verify:dist] ALL PASSED')

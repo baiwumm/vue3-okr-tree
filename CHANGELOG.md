@@ -2,6 +2,18 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## Unreleased
+
+### 新增
+
+- **导出 `BUILT_IN_THEMES`**：内置主题名清单（`default / feishu / dark / auto / minimal / colorful`）。此前它只用于 `theme` prop 的校验告警、未从包入口导出，而姊妹包 react-okr-tree 已导出——本次补齐两端导出面对齐。需要枚举主题名的场景（主题选择器、设置面板）不再得硬编码字符串数组。
+
+### 工程化
+
+- `verify:dist` 补 3 条 `.cjs` 断言（对应验收表缺口 Q9 / G5）：本包是 `"type": "module"`，Node 会把 `.umd.js` 按 ESM 解析，`require()` 只能走 `.cjs` 这份产物，而这条路径此前全靠人工验证、构建端把 exports 条件写坏要到发包后才被发现。现在用 `createRequire` 真实加载产物，断言 `OkrTree === VueOkrTree`、`BUILT_IN_THEMES` 为 6 项、`createTypedOkrTree` / `TreeStore` 可取。
+- 新增 `docs/acceptance.md` 验收证据表，结构与 react-okr-tree 的同名文档对齐：§7 五条验收项与 Q1–Q9 逐条给到 `文件:行 + 用例名`，并记入与 react 侧的 props / 导出面双向差集实测结果。
+- `docs/requirements.md` 与 `docs/development-plan.md` 的 Demo 用例数由 20 更正为 **24**（`playground/components/demos/` 实际文件数）。
+
 ## 1.13.0
 
 ### 新增

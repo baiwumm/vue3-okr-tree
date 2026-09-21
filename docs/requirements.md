@@ -205,7 +205,7 @@ src/lib/vue-okr-tree/
 ## 7. 验收标准
 
 1. 3.1–3.4 全部 API 行为与原组件一致（含抛错文案语义：缺 nodeKey/leftData/filterNodeMethod 时的 Error，以及 3.4 表标注的各边界行为）；与原版的有意差异仅限第 6 节决策清单（Q1–Q9）。
-2. Demo 页 20 个用例全部可交互、展示效果与原 Demo 对齐；Filter 用例体现空值恢复语义（见第 4 节 #13）。
+2. Demo 页 24 个用例全部可交互、展示效果与原 Demo 对齐；Filter 用例体现空值恢复语义（见第 4 节 #13）。
 3. 构建产物：`dist/vue3-okr-tree.es.js`、`dist/vue3-okr-tree.umd.js`、`dist/vue3-okr-tree.cjs`、`dist/style.css`、类型声明 `dist/index.d.ts`；支持 `import { VueOkrTree } from 'vue3-okr-tree'` + `import 'vue3-okr-tree/dist/style.css'`，以及 `require('vue3-okr-tree')`。
 4. 原仓库已知 bug 场景（异步改 data、左右子树单独更新、倒序显示）在新版全部正常。
 5. 第 6 节 Q1–Q5、Q8 的修复项各有对应用例覆盖（单测或 Demo 演示），Q3 复刻项有单测验证源数据副作用与原版一致。
