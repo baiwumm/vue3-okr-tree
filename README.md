@@ -24,6 +24,8 @@
 - `lazy` + `load` 懒加载子节点（大数据量只加载展开路径）、`<OkrTreeViewport>` 画布缩放平移与 PNG/SVG 导出，`<OkrTreeGroup>` 跨实例根对齐、WAI-ARIA 键盘导航、`node-component` prop、`createTypedOkrTree<T>()` 类型化辅助
 - 修复了原版的多根过滤、左右树同 key 覆盖、`animate` / `animate-duration` 无效等问题（见下文「与 vue-okr-tree 的差异」）
 
+> React 技术栈请用姊妹包 [react-okr-tree](https://github.com/baiwumm/react-okr-tree)——本包的 React 完整复刻版，特性逐项对齐，版本号自 1.13.0 起两边锁步发布（同号即同一功能面）。
+
 ## 安装
 
 ```bash

@@ -7,6 +7,7 @@ name: Release
 #   2. npm 包首次发布可由本 workflow 完成（npm publish --provenance，需仓库公开）
 #
 # 日常发布：更新 package.json version 与 CHANGELOG → 提交 → git tag v1.x.x && git push origin v1.x.x
+# 版本基准：本包是版本决策点，react-okr-tree 同号锁步跟随（两个仓库各自打 v* tag 发包）。
 
 on:
   push:
