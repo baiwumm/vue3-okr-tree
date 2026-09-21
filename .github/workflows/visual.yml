@@ -20,6 +20,9 @@ jobs:
   visual:
     name: Playwright Visual · Perf
     runs-on: ubuntu-24.04
+    # 正常全套 ~2 分钟；曾出现过测试步骤挂起 2 小时（每用例 30s 超时管不住步骤级挂死），
+    # 兜底 20 分钟强制失败并放出日志与截图 artifact
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 

@@ -39,7 +39,10 @@ export default defineConfig({
     },
   },
   webServer: {
-    command: `pnpm preview:playground --host 127.0.0.1 --port ${port} --strictPort`,
+    // 直接以 node 拉起 vite，不经过 pnpm 包装：CI runner 上出现过 pnpm 收到 SIGTERM 后
+    // 不转发给子进程，vite 孤儿进程占住端口，测试全绿但 playwright 退不出去挂死（2026-09-21）；
+    // react-okr-tree 的 webServer 因走裸 node 无此问题
+    command: `node node_modules/vite/bin/vite.js preview --config vite.playground.config.ts --host 127.0.0.1 --port ${port} --strictPort`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,

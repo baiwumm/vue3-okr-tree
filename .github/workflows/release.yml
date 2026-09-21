@@ -26,6 +26,8 @@ jobs:
   publish:
     name: Verify & Publish
     runs-on: ubuntu-latest
+    # 全部门禁正常 ~3 分钟；卡死时强制失败，避免 tag 发布被无限占住
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
