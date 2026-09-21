@@ -66,7 +66,24 @@ jobs:
       - name: Ensure npm supports Trusted Publishing
         run: npm install -g npm@^11.5.1
 
+      # 手动首发过的版本（如 1.13.0）再推 tag 时跳过发布，而不是撞 EPUBLISHCONFLICT 把整条
+      # 链路弄红——后面的 gh release create 仍能把 GitHub Release 补上。
+      # npm view 查不存在的版本会以非零码退出，故失败方向是安全的：误判成「未发布」只会
+      # 照常尝试发布并大声报错，不会静默跳过一次真实发布。
+      - name: Check whether this version is already on npm
+        id: npm_published
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::$NAME@$VERSION 已存在于 npm，跳过 publish"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish to npm (Trusted Publishing, no token)
+        if: steps.npm_published.outputs.exists == 'false'
         run: npm publish --provenance --access public
 
       - name: Create GitHub Release
