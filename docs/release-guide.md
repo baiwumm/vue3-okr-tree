@@ -149,5 +149,5 @@ gh release view v<ver>                                                    # GitH
 - [x] npm 手动首发 **1.13.0**（2026-09-21 完成，npm `latest` 已指向 1.13.0；react-okr-tree 同日同号首发）
 - [x] Trusted Publisher 登记（2026-09-21 两个包各配一次，见第四节）：GitHub Actions + `release.yml` + Environment 留空，Permissions 已含 `npm publish` 与 `npm stage publish`
 - [x] 发布后验证（2026-09-21 实测）：`import()` 与 `require()` 均通过（`VueOkrTree` / `OkrTree` 等导出齐全）；unpkg 上 `dist/vue3-okr-tree.es.js` 与 `dist/style.css` 均 200。`pnpm add vue3-okr-tree` **只自动装必选 peer `vue`，可选 peer `html-to-image` 不装**（`auto-install-peers` 默认跳过 `optional: true`），导出图片能力需用户自行安装
-- [ ] 推 `v1.13.0` tag 让 workflow 建 GitHub Release。原先「手动发过的版本不要再打 tag」的禁令已随守卫解除：publish 步会检测到版本已存在并跳过，`gh release create` 照常执行。注意 `gh release create v1.13.0` 在 tag 不存在时会自己创建并推送 tag、进而触发 workflow，所以**直接 `git tag v1.13.0 <含守卫的提交> && git push origin v1.13.0` 让 workflow 建 release 即可**，不要两边各建一次
+- [x] 推 `v1.13.0` tag 让 workflow 建 GitHub Release（2026-09-21 实测通过）。原先「手动发过的版本不要再打 tag」的禁令已随守卫解除：`git tag v1.13.0 <含守卫的提交> && git push origin v1.13.0` → run `35579119550` 全绿，守卫命中把 publish 步标成 `skipped`，`gh release create` 照常建出 v1.13.0；registry 侧版本号与 `attestations: none` 均未变动。react-okr-tree 同改动同结果（run `35579145408`）。注意别改用 `gh release create v1.13.0` 手动建——tag 不存在时它会自己创建并推送 tag、再触发一次 workflow，等于两边各来一遍
 - [ ] OIDC 端到端验证留给下一个功能版本（2026-09-21 决策：不为验证单独烧版本号）。判据见第七节「怎么确认这次发布真的走了 OIDC」
