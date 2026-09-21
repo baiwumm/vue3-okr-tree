@@ -10,15 +10,15 @@
 
 ## 步骤总览
 
-| #   | 步骤                                       | 依赖 npm 解封？                                    |
-| --- | ------------------------------------------ | -------------------------------------------------- |
-| 1   | 推送仓库到 GitHub                          | ❌ 现在就能做                                      |
-| 2   | Cloudflare 绑定 + 部署文档站 + 配置域名    | ❌ 现在就能做                                      |
-| 3   | 手动首发 npm 包（版本号见 `package.json`） | ✅ 需解封                                          |
-| 4   | 创建 Granular Token → 配置 GitHub Secrets  | ✅ 需解封                                          |
-| 5   | npm 包页面关联 GitHub 仓库                 | ✅ 需解封                                          |
-| 6   | 确认 CI workflow 通过                      | ❌（push 后自动跑）                                |
-| 7   | 发布后验证                                 | ✅（安装包需要登录态？不需要，安装公开包无需登录） |
+| #   | 步骤                                          | 依赖 npm 解封？                                    |
+| --- | --------------------------------------------- | -------------------------------------------------- |
+| 1   | 推送仓库到 GitHub                             | ❌ 现在就能做                                      |
+| 2   | Cloudflare 绑定 + 部署文档站 + 配置域名       | ❌ 现在就能做                                      |
+| 3   | 手动首发 npm 包（版本号见 `package.json`）    | ✅ 需解封                                          |
+| 4   | 包设置登记 Trusted Publisher（免 token 发布） | ✅ 需解封                                          |
+| 5   | npm 包页面关联 GitHub 仓库                    | ✅ 需解封                                          |
+| 6   | 确认 CI workflow 通过                         | ❌（push 后自动跑）                                |
+| 7   | 发布后验证                                    | ✅（安装包需要登录态？不需要，安装公开包无需登录） |
 
 ---
 
@@ -66,24 +66,25 @@ npm publish             # 会提示输入 2FA 验证码；access: public 已在 
 
 > 注意：手动发的首版不带 provenance 标志（只有 CI 发布能生成），从下一版本起走自动发布即有。
 
-## 4. 创建 Token → 配置 GitHub Secrets
+## 4. 包设置登记 Trusted Publisher（免 token 发布）
 
-npmjs.com → 头像 → Access Tokens → Generate New Token → **Granular Access Token**：
+npm 已宣布 **2027-01 起 granular token 不能再直接发包**，自动发布统一走 Trusted Publishing（OIDC）：GitHub Actions 出短时 OIDC 凭证，npm 核对包设置里登记的仓库与 workflow 后放行——全程不需要任何 token，也没有 GitHub Secrets 可配。
 
-| 字段                                   | 值                                                                                        |
-| -------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Token name                             | `github-actions-vue3-okr-tree`                                                            |
-| Bypass two-factor authentication (2FA) | ✅ 勾选（CI 无法交互式 2FA）                                                              |
-| Allowed IP ranges                      | 留空                                                                                      |
-| Packages and scopes → Permissions      | **Read and write (publish and stage)**；此时包已存在，**只勾选 `vue3-okr-tree` 这一个包** |
-| Organizations                          | No access                                                                                 |
-| Expiration Date                        | No expiration 或最长可选（泄露可随时撤销）                                                |
+npmjs.com → 包页面 → Settings → **Trusted Publisher**，两个包各登记一次：
 
-生成后立即复制（只显示一次），到 GitHub 仓库 → Settings → Secrets and variables → Actions → New repository secret：**Name 填 `NPM_TOKEN`**，Value 粘贴。
+| 字段                | vue3-okr-tree                            | react-okr-tree           |
+| ------------------- | ---------------------------------------- | ------------------------ |
+| Repository          | `baiwumm/vue3-okr-tree`                  | `baiwumm/react-okr-tree` |
+| Workflow filename   | `release.yml`                            | `release.yml`            |
+| Environment（可选） | 留空（workflow 未用 GitHub environment） | 留空                     |
+
+工作流里已带 `permissions.id-token: write` 与 `--provenance`，发布步自动走 OIDC。此前如已创建过 `NPM_TOKEN` secret / granular token，可直接删除并 revoke。
+
+> 已知限制：OIDC **不能发包的首版**——两包 1.13.0 均已手动首发，此限制对后续版本无感。CI 的 npm 需 ≥ 11.5.1，release.yml 内已有显式升级步。
 
 ## 5. npm 包页面关联仓库
 
-npmjs.com 包页面 → Settings：确认 Repository 链接指向 `github:baiwumm/vue3-okr-tree`（来自 package.json，一般自动带出）；有条件时把 **Trusted Publisher** 配置为仓库 `baiwumm/vue3-okr-tree` + workflow 文件 `release.yml`——这是 npm 的新方向，配置后未来可完全摆脱 token（release.yml 已带 `id-token: write` 与 `--provenance`，天然兼容）。
+npmjs.com 包页面 → Settings：确认 Repository 链接指向 `github:baiwumm/vue3-okr-tree`（来自 package.json，一般自动带出）。
 
 ## 6. 发布后验证
 
@@ -105,12 +106,11 @@ node -e "const l=require('vue3-okr-tree'); console.log(typeof l.VueOkrTree)"   #
 
 ### 常见问题
 
-| 现象                              | 原因 / 处理                                                |
-| --------------------------------- | ---------------------------------------------------------- |
-| publish 步骤报 `EPUBLISHCONFLICT` | 该版本号已发过（npm 不允许重复版本号）——把版本号提新再 tag |
-| publish 步骤 401/403              | NPM_TOKEN 失效 / 没勾 Bypass 2FA / 权限没选 Read and write |
-| tag 校验失败                      | git tag 与 package.json version 不一致，改对后再 tag       |
-| Token 过期导致 CI 失败            | 撤销旧 token、生成新的、更新 GitHub Secrets                |
+| 现象                              | 原因 / 处理                                                                                           |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| publish 步骤报 `EPUBLISHCONFLICT` | 该版本号已发过（npm 不允许重复版本号）——把版本号提新再 tag                                            |
+| publish 步骤 401/403              | Trusted Publisher 未登记，或仓库 / workflow 文件名与实际触发的不一致；npm < 11.5.1 也会在 OIDC 处失败 |
+| tag 校验失败                      | git tag 与 package.json version 不一致，改对后再 tag                                                  |
 
 ---
 
@@ -121,7 +121,7 @@ node -e "const l=require('vue3-okr-tree'); console.log(typeof l.VueOkrTree)"   #
 - [x] Cloudflare 部署 + 域名绑定（`https://vue3-okr-tree.baiwumm.com/` 与 `/playground/`、`/api/`、`/theme/`、`/guide/*` 均 200；Workers Builds 在 `cb38701` success）
 - [x] CI 红灯根因修复（2026-09-18）：`ci.yml` 矩阵 Node 20 → 22/24（pnpm 11 需 `node:sqlite`，Node ≥ 22.5）、加 `fail-fast: false`；`visual.yml` runner 固定 `ubuntu-24.04`（`ubuntu-latest` 2026-10-19 迁移 Ubuntu 26 会使基线集体失配）；新增 `snapshot-bootstrap.yml`
 - [x] Linux 视觉基线提交（`be50ee0`，Snapshot Bootstrap 生成后入库），Visual Regression 已转绿；win32 侧现可本地复现：预览端口被 Windows 的 TCP 排除区间占住时用 `OKR_VISUAL_PORT=4500 pnpm test:visual`
-- [ ] npm 解封后手动首发 **1.13.0**（2026-09-21 14:22 北京时间；先 `node -p "require('./package.json').version"` 复核）
-- [ ] NPM_TOKEN 配置
+- [x] npm 手动首发 **1.13.0**（2026-09-21 完成，npm `latest` 已指向 1.13.0；react-okr-tree 同日同号首发）
+- [ ] Trusted Publisher 登记（npmjs 两个包的 Settings 各配一次，见第四节）
 - [ ] ⚠️ 手动发过的 `v1.13.0` **不要再打 tag 推 origin**：`release.yml` 的 publish 步骤没有「版本已存在则跳过」的守卫，会 EPUBLISHCONFLICT。自动链路留给下一个版本号（1.13.1 / 1.14.0）验证，1.13.0 的 GitHub Release 手写一条
 - [ ] 发布后验证（第三节末 + 第六节：ESM / require / CDN 三路径；另留意 `pnpm add` 是否会因 `auto-install-peers` 自动装上可选 peer `html-to-image`）

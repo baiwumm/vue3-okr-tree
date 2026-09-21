@@ -3,8 +3,10 @@ name: Release
 # 发布流程（roadmap 1.5.0 #4）：推送 v* tag 后自动构建、校验并发包。
 #
 # 前置（一次性，由维护者手动完成）：
-#   1. GitHub 仓库 Settings → Secrets → 添加 NPM_TOKEN（npmjs.com 的 Automation token）
-#   2. npm 包首次发布可由本 workflow 完成（npm publish --provenance，需仓库公开）
+#   1. npmjs.com 包页面 → Settings → Trusted Publisher → 登记仓库 baiwumm/vue3-okr-tree +
+#      workflow 文件名 release.yml（OIDC 免密发布，无需任何 token / GitHub Secrets；
+#      npm 已宣布 2027-01 起 granular token 不能再直接发包）
+#   2. CI 里 npm 需 ≥ 11.5.1（下方有显式升级步；setup-node 的 Node 22 自带 npm 10.x）
 #
 # 日常发布：更新 package.json version 与 CHANGELOG → 提交 → git tag v1.x.x && git push origin v1.x.x
 # 版本基准：本包是版本决策点，react-okr-tree 同号锁步跟随（两个仓库各自打 v* tag 发包）。
@@ -60,10 +62,12 @@ jobs:
           pnpm verify:package
           pnpm size
 
-      - name: Publish to npm (with provenance)
+      # Trusted Publishing：身份走 OIDC（permissions.id-token: write），要求 npm ≥ 11.5.1
+      - name: Ensure npm supports Trusted Publishing
+        run: npm install -g npm@^11.5.1
+
+      - name: Publish to npm (Trusted Publishing, no token)
         run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub Release
         run: gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes
