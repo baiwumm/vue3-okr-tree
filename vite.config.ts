@@ -52,6 +52,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     include: [
+      'tests/*.spec.ts',
       'tests/components/**/*.spec.ts',
       'tests/model/**/*.spec.ts',
       'tests/ssr/**/*.spec.ts',

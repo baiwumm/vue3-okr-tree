@@ -127,3 +127,48 @@ describe('子容器 <transition> 在 rAF 被节流环境下的健壮性', () => 
     expect(c2.attributes('style') ?? '').not.toContain('--okr-anim-duration')
   })
 })
+
+/** src/types/index.ts 的 AnimateName 联合类型全集，新增/删除内置动画时这里要同步 */
+const BUILT_IN_ANIMATE_NAMES = [
+  'okr-fade-in-linear',
+  'okr-fade-in',
+  'okr-zoom-in-center',
+  'okr-zoom-in-top',
+  'okr-zoom-in-bottom',
+  'okr-zoom-in-left',
+]
+
+describe('六种内置过渡名全部接线（Q6）', () => {
+  it.each(BUILT_IN_ANIMATE_NAMES)(
+    'animateName=%s 时子容器带上 okr-anim-<name> 类',
+    (animateName) => {
+      const wrapper = mountDemo({ animate: true, animateName })
+      const container = wrapper.find('.org-chart-node > .org-chart-node-children')
+      expect(container.classes()).toContain(`okr-anim-${animateName}`)
+    }
+  )
+
+  it('内置动画名共 6 种，与 AnimateName 联合类型条数一致', () => {
+    expect(BUILT_IN_ANIMATE_NAMES).toHaveLength(6)
+  })
+})
+
+describe('展开 / 收起切换 is-hidden 状态类而非卸载子容器（Q8）', () => {
+  it('点击 +/- 收起后子容器仍在 DOM 中并带 is-hidden，再点恢复', async () => {
+    const wrapper = mountDemo({ showCollapsable: true, defaultExpandAll: true, animate: true })
+    const children = () => wrapper.find('.org-chart-node > .org-chart-node-children')
+    const btn = wrapper.find('.org-chart-node-btn')
+
+    expect(children().classes()).not.toContain('is-hidden')
+    expect(btn.classes()).toContain('expanded')
+
+    await btn.trigger('click')
+    expect(children().classes()).toContain('is-hidden')
+    // 收起不等于卸载：折叠子树的节点仍留在 DOM 里，这正是 getVisibleNodes 与 DOM 节点数不等的原因
+    expect(labels(wrapper)).toContain('研发-前端')
+
+    await btn.trigger('click')
+    expect(children().classes()).not.toContain('is-hidden')
+    expect(btn.classes()).toContain('expanded')
+  })
+})

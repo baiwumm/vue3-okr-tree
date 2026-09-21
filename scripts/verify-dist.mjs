@@ -103,10 +103,23 @@ assert(okr.el.querySelector('.org-chart-node').classList.contains('align-root'),
 assert(texts(okr.el).includes('L'), 'OKR 左节点文本')
 
 const css = readFileSync(distCss, 'utf8')
-assert(
-  css.includes('.org-chart-container') && css.includes('.okr-zoom-in-center-enter-active'),
-  'style.css 含组件与动画样式'
-)
+assert(css.includes('.org-chart-container'), 'style.css 含组件样式')
+// Q6：六种内置过渡名必须在 CSS 里各有 enter / leave 两组类。
+// 组件侧的 okr-anim-<name> 类是拼字符串生成的，CSS 少一组不会报错，只会静默没有动画。
+const ANIMATE_NAMES = [
+  'okr-fade-in-linear',
+  'okr-fade-in',
+  'okr-zoom-in-center',
+  'okr-zoom-in-top',
+  'okr-zoom-in-bottom',
+  'okr-zoom-in-left',
+]
+for (const name of ANIMATE_NAMES) {
+  assert(
+    css.includes(`.${name}-enter-active`) && css.includes(`.${name}-leave-active`),
+    `style.css 含 ${name} 的 enter / leave 过渡类`
+  )
+}
 assert(!/^\s*\*\s*\{/m.test(css), 'style.css 无全局 * reset')
 assert(
   css.includes('.okr-theme-feishu') &&

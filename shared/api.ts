@@ -493,6 +493,16 @@ export const methodsSection: ApiSection = {
       '<strong>Vue 3 版新增（1.12.0）。</strong>返回从顶层节点到目标节点的链路（含目标自身），未命中返回空数组。OKR 左树节点的链路留在左树内（顶层为根节点的左侧镜像，与右树根同 key），不跨接到右树根',
       '(data) key、data 对象或 Node 实例',
     ],
+    [
+      'getNodeKey',
+      '取节点的 key：读 `data[node-key]`，未配置 node-key 时回退到内部 WeakMap 生成的 id。此前 `defineExpose` 已暴露但表格漏记，README 与文档站都查不到这个方法',
+      '(node) Node 实例',
+    ],
+    [
+      'store / root',
+      '内部 TreeStore 实例与根节点。供直接遍历 `nodesMap`、取 `root` 子树等高级用法，<strong>属于逃生舱</strong>，跨版本不保证稳定',
+      '—',
+    ],
   ],
 }
 
