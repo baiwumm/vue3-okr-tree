@@ -2,7 +2,9 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
-## Unreleased
+## 1.14.0（2026-09-22）
+
+对外只多一个导出（`BUILT_IN_THEMES`），其余全是发布前收口的测试与门禁断言。本版本同时是**第一个由 CI 通过 OIDC Trusted Publishing 真实发包**的版本。
 
 ### 新增
 

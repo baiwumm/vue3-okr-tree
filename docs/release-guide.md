@@ -1,10 +1,10 @@
 # 发布操作手册（release-guide）
 
 > vue3-okr-tree 首发与后续版本的完整操作步骤。写给维护者本人照着执行。
-> 当前状态（2026-09-19）：**1.13.0** 已在 `origin/main`（`cd2b7e5`）就绪，CI 7 项全绿；1.6.0–1.13.0 从未发布过，
-> 首个上线版本即 **1.13.0**（发包前请以 `node -p "require('./package.json').version"` 复核，不要照抄本文任何版本号），
-> **npm 从未发布过此包**；npm 账号 `baiwumm` 因使用恢复码登录被临时冻结 72 小时，
-> **2026-09-21 14:22（北京时间，UTC 06:22）自动解封**——冻结期间只读（不能发包 / 建 token / 改设置），解封前先做不依赖 npm 的步骤。
+> 当前状态（2026-09-22）：**1.13.0 已上线**（2026-09-21 手动首发，registry 时间 `06:29:10Z`；1.6.0–1.13.0 从未单独发布，首个线上版本即 1.13.0）。
+> 自动发布链路已借 `v1.13.0` tag 演练过一次（run `35579119550`：守卫检测到版本已存在 → publish 步 `skipped` → 只补建 GitHub Release），
+> 但 **OIDC 换 token + `npm publish` 这一步还没真实执行过**——它要到下一个版本才第一次被验证。发包前请以
+> `node -p "require('./package.json').version"` 复核版本号，不要照抄本文任何版本号。
 
 ---
 
@@ -55,7 +55,7 @@ git push origin main        # 首次推送全部本地提交
 
 ```bash
 # 仓库根目录（确认 git 状态干净、与远端一致）
-node -p "require('./package.json').version"   # 核对要发的版本号（当前 1.13.0）
+node -p "require('./package.json').version"   # 核对版本号（本节只适用于首发那一次，后续版本由 CI 发布，见第七节）
 pnpm build              # 生成 dist（含 index.d.cts 后处理）
 pnpm verify:package     # publint + attw 体检，应输出 No problems found
 npm login               # 若本地登录态还在可跳过
