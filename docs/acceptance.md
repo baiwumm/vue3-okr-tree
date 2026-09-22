@@ -8,6 +8,8 @@
 
 代码与门禁已达发布条件并且**已真实上线**：1.13.0 于 2026-09-21 `06:29:10Z` 手动首发，226 条单测、覆盖率四项、size 三项、attw 四格全绿，`ci.yml` / `visual.yml` / `release.yml` 三条 workflow 最近一次均 success。
 
+**2026-09-22 更新**：**1.14.0 已由 CI 经 OIDC Trusted Publishing 真实发布**（run `35708582755`，provenance 已入 sigstore），第 5 节里原先「尚未被验证的一步」就此收口。本包至此完整跑通了「tag 触发 → 门禁 → OIDC 发包 → provenance → GitHub Release」全链路。
+
 `requirements.md` 第 7 节的 5 条验收项：**4 条 ✅、1 条 ⚠️**（剩第 2 条 Demo 项）；第 6 节 Q1–Q9：**9 条全部 ✅**。
 
 > 更正一处本文首版的计数错误：当时写成「4 ✅ 1 ⚠️」，但按第 2 节的表实际是 3 ✅ 2 ⚠️（第 2 条与第 5 条都是 ⚠️，我漏看了第 5 条）。本次 Q8 收口让第 5 条转 ✅，两种口径才恰好重合。
@@ -58,17 +60,17 @@
 
 ## 5. 门禁与发布链路现状（2026-09-21 实跑）
 
-| 项                    | 结果                                                                                                                                                                                        |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm test`           | **242** passed（23 个 spec 文件）。建表时为 226 passed / 21 文件，与 react 侧审计「重数 Vue 侧逐文件 `it()` 恰好 226」对上；本次补断言后 +16                                                |
-| `pnpm test:coverage`  | 90.85 / 81.81 / 88.94 / 93.56（stmts / branch / funcs / lines），阈值 80 / 75 / 80 / 80（`vite.config.ts:66-69`）。建表时 90.69 / 81.59 / 88.94 / 93.43                                     |
-| `pnpm size`           | ESM 16.77 / 19 kB、样式 3.84 / 4 kB、UMD 16.64 / 19.5 kB（gzip），三项均达标（补 `BUILT_IN_THEMES` 导出后 ESM +0.02 / UMD +0.02 kB）                                                        |
-| `pnpm verify:package` | publint `All good!`；attw `No problems found`（四格 🟢）                                                                                                                                    |
-| `pnpm verify:dist`    | 实跑 **34** 条 `ok`（22 → 25 加 `.cjs` 三条 → 34 加 CSS 六组动画逐个断言与 UMD 执行三条）                                                                                                   |     |
-| 视觉基线              | win32 14 张 + linux 14 张（`find tests/visual -name '*-linux.png'`）                                                                                                                        |
-| workflow 最近一次     | `ci.yml` success、`visual.yml` success、`release.yml` success                                                                                                                               |
-| 发布链路首跑          | run `35579119550`（推 `v1.13.0` tag 触发）：门禁全跑 → 守卫检测到 1.13.0 已发布 → publish 步 `skipped` → `gh release create` 建出 GitHub Release；registry 版本号与 `attestations` 均未变动 |
-| 尚未被验证的一步      | **OIDC 换 token + `npm publish` 真实执行**（因 publish 被守卫跳过）。留给下一个功能版本顺带验证，判据见 `docs/release-guide.md` 第七节                                                      |
+| 项                                   | 结果                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm test`                          | **242** passed（23 个 spec 文件）。建表时为 226 passed / 21 文件，与 react 侧审计「重数 Vue 侧逐文件 `it()` 恰好 226」对上；本次补断言后 +16                                                                                                                                                                                                                                                             |
+| `pnpm test:coverage`                 | 90.85 / 81.81 / 88.94 / 93.56（stmts / branch / funcs / lines），阈值 80 / 75 / 80 / 80（`vite.config.ts:66-69`）。建表时 90.69 / 81.59 / 88.94 / 93.43                                                                                                                                                                                                                                                  |
+| `pnpm size`                          | ESM 16.77 / 19 kB、样式 3.84 / 4 kB、UMD 16.64 / 19.5 kB（gzip），三项均达标（补 `BUILT_IN_THEMES` 导出后 ESM +0.02 / UMD +0.02 kB）                                                                                                                                                                                                                                                                     |
+| `pnpm verify:package`                | publint `All good!`；attw `No problems found`（四格 🟢）                                                                                                                                                                                                                                                                                                                                                 |
+| `pnpm verify:dist`                   | 实跑 **34** 条 `ok`（22 → 25 加 `.cjs` 三条 → 34 加 CSS 六组动画逐个断言与 UMD 执行三条）                                                                                                                                                                                                                                                                                                                |     |
+| 视觉基线                             | win32 14 张 + linux 14 张（`find tests/visual -name '*-linux.png'`）                                                                                                                                                                                                                                                                                                                                     |
+| workflow 最近一次                    | `ci.yml` success、`visual.yml` success、`release.yml` success                                                                                                                                                                                                                                                                                                                                            |
+| 发布链路首跑                         | run `35579119550`（推 `v1.13.0` tag 触发）：门禁全跑 → 守卫检测到 1.13.0 已发布 → publish 步 `skipped` → `gh release create` 建出 GitHub Release；registry 版本号未变动（这次演练不发包，也没产生 provenance）                                                                                                                                                                                           |
+| **OIDC 端到端（2026-09-22 已验证）** | **1.14.0 由 CI 真实发布**：run `35708582755` 的 publish 步 success，日志 `+ vue3-okr-tree@1.14.0` 与 `Provenance statement published to transparency log: …logIndex=2908846083`；`gh secret list` 为空 → 无 token 参与；registry `dist-tags.latest=1.14.0`，attestations 端点返回 publish 证明，`npm audit signatures` 的 `invalid` / `missing` 均为空数组。react-okr-tree 同号跟随（run `35711304130`） |
 
 ## 6. 已知缺口与建议顺序
 

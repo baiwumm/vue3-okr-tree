@@ -76,7 +76,7 @@
 - [x] `release.yml` 加「registry 已存在该版本则跳过 publish」守卫：手动发过的版本再推 tag 不再 EPUBLISHCONFLICT 直接红，而是跳过发布、继续建 GitHub Release
 - [x] npm 包页面关联 GitHub 仓库；Trusted Publisher 已登记 `baiwumm/vue3-okr-tree` + `release.yml`（react-okr-tree 同）。Permissions 含 `npm publish` 与 `npm stage publish`，**Environment 留空**（publish job 未声明 `environment:`，填了会因 OIDC claim 不匹配被拒）
 - [x] 推 `v1.13.0` tag 让 workflow 自己建 GitHub Release（2026-09-21 完成）：run `35579119550` success，守卫命中 → publish 步 `skipped` → `gh release create` 建出 v1.13.0；registry 仍是 1.13.0 且 `attestations: none`，即这次演练没有改动发布物。react-okr-tree 同改动同结果（run `35579145408`）
-- [ ] OIDC 端到端验证留给下一个功能版本顺带跑（2026-09-21 决策：不为验证单独烧版本号，且 publish 被拒时 registry 不留脏版本）。判据与排错入口见 `docs/release-guide.md` 第四、五节
+- [x] **OIDC 端到端验证（2026-09-22 完成）**：本包 **1.14.0** 由 CI 经 Trusted Publishing 真实发布（run `35708582755`，`+ vue3-okr-tree@1.14.0`，provenance 入 sigstore `logIndex=2908846083`，`gh secret list` 为空即无 token 参与）；react-okr-tree 同号跟随（run `35711304130`）。原「不为验证单独烧版本号」的决策由这个有真实内容的 minor 版本顺带完成了验证。判据与排错入口见 `docs/release-guide.md` 第四、五、七节
 - **验收**：npm 页面可见 1.x，安装后类型提示与样式正常。
   > ✅ 2026-09-21 完成：1.13.0 已手动首发（1.7.0–1.13.0 此前均未发过 tag，故首个线上版本即 1.13.0；1.8.0 起新增 peer `vue>=3.3.0` 收紧，accordion / expand-on-click-node / 复选框 / 拖拽 / SVG 连接线 / 查询方法 / 打印样式 / unstyled 详见 CHANGELOG）。原计划的「GitHub 配置 NPM_TOKEN」一步已被 Trusted Publishing（OIDC）取代，**不再需要任何 secret**。剩余两个未勾项见上：推 `v1.13.0` tag 让 workflow 建 GitHub Release，以及 OIDC 端到端验证留给下一个功能版本。
 

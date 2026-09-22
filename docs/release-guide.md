@@ -119,12 +119,23 @@ node -e "const l=require('vue3-okr-tree'); console.log(typeof l.VueOkrTree)"   #
 
 ```bash
 gh run list --workflow=release.yml --limit 3                              # 有 run 且 success
-gh run view <RUN_ID> --log | grep -iE "E403|EPUBLISHCONFLICT|provenance"  # 发布步无权限/冲突报错
+gh run view <RUN_ID> --log | grep -iE "Signed provenance|transparency log|\+ vue3-okr-tree@"
 npm view vue3-okr-tree@<ver> version                                      # 版本号确实上了 registry
 gh release view v<ver>                                                    # GitHub Release 也建了
+curl -s "https://registry.npmjs.org/-/npm/v1/attestations/vue3-okr-tree@<ver>" | head -c 200
 ```
 
-硬证据是包页面 README 右侧新出现的 **Provenance** 区块：attester 显示 `baiwumm/vue3-okr-tree` + `release.yml` + 那次 Run 的链接。手动 `npm publish` 的版本没有这个区块（两包 1.13.0 即是），所以「有没有 Provenance」就是「有没有走 CI」的判别标志。终极验证：临时目录 `npm i vue3-okr-tree@<ver> && npm audit signatures`。
+三条由强到弱的硬证据：
+
+1. **publish 步日志**里出现 `npm notice publish Signed provenance statement with source and build information from GitHub Actions` 与 `Provenance statement published to transparency log: https://search.sigstore.dev/?logIndex=…`，末尾跟着 `+ vue3-okr-tree@<ver>`。
+2. **attestations 端点**返回 `{"attestations":[{"predicateType":"https://github.com/npm/attestation/tree/main/specs/publish/v0.1", …`。
+3. 临时目录 `npm i vue3-okr-tree@<ver> && npm audit signatures`——`invalid` 与 `missing` 都应为空数组。
+
+> ⚠️ **不要用完整 packument 里的 `attestations` 字段判断**：provenance 不在 packument 的 version 条目里，`curl https://registry.npmjs.org/<pkg>/latest` 永远查不到它，对已带签名证明的版本也一样返回空——这条判据是假的，用它会把成功当失败。
+>
+> ⚠️ registry 有传播延迟（实测约 1 分钟内 `dist-tags.latest` 才更新，attestations 端点也会短暂 404）。run 刚结束就查不到不等于发布失败，先看日志里的 `+ <pkg>@<ver>`。
+
+> **2026-09-22 首次实测通过**：两包 1.14.0 均由 CI 经 OIDC 真实发布，三条证据全部命中；`gh secret list` 为空，证明没有 token 参与。
 
 > `npm publish --dry-run` 不换 OIDC token（dry-run 直接跳过发布请求），**验不出发布链路**，别拿它当预检。
 
@@ -150,4 +161,4 @@ gh release view v<ver>                                                    # GitH
 - [x] Trusted Publisher 登记（2026-09-21 两个包各配一次，见第四节）：GitHub Actions + `release.yml` + Environment 留空，Permissions 已含 `npm publish` 与 `npm stage publish`
 - [x] 发布后验证（2026-09-21 实测）：`import()` 与 `require()` 均通过（`VueOkrTree` / `OkrTree` 等导出齐全）；unpkg 上 `dist/vue3-okr-tree.es.js` 与 `dist/style.css` 均 200。`pnpm add vue3-okr-tree` **只自动装必选 peer `vue`，可选 peer `html-to-image` 不装**（`auto-install-peers` 默认跳过 `optional: true`），导出图片能力需用户自行安装
 - [x] 推 `v1.13.0` tag 让 workflow 建 GitHub Release（2026-09-21 实测通过）。原先「手动发过的版本不要再打 tag」的禁令已随守卫解除：`git tag v1.13.0 <含守卫的提交> && git push origin v1.13.0` → run `35579119550` 全绿，守卫命中把 publish 步标成 `skipped`，`gh release create` 照常建出 v1.13.0；registry 侧版本号与 `attestations: none` 均未变动。react-okr-tree 同改动同结果（run `35579145408`）。注意别改用 `gh release create v1.13.0` 手动建——tag 不存在时它会自己创建并推送 tag、再触发一次 workflow，等于两边各来一遍
-- [ ] OIDC 端到端验证留给下一个功能版本（2026-09-21 决策：不为验证单独烧版本号）。判据见第七节「怎么确认这次发布真的走了 OIDC」
+- [x] **OIDC 端到端验证（2026-09-22 完成）**：两包 **1.14.0** 均由 CI 经 Trusted Publishing 真实发包。vue3 run `35708582755`（publish 步 success → `+ vue3-okr-tree@1.14.0`，provenance 入 sigstore `logIndex=2908846083`）；react-okr-tree run `35711304130`（`+ react-okr-tree@1.14.0`，`logIndex=2908890080`）。两端 `gh secret list` 均为空，证明确实没有 token 参与。判据见第七节
