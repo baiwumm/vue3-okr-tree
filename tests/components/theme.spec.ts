@@ -49,6 +49,8 @@ describe('theme prop', () => {
       mount(VueOkrTree, { props: { data, theme: 'my-brand' } })
       expect(spy).toHaveBeenCalledWith(expect.stringContaining('theme="my-brand" 不是内置主题'))
       expect(spy).toHaveBeenCalledWith(expect.stringContaining('.okr-theme-my-brand'))
+      // 前缀是用户排查警告来源的唯一线索，改掉了没人会发现，所以单独钉一条
+      expect(spy).toHaveBeenCalledWith(expect.stringContaining('[vue3-okr-tree]'))
       spy.mockRestore()
     })
 

@@ -10,7 +10,14 @@
 
 ### 工程化
 
-- `verify:dist` 补 3 条 `.cjs` 断言（对应验收表缺口 Q9 / G5）：本包是 `"type": "module"`，Node 会把 `.umd.js` 按 ESM 解析，`require()` 只能走 `.cjs` 这份产物，而这条路径此前全靠人工验证、构建端把 exports 条件写坏要到发包后才被发现。现在用 `createRequire` 真实加载产物，断言 `OkrTree === VueOkrTree`、`BUILT_IN_THEMES` 为 6 项、`createTypedOkrTree` / `TreeStore` 可取。
+- `verify:dist` 补 3 条 `.cjs` 断言（对应验收表缺口 Q9 / G5）：本包是 `"type": "module"`，Node 会把 `.umd.js` 按 ESM 解析，`require()` 只能走 `.cjs` 这份产物，而这条路径此前全靠人工验证、构建端把 exports 条件写坏要到发包后才被发现。现在用 `createRequire` 真实加载产物，断言组件导出指向同一实现、`BUILT_IN_THEMES` 为 6 项、`createTypedOkrTree` / `TreeStore` 可取。
+- **`shared/api.ts` 的 Methods 表补 `getNodeKey` 与 `store / root` 两行**，README 随之重新生成。`getNodeKey` 早在 `defineExpose` 里，但表上漏记，导致 README、文档站 API 页与 playground 三处同时查不到这个方法——react 侧审计的 §6.3 一度指出过，本包未修。
+- 新增 `tests/api-surface.spec.ts`：API 表与 `defineExpose` 的双向防漂移（表→实例、实例→表、行数与成员数一致），与 react 侧 `tests/api-surface.spec.tsx` 同构。上面的漏记正是这条用例存在的理由。
+- 新增 `tests/model/framework-boundary.spec.ts`：模型层无 Vue 2 残留写法（`new Vue(` / `eventBus` / `$on` `$emit` `$set` `$children` `$refs` / `Vue.prototype`），且从 `vue` 只引入响应式 API（收口 Q7）。与 react 侧同名文件命名一致但内容不同——react 断的是「模型层不引用框架」，本包的 `node.ts` 刻意用了 `shallowReactive`，照搬会写成假测试。
+- 过渡相关补三组断言（收口 Q6 / Q8）：`transition-robustness.spec.ts` 用 `it.each` 逐个断六种内置 `animateName` 的 `okr-anim-<name>` 接线（此前只钉 `okr-fade-in` 一种），并新增「点击 +/- 收起时子容器切 `is-hidden` 而非卸载、再点恢复」的用例；`verify:dist` 的 CSS 侧由「只钉一组」改为六种逐个断 `enter-active` / `leave-active`。
+- `theme.spec.ts` 补 `[vue3-okr-tree]` 警告前缀断言（此前只断文案，前缀本身零覆盖）。
+- `vite.config.ts` 的 `test.include` 加 `tests/*.spec.ts`，使根级 `api-surface` 用例被收集。
+- 门禁数字：单测 226 → **242**（21 → 23 个文件），覆盖率 90.85 / 81.81 / 88.94 / 93.56，`verify:dist` 实跑 34 条 `ok`。
 - 新增 `docs/acceptance.md` 验收证据表，结构与 react-okr-tree 的同名文档对齐：§7 五条验收项与 Q1–Q9 逐条给到 `文件:行 + 用例名`，并记入与 react 侧的 props / 导出面双向差集实测结果。
 - `docs/requirements.md` 与 `docs/development-plan.md` 的 Demo 用例数由 20 更正为 **24**（`playground/components/demos/` 实际文件数）。
 

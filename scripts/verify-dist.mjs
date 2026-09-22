@@ -173,4 +173,20 @@ assert(
   '.cjs 导出含类型收窄工具与 TreeStore'
 )
 
+// UMD 此前只 existsSync 一下、从未被执行：它外部化 vue，工厂签名或依赖声明一旦出问题，
+// 只有浏览器 <script> 用户会撞上而 CI 全绿。走 CJS 分支真跑一遍即可证明签名正确。
+const umdSource = readFileSync(distUmd, 'utf8')
+assert(/require\((["'`])vue\1\)/.test(umdSource), 'UMD 的 CJS 分支把 vue 作为外部依赖 require')
+const umdModule = { exports: {} }
+new Function('module', 'exports', 'require', umdSource)(umdModule, umdModule.exports, req)
+assert(
+  umdModule.exports.OkrTree && umdModule.exports.OkrTree === umdModule.exports.VueOkrTree,
+  '.umd.js 可被执行且导出与 .cjs 一致（OkrTree === VueOkrTree）'
+)
+assert(
+  Array.isArray(umdModule.exports.BUILT_IN_THEMES) &&
+    umdModule.exports.BUILT_IN_THEMES.length === 6,
+  '.umd.js 导出 BUILT_IN_THEMES（6 个内置主题）'
+)
+
 console.log('[verify:dist] ALL PASSED')
