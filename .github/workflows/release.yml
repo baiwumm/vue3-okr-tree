@@ -86,7 +86,46 @@ jobs:
         if: steps.npm_published.outputs.exists == 'false'
         run: npm publish --provenance --access public
 
+      # Release 正文取 CHANGELOG 里本版本的那一段。不用 --generate-notes：它靠合并的 PR 列表
+      # 生成摘要，而本仓库直推 main 没有 PR，结果就只剩一行 compare 链接（1.14.0 首发时实测过）。
+      # 标题有两种写法（`## 1.14.0（2026-09-22）` 与 `## 1.13.0`），故按前缀匹配。
+      # 取不到段落时退回自动生成，不让发布链路变红。
+      - name: Build release notes from CHANGELOG
+        id: notes
+        run: |
+          node -e '
+            const fs = require("node:fs");
+            const v = process.env.GITHUB_REF_NAME.replace(/^v/, "");
+            const lines = fs.readFileSync("CHANGELOG.md", "utf8").split(/\r?\n/);
+            const head = new RegExp("^##\\s*" + v.replace(/\./g, "\\.") + "(?![\\d.])");
+            const start = lines.findIndex((l) => head.test(l.trim()));
+            let body = "";
+            if (start >= 0) {
+              let end = lines.length;
+              for (let i = start + 1; i < lines.length; i += 1) {
+                if (/^##\s/.test(lines[i])) { end = i; break; }
+              }
+              body = lines.slice(start, end).join("\n").trim();
+            }
+            if (body) {
+              fs.writeFileSync("/tmp/release-notes.md", body + "\n");
+              console.log("Release 正文取 CHANGELOG 的 " + v + " 段（" + body.split("\n").length + " 行）");
+            } else {
+              console.log("::notice::CHANGELOG 没有 " + v + " 段，退回 --generate-notes");
+            }
+          '
+          if [ -s /tmp/release-notes.md ]; then
+            echo "has_notes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_notes=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Create GitHub Release
-        run: gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes
+        run: |
+          if [ "${{ steps.notes.outputs.has_notes }}" = "true" ]; then
+            gh release create "$GITHUB_REF_NAME" --verify-tag --notes-file /tmp/release-notes.md
+          else
+            gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes
+          fi
         env:
           GH_TOKEN: ${{ github.token }}
