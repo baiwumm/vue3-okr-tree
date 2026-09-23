@@ -1,5 +1,7 @@
 /**
- * 从 shared/api.ts（API 单一来源）生成 README 的 API 段落。
+ * 从 shared/api.ts（API 单一来源）生成 README 的 API 段落——只生成**分组概览**
+ * （分组 / 条数 / 成员名清单），完整表格由文档站 API 页渲染同一份数据。
+ * README 承载概览即可，逐条说明放在文档站，避免同一份内容两处维护篇幅。
  * 用法：pnpm gen:readme（Node 24 原生 type-stripping 直接导入 .ts）
  * README 中以 <!-- API-DOC-BEGIN --> / <!-- API-DOC-END --> 标记该段落。
  */
@@ -12,6 +14,8 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const readmePath = resolve(root, 'README.md')
 const BEGIN = '<!-- API-DOC-BEGIN（本段由 pnpm gen:readme 从 shared/api.ts 生成，勿手改） -->'
 const END = '<!-- API-DOC-END -->'
+/** 概览里的「完整表格」链接指向线上文档站（与 README 顶部的文档站链接同源） */
+const API_DOC_URL = 'https://vue3-okr-tree.baiwumm.com/api/'
 
 /** HTML 片段转 markdown 行内格式 */
 function toMarkdown(cell) {
@@ -27,45 +31,33 @@ function toMarkdown(cell) {
     .replace(/\n/g, ' ')
 }
 
-function renderTable(section, columnIdx) {
-  const header = columnIdx.map((i) => section.columns[i]).filter(Boolean)
-  const lines = [`| ${header.join(' | ')} |`, `| ${header.map(() => '---').join(' | ')} |`]
-  for (const row of section.rows) {
-    const cells = columnIdx.map((i) => toMarkdown(row[i] ?? '—'))
-    lines.push(`| ${cells.join(' | ')} |`)
-  }
-  return lines.join('\n')
+/** 成员名单元格 → 概览里统一的内联代码写法（剥掉数据里已有的反引号避免重复包裹） */
+function toName(cell) {
+  return toMarkdown(cell)
+    .replace(/`/g, '')
+    .replace(/（(?:prop|slot|method)）/g, '')
+    .trim()
 }
 
-const parts = ['## API']
-
-for (const section of apiSections) {
-  parts.push(`### ${section.title}`)
-  if (section.intro) parts.push(toMarkdown(section.intro))
-  // Attributes 表 5 列 → README 用 参数/说明/类型/默认值（可选值并入类型列）
-  if (section.columns.length === 5) {
-    const merged = {
-      ...section,
-      columns: ['参数', '说明', '类型', '默认值'],
-      rows: section.rows.map(([name, desc, type, values, dft]) => [
-        name,
-        desc,
-        values && values !== '—' ? `${type}（可选值：${values}）` : type,
-        dft,
-      ]),
-    }
-    parts.push(renderTable(merged, [0, 1, 2, 3]))
-  } else {
-    parts.push(
-      renderTable(
-        section,
-        section.columns.map((_, i) => i)
-      )
+const parts = [
+  '## API',
+  [
+    '完整表格（每个参数的说明、类型与默认值）见 **[文档站 API 页](' +
+      API_DOC_URL +
+      ')**，Playground 的 API 页与下面这份概览读的都是同一份 [`shared/api.ts`](https://github.com/baiwumm/vue3-okr-tree/blob/main/shared/api.ts)——条数由脚本统计，表与实现的偏差不超过一条用例（`tests/api-surface.spec.ts`）。',
+  ].join('\n'),
+  apiSections
+    .map(
+      (section) =>
+        `- **${section.title}**（${section.rows.length} 条）：` +
+        section.rows.map((row) => `\`${toName(row[0])}\``).join(' / ')
     )
-  }
-}
+    .join('\n'),
+]
 
-const generated = `${BEGIN}\n${parts.join('\n\n')}\n\n${END}`
+// 标记前后各留一个空行：与 Prettier 对 markdown 的规范形态一致，
+// 否则 pnpm gen:readme 之后再跑 format:check（CI 里有一步）会报未格式化。
+const generated = `${BEGIN}\n\n${parts.join('\n\n')}\n\n${END}`
 const readme = readFileSync(readmePath, 'utf8')
 const start = readme.indexOf(BEGIN)
 const end = readme.indexOf(END)
@@ -74,4 +66,9 @@ if (start === -1 || end === -1) {
   process.exit(1)
 }
 writeFileSync(readmePath, readme.slice(0, start) + generated + readme.slice(end + END.length))
-console.log('[gen:readme] README API 段落已从 shared/api.ts 重新生成')
+console.log(
+  `[gen:readme] README API 概览已生成（${apiSections.length} 组 / ${apiSections.reduce(
+    (n, s) => n + s.rows.length,
+    0
+  )} 条）`
+)

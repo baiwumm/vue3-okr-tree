@@ -1,14 +1,43 @@
 # 受控状态与方法
 
-`expanded-keys` / `current-key` 传入后即为受控模式（需 `node-key`）：列表内节点展开、其余收起；用户点击 +/- 或调用展开/收起方法都会触发 `update:expandedKeys` / `update:currentKey` 回写。不传时保持原版的非受控行为。
+## 判定规则
 
-内置方法：`expandAll` / `collapseAll` / `expandNode` / `collapseNode` / `scrollToNode` / `getNodeEl` 等，完整列表见 [API](/api/)。
+| 写法                                               | 结果                                                         |
+| -------------------------------------------------- | ------------------------------------------------------------ |
+| 不传 `expanded-keys` / `current-key`               | 非受控，组件自己管状态，`default-*` 决定初始值               |
+| 传 `v-model:expanded-keys` / `v-model:current-key` | 受控：值即状态，用户操作通过 `update:*` 回写，你改回去就生效 |
+| 只传值、不监听 `update:*`                          | **锁定态**：用户点 ± 或选节点看起来没反应，外部改值仍生效    |
+
+受控与判定都只看 `!== undefined`（`OkrTree.vue:394-395`），所以传空数组就是「全部收起」而不是「不干预」。两者都需要 `node-key`。
+
+非受控下 `default-expanded-keys` 与 `default-checked-keys` 的运行时语义不同（一个只追加、一个先清空再应用），见[需要注意的行为](/guide/behavior)。
+
+## 通过 ref 调方法
 
 <DemoBlock>
 
 <Base09 />
 
 </DemoBlock>
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import { VueOkrTree, type VueOkrTreeInstance, type TreeKey } from 'vue3-okr-tree'
+
+const tree = ref<VueOkrTreeInstance | null>(null)
+const expandedKeys = ref<TreeKey[]>([1])
+
+tree.value?.expandAll()
+tree.value?.scrollToNode(8) // Promise<boolean>，先展开祖先再滚动
+</script>
+```
+
+定位类入参普遍接受**三种形态**：key、data 对象、内部 Node 实例（`getNode` / `setCurrentKey` / `expandNode` / `remove` / `moveNode` 等）。未配 `node-key` 时只有 Node 实例这一路可用，见[需要注意的行为](/guide/behavior)。
+
+## 事件回调
+
+`node-click` / `node-expand` / `node-collapse` / `node-contextmenu` 四个基础事件，加 `check` / `check-change`（复选框）与六个拖拽事件，再加两个受控回写 `update:expandedKeys` / `update:currentKey`。回调里的 `node` 一律是内部 Node 实例（源数据在 `node.data`），不是源数据对象；`node-contextmenu` 只有在你绑了它之后才阻止浏览器默认菜单。逐个签名见 [API](/api/)，用例见 [Demo 总览](/guide/demos)。
 
 <script setup lang="ts">
 import DemoBlock from '../components/DemoBlock.vue'

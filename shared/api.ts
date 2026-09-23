@@ -4,7 +4,7 @@
  * 三处消费：
  * - playground/components/api/*.vue（Playground 表格）
  * - docs-site（VitePress API 页，经 ApiDoc 组件渲染）
- * - scripts/gen-readme-api.mjs（生成 README 的 API 段落，node 直接导入本文件）
+ * - scripts/gen-readme-api.mjs（生成 README 的 API 分组概览，node 直接导入本文件）
  *
  * 注意：本文件会被 Node 原生 type-stripping 直接导入，只使用可擦除语法
  * （interface / 类型标注），不要使用 enum / namespace / 装饰器。
@@ -495,12 +495,12 @@ export const methodsSection: ApiSection = {
     ],
     [
       'getNodeKey',
-      '取节点的 key：读 `data[node-key]`，未配置 node-key 时回退到内部 WeakMap 生成的 id。此前 `defineExpose` 已暴露但表格漏记，README 与文档站都查不到这个方法',
+      '取节点的 key：读 <code>data[node-key]</code>，未配置 node-key 时回退到内部 WeakMap 生成的 id',
       '(node) Node 实例',
     ],
     [
       'store / root',
-      '内部 TreeStore 实例与根节点。供直接遍历 `nodesMap`、取 `root` 子树等高级用法，<strong>属于逃生舱</strong>，跨版本不保证稳定',
+      '内部 TreeStore 实例与根节点。供直接遍历 <code>nodesMap</code>、取 <code>root</code> 子树等高级用法，<strong>属于逃生舱</strong>，跨版本不保证稳定',
       '—',
     ],
   ],
@@ -540,7 +540,7 @@ export const groupSection: ApiSection = {
     [
       '键盘导航',
       '—',
-      'Tab 进入，↑/↓ 在可见节点间移动，→ 展开或进入子节点，← 收起或回到父节点，Enter/Space 选中，Home/End 首尾；OKR 根节点 ← 进入左子树，左树节点镜像。节点带 <code>role=treeitem</code> / <code>aria-expanded</code> / <code>aria-selected</code> / <code>aria-level</code>，焦点环可用 <code>--okr-focus-color</code> / <code>--okr-focus-width</code> 定制',
+      'Tab 进入，↑/↓ 在可见节点间移动，→ 展开或进入子节点，← 收起或回到父节点，Enter 选中，Home/End 首尾；<code>show-checkbox</code> 下 Space 切换勾选而非选中；OKR 根节点 ← 进入左子树，左树节点镜像。节点带 <code>role=treeitem</code> / <code>aria-expanded</code> / <code>aria-selected</code> / <code>aria-level</code> / <code>aria-checked</code>（仅 <code>show-checkbox</code> 时输出，含 <code>mixed</code>）/ <code>aria-setsize</code> / <code>aria-posinset</code>，焦点环可用 <code>--okr-focus-color</code> / <code>--okr-focus-width</code> 定制',
     ],
   ],
 }

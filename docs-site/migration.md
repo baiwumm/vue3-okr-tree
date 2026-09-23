@@ -28,3 +28,4 @@ API 名称与语义完全对齐，直接把 `import { VueOkrTree } from 'vue-okr
 - SVG 连接线模式 `connector="svg"` 与 `curve` / `orthogonal` / `straight` 三种路径形状（1.11.0）
 - 查询辅助方法 `getVisibleNodes()` / `getNodePath()`、`@media print` 打印样式（1.12.0）
 - `unstyled` prop：去掉卡片外观只留布局与连接线，供 Tailwind / 自有设计系统接管（1.13.0）
+- 导出 `BUILT_IN_THEMES`：内置六套主题名清单（`TreeTheme` 由它派生），做主题选择器不必再硬编码字符串数组（1.14.0）

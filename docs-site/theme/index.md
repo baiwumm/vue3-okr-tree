@@ -23,6 +23,8 @@
 
 六套主题的实际效果可在 [Demo 总览](/guide/demos) 各用例与 Playground 顶部切换预览。
 
+传不在这六套里的名字是允许的（用于挂你自己的 `.okr-theme-{name}` 类），只是开发期会输出一条提示，避免拼错主题名时毫无视觉变化却找不到原因。内置清单可从包入口按 `BUILT_IN_THEMES` 取用。
+
 ## 自定义主题 / 覆盖变量
 
 ```css
@@ -78,3 +80,41 @@
 | `--okr-anim-easing`       | 过渡缓动（按动画名可覆盖）        | `cubic-bezier(.55,0,.1,1)`      |
 
 画布组件 `OkrTreeViewport` 另有一组变量：`--okr-viewport-height`（默认 `420px`）、`--okr-viewport-bg`、`--okr-viewport-border`、`--okr-viewport-radius`、`--okr-viewport-toolbar-bg`、`--okr-viewport-toolbar-shadow`。
+
+另有 `--okr-group-left-width` 由 [`OkrTreeGroup`](/guide/group) 运行时测量写入，不是给用户改的。
+
+## 连接线：CSS 与 SVG 两种渲染模式
+
+默认 `connector="css"` 用伪元素画线；`connector="svg"` 把线条换成覆盖层 `<svg>` 路径，**布局零改动**——伪元素只被中和边框、保留占位盒（展开按钮的 +/- 符号同为伪元素边框，不在中和范围内）。
+
+```vue
+<vue-okr-tree :data="data" direction="horizontal" connector="svg" connector-shape="orthogonal" />
+```
+
+- `connector-shape` 仅在 svg 模式下生效：`curve` 三次贝塞尔（控制点随主轴延伸，最长 40px）/ `orthogonal` 中点直角折线 / `straight` 两点直线。
+- 线色与线宽继续走 `--okr-line-color` / `--okr-line-width`，六套主题与自定义变量零配置适配。
+- 锚点随模式镜像：垂直出底入顶；水平右树出右入左、OKR 左树出左入右；根节点到 OKR 左树顶层节点绘制镜像连线。
+- 展开/收起（含 `animate` 过渡期间）与容器尺寸变化都会自动重绘，不留残影；运行时切换 `connector` / `connector-shape` 即时生效。
+- 可与[画布缩放](/guide/viewport)与 OKR 双树组合；交互用例见 [Demo 总览](/guide/demos)。
+
+## 无样式模式
+
+`unstyled` 只去掉卡片外观（背景 / 边框 / 圆角 / 阴影，含 hover 态），布局与连接线原样保留，
+供 Tailwind 或自有设计系统接管。它**刻意不动** `padding`、`font-size`、`color`：改 `padding` 会移动
+节点盒、牵动连接线的伪元素几何，这三项请继续用 `--okr-node-padding` / `--okr-node-font-size` /
+`--okr-node-color` 或 `label-class-name` 调。
+
+顺带说明为什么样式是手写而不是接 Tailwind：连接线是伪元素上的像素级几何（`::before/::after` 的
+边框与偏移量彼此咬合），工具类表达不了；而 Preflight 会重新引入全局样式污染——那正是原版
+`* { margin:0; padding:0 }` 被诟病的地方。所以组件本体只留 CSS 变量，本文档站才随意用 Tailwind。
+
+## 打印
+
+`@media print` 下自动隐藏展开按钮与画布工具栏（纸上点不动的交互件），并去掉卡片与画布的
+`box-shadow`（部分打印引擎会把阴影渲染成灰块、也费墨）。折叠的子树按屏幕原样输出——想让整棵树
+都印出来，先调 `expandAll()`。需要图片版请用[画布组件](/guide/viewport)的 `exportImage()`。
+
+## 减弱动效
+
+系统开启「减弱动态效果」（`prefers-reduced-motion: reduce`）时，展开/收起过渡与 `scrollToNode`
+的平滑滚动自动关闭，状态直切——`animate` 无需宿主自己判断媒体查询。

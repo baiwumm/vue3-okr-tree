@@ -1,6 +1,6 @@
 # API
 
-以下表格由 [`shared/api.ts`](https://github.com/baiwumm/vue3-okr-tree/blob/main/shared/api.ts) 单一来源生成：Playground、本文档站与 README 使用同一份数据。
+以下表格由 [`shared/api.ts`](https://github.com/baiwumm/vue3-okr-tree/blob/main/shared/api.ts) 单一来源生成：Playground 与本文档站渲染完整表格，README 只保留由同一份数据生成的分组概览（`pnpm gen:readme`）。
 
 <ApiDoc :section="attributesSection" />
 <ApiDoc :section="propsSection" />

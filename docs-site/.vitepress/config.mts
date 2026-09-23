@@ -10,7 +10,11 @@ const r = (p: string) => fileURLToPath(new URL(p, import.meta.url))
 // VitePress 会自动附加 base，base 改回子路径部署时无需改动页面。
 export default defineConfig({
   lang: 'zh-CN',
-  title: 'vue3-okr-tree',
+  // 与姊妹站 react-okr-tree 同格式：首页标题是「名称 — 一句话定位」，内页只挂短名后缀。
+  // VitePress 1.6 的占位符是 :title（不是 %s），且首页会被再拼一次后缀，
+  // 所以首页用 index.md 的 frontmatter titleTemplate: ':title' 单独关掉（见该文件）。
+  title: 'vue3-okr-tree — Vue 3 组织架构树 / OKR 树组件',
+  titleTemplate: 'vue3-okr-tree',
   description:
     'Vue 3 组织架构树 / OKR 树组件：根节点左右双向展开、CSS 变量主题化、懒加载、画布缩放与导出',
   // Cloudflare 按域名根路径部署；如需子路径部署改回 '/vue3-okr-tree/' 即可
@@ -19,6 +23,11 @@ export default defineConfig({
   srcExclude: ['README.md'],
   cleanUrls: false,
   lastUpdated: true,
+  // 字体换成自托管的 Maple Mono CN（见 theme/custom.css）后，VitePress 自带的 Inter 已无人引用，
+  // 但它仍会往每页注入一条 preload —— 构建期摘掉，省下这约 40KB 白下载。
+  transformHtml(code) {
+    return code.replace(/<link rel="preload" href="\/assets\/inter-[^"]+\.woff2"[^>]*>/g, '')
+  },
   // 图标与分享图放 docs-site/public/（构建时原样拷到站点根）；head 内路径 VitePress 不会自动加 base，
   // 与 base 保持一致地写根绝对路径。
   head: [
@@ -36,11 +45,13 @@ export default defineConfig({
     // 导航栏 Logo：透明底、图形随主题反相（源文件 design/logo/concept-c-ring-*.svg）
     logo: { light: '/logo.svg', dark: '/logo-dark.svg' },
     nav: [
-      { text: '指南', link: '/guide/quick-start', activeMatch: '/guide/' },
+      { text: '指南', link: '/guide/', activeMatch: '/guide/' },
       { text: '主题', link: '/theme/', activeMatch: '/theme/' },
       { text: 'API', link: '/api/', activeMatch: '/api/' },
       { text: '迁移', link: '/migration' },
       { text: '更新日志', link: '/changelog' },
+      // 姊妹包：同一功能面的 React 实现，版本号两边锁步
+      { text: 'React 版', link: 'https://react-okr-tree.baiwumm.com', target: '_blank' },
       // Playground 由 docs:build:full 合并进输出目录 /playground/ 子路径
       { text: 'Playground', link: '/playground/', target: '_blank' },
     ],
@@ -49,14 +60,19 @@ export default defineConfig({
         {
           text: '指南',
           items: [
+            { text: '指南总览', link: '/guide/' },
             { text: '快速开始', link: '/guide/quick-start' },
             { text: 'Demo 总览（可交互）', link: '/guide/demos' },
+            { text: '自定义节点内容', link: '/guide/node-content' },
             { text: '受控状态与方法', link: '/guide/controlled' },
+            { text: '复选框与拖拽', link: '/guide/interaction' },
             { text: '懒加载子节点', link: '/guide/lazy' },
             { text: '画布缩放 OkrTreeViewport', link: '/guide/viewport' },
             { text: '多树根对齐 OkrTreeGroup', link: '/guide/group' },
             { text: '键盘导航与可访问性', link: '/guide/keyboard' },
             { text: '类型化 createTypedOkrTree', link: '/guide/typed' },
+            { text: '需要注意的行为', link: '/guide/behavior' },
+            { text: '仓库与本地开发', link: '/guide/repo' },
           ],
         },
         {

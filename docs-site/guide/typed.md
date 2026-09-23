@@ -16,9 +16,29 @@ const DeptTree = createTypedOkrTree<Dept>()
 ```vue
 <DeptTree :data="depts" node-key="id">
   <template #default="{ data }">
-    {{ data.label }} — {{ data.leader }}   <!-- data: Dept，有类型提示 -->
+    {{ data.label }} — {{ data.leader }} <!-- data: Dept，有类型提示 -->
   </template>
 </DeptTree>
 ```
 
-组件同时导出 `TreeStore` / `TreeNode` / `createNode` 与全部类型（`TreeKey` / `TreeNodeData` / `TreeLoadFunction` / `ViewportOffset` 等），方便扩展与二次封装。
+## T 覆盖哪些位置
+
+`data` / `leftData` 的元素类型、`#default` 与 `#expand-btn` 插槽作用域里的 `data`、`node-component` 组件的 `data` prop、`filter-node-method` 与 `render-content` 拿到的 `node.data`。不含事件回调的第三参 `nodeComponent`（那是组件实例，类型固定）。
+
+ref 类型仍是 `VueOkrTreeInstance`（方法入参是 `TreeKey` / `TreeNodeData`，与 `T` 无关）；需要 `node.data` 也收窄，就在插槽里 `data as Dept` 或用 `node-component`。
+
+## 导出的类型与值
+
+从包入口一次性导出，不需要深路径 import（清单以 `src/lib/index.ts` 为准）：
+
+| 类别       | 类型                                                                                                                                                                                                          |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 组件实例   | `VueOkrTreeInstance`、`OkrTreeGroupInstance`、`OkrTreeViewportInstance`                                                                                                                                       |
+| 数据与 key | `TreeNodeData`、`TreeKey`、`TreeDirection`、`TreeOptionProps`、`TreeStoreOptions`                                                                                                                             |
+| 回调与渲染 | `TreeLoadFunction`、`FilterNodeMethod`、`RenderContentFunction`、`NodeBtnContentFunction`、`LabelClassName`、`ExpandBtnSlotScope`、`ScrollToNodeOptions`、`TreeCheckInfo`、`DropType`、`TypedOkrTreeSlots<T>` |
+| 外观       | `AnimateName`、`TreeTheme`、`ConnectorMode`、`ConnectorShape`                                                                                                                                                 |
+| 画布       | `ExportImageOptions`、`ViewportOffset`、`ViewportWheelBehavior`                                                                                                                                               |
+
+导出的值：`VueOkrTree`（= `OkrTree`）、`OkrTreeGroup`、`OkrTreeViewport`、`createTypedOkrTree`、`VueOkrTreePlugin`（也是默认导出）、`TreeNode` / `TreeStore` / `createNode`（模型层）、`NODE_KEY` / `getNodeKey` / `markNodeData`、`BUILT_IN_THEMES`、以及画布纯函数 `clampZoom` / `computeFit` / `renderToDataUrl` / `loadHtmlToImage`（便于自绘工具栏与单测）。
+
+`NODE_KEY` 是写在源数据上的那个不可枚举字段名（`'$treeNodeId'`），做持久化或调试时会用，见[需要注意的行为](/guide/behavior)。

@@ -38,22 +38,11 @@
 import { ref } from 'vue'
 import { OkrTreeGroup, VueOkrTree } from 'vue3-okr-tree'
 import ApiTable from './ApiTable.vue'
+import { groupSection } from '../../../shared/api'
 
-const columns = ['名称', '类型', '说明']
-const rows: string[][] = [
-  ['align（prop）', 'boolean，默认 true', '是否对齐；为 false 时各树独立排布'],
-  ['default（slot）', '—', '放置若干 <code>&lt;vue-okr-tree only-both-tree&gt;</code>'],
-  [
-    'refresh()（method）',
-    '—',
-    '手动重新测量（字体加载完成、外部样式变化等场景；组件已自动响应成员挂载/更新与尺寸变化）',
-  ],
-  [
-    '键盘导航',
-    '—',
-    'Tab 进入，↑/↓ 在可见节点间移动，→ 展开或进入子节点，← 收起或回到父节点，Enter/Space 选中，Home/End 首尾；OKR 根节点 ← 进入左子树，左树节点镜像。节点带 <code>role=treeitem</code> / <code>aria-expanded</code> / <code>aria-selected</code> / <code>aria-level</code>，焦点环可用 <code>--okr-focus-color</code> / <code>--okr-focus-width</code> 定制',
-  ],
-]
+// 与其余五张表一样走 shared/api.ts 单一来源（此前这里是手写副本，改了表不会传导）
+const columns = groupSection.columns
+const rows = groupSection.rows
 
 const treeA = ref([
   {

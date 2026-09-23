@@ -1,0 +1,53 @@
+# 仓库与本地开发
+
+## 目录结构
+
+```
+vue3-okr-tree/
+├─ src/lib/okr-tree/         # 库本体
+│  ├─ OkrTree.vue            # 容器：props / defineExpose / 配置同步 / 键盘导航
+│  ├─ OkrTreeNode.vue        # 递归节点：渲染、交互、ARIA
+│  ├─ OkrTreeGroup.vue       # 多树根对齐
+│  ├─ OkrTreeViewport.vue    # 画布缩放平移与导出
+│  ├─ model/                 # 框架无关的树模型（TreeStore / TreeNode / util / transition.css）
+│  ├─ style.css              # 组件样式（全部限定在 .org-chart-container 内）
+│  ├─ viewport.ts            # clampZoom / computeFit / renderToDataUrl 等纯函数
+│  └─ context.ts / node-content.ts / use-reduced-motion.ts
+├─ shared/api.ts             # API 表单一来源
+├─ playground/               # 可交互 Demo 站（24 个用例，文档站内嵌同一批组件）
+├─ docs-site/                # VitePress 文档站（本页）
+├─ tests/                    # Vitest 单测 + Playwright 视觉回归 + SSR 冒烟
+├─ scripts/                  # gen-readme-api / post-build / verify-dist / benchmark 等
+└─ docs/                     # requirements / roadmap / release-guide / acceptance（仓库内文档，不发布）
+```
+
+## 关键设计：三份真源
+
+| 真源           | 位置                                                  | 谁在消费                                                                                                                                           |
+| -------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| API 表         | `shared/api.ts`                                       | 文档站 `<ApiDoc>`、Playground API 页、README 的分组概览（`pnpm gen:readme` 生成）；表与 `defineExpose` 由 `tests/api-surface.spec.ts` 断言不漂移   |
+| 样式           | `src/lib/okr-tree/style.css` + `model/transition.css` | 库产物 `dist/style.css`（单文件）；连接线的几何取值多处相互咬合，改任何一项都可能产生亚像素漂移，所以外观定制走 `--okr-*` 变量而不是改样式         |
+| DOM 类名与结构 | 组件模板里的 `org-chart-*` 类名                       | `OkrTreeGroup` 的测量选择器（`OkrTreeGroup.vue:53-54`）、`getVisibleNodes` 的可见性判定、视觉回归基线都按类名查询，因此 DOM 结构是对外契约的一部分 |
+
+## 常用命令
+
+```bash
+pnpm install
+pnpm dev              # Demo 站（引用 src 源码）
+pnpm test             # Vitest 单测
+pnpm typecheck        # vue-tsc
+pnpm lint             # ESLint
+pnpm build            # 库构建 → dist/
+pnpm verify:dist      # 用 dist 产物做挂载冒烟
+pnpm verify:package   # publint + attw 包发布体检
+pnpm size             # size-limit 体积预算
+pnpm test:visual      # Playwright 视觉回归 + 浏览器性能基线
+pnpm docs:dev         # 文档站（本页）
+pnpm gen:readme       # 从 shared/api.ts 重新生成 README 的 API 概览
+```
+
+改了 `shared/api.ts` 或 `src/` 的 `defineExpose` 之后要跑 `pnpm gen:readme`——README 的 API 段是生成物，不手改（仓库根 `AGENTS.md` 记了这条约定）。
+
+## 发布
+
+更新 `package.json` 的 `version` 与 `CHANGELOG.md` → 提交 → `git tag v1.x.x && git push origin v1.x.x`，`release.yml` 跑完门禁后 `npm publish --provenance` 并创建 GitHub Release。完整步骤与前置配置见仓库 `docs/release-guide.md`。版本号自 1.13.0 起与姊妹包 [react-okr-tree](https://react-okr-tree.baiwumm.com) 锁步发布。
