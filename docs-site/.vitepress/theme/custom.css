@@ -1,3 +1,28 @@
+/*
+ * 字体：与姊妹站 react-okr-tree 同一份 Maple Mono CN 自托管子集（GB2312 + 常用标点，
+ * unicode-range 之外的生僻字自然回退系统字体）。两端文档站共用同一字体资产，
+ * 视觉才能对上；文件放在 docs-site/public/fonts/，随站点一起静态部署，不引外部 CDN。
+ */
+@font-face {
+  font-family: 'Maple Mono CN';
+  src: url('/fonts/maple-mono-cn-regular.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  unicode-range:
+    U+0020-007E, U+00B1, U+00B7, U+00D7, U+00F7, U+2014, U+2018-2019, U+201C-201D, U+2026,
+    U+3000-303F, U+4E00-9FFF, U+FF00-FFEF;
+}
+
+:root {
+  --vp-font-family-base:
+    'Maple Mono CN', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --vp-font-family-mono:
+    'Maple Mono CN', ui-monospace, 'Cascadia Code', 'JetBrains Mono', Consolas, 'Courier New',
+    monospace;
+}
+
 /* 文档站对默认主题的少量补充（Demo 复用样式的协调） */
 .VPDoc .docs-demo-block {
   border: 1px solid var(--vp-c-divider);
@@ -7,4 +32,17 @@
 }
 .api-doc-section table {
   width: 100%;
+}
+
+/* 首页 Hero Logo 投影：drop-shadow 跟随 SVG 圆角方块的 alpha，不会在四角露出方形光晕。
+   深色底上黑色投影等于看不见，所以暗色模式换成冷白微光，同样是为了把 logo 从背景抬起。 */
+:root {
+  --okr-hero-shadow: rgb(0 0 0 / 24%);
+}
+.dark {
+  --okr-hero-shadow: rgb(148 173 255 / 26%);
+}
+.VPHero .image .image-src {
+  filter: drop-shadow(0 10px 22px var(--okr-hero-shadow))
+    drop-shadow(0 3px 8px var(--okr-hero-shadow));
 }

@@ -2,6 +2,36 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## Unreleased
+
+### 文档
+
+- **README 由 642 行精简到 147 行**：只留定位、特性清单、安装、快速开始、OKR 模式、API 概览与「需要注意的行为」要点，完整用法一律指向在线文档站对应页面（新增一节「完整文档」按场景列指路表）。此前 README 与文档站是同一份内容两处维护，篇幅涨到没人读完，而文档站才是合适的承载位置——按页组织、内嵌可交互 Demo、API 表随 `shared/api.ts` 渲染。姊妹包 react-okr-tree 同批精简，两端章节顺序与措辞对齐。
+- **删之前先把 README 独有的四块内容补进文档站**：新增[自定义节点内容](https://vue3-okr-tree.baiwumm.com/guide/node-content)（三种写法与优先级，内嵌 Base06 用例）与[需要注意的行为](https://vue3-okr-tree.baiwumm.com/guide/behavior)（回写源数据、`node-key` 缺失的内部 id 策略、冻结 / 只读边界、创建期快照 prop；后者此前只活在 README，而 `model/util.ts` 的只读数据警告文案正写着「详见 README『需要注意的行为』」）；主题页补无样式模式、打印、减弱动效与未知主题名提示；快速开始页补 CDN / UMD 用法与「UMD 下没有任何开发期警告」这条边界（`isDev()` 在 `<script>` 环境里必然为假）；键盘页补 `aria-setsize` / `aria-posinset` 的计数口径。
+
+### 文档站
+
+- **首页 Hero Logo 加投影**：`filter: drop-shadow()` 两层，跟随 SVG 圆角方块的 alpha，四角不会露出方形光晕（实测亮色底边下 6 / 16 / 30px 亮度差 −53 / −28 / −12，四角仅 −1 / −3）。暗色模式黑色投影等于看不见，改用冷白微光（同点位 +32 / +17 / +6）。
+- **首页 7 个特性卡文案精简**：每条 details 从两三行压到一句（如「复选框、拖拽换父级、手风琴、点击节点展开。」），六套主题名与变量数这类清单不再堆在卡片里——它们本来就在主题页。
+- **新增[复选框与拖拽](https://vue3-okr-tree.baiwumm.com/guide/interaction)页**：1.9.0 / 1.10.0 的这两块能力此前只有 API 表与可交互用例，正文零覆盖。联动含 `disabled` 后代、唯一子链选中即父全选、`check` 与 `check-change` 的触发差异、OKR 左右两树独立维护、25%/50%/25% 分区按 `direction` 换轴、防自嵌套硬规则、跨左右树默认禁止与放开后的注册表迁移，全部落到页面里。
+- **主题页补「连接线：CSS 与 SVG 两种渲染模式」一节**：`connector` / `connector-shape` 三形状、锚点随模式镜像、布局零改动的实现口径，此前正文只在迁移页有一行。
+- **对齐已发布实现修正五处**：`keyboard.md` 补 `aria-checked`（半选 `mixed`）并把 Space 拆行——`show-checkbox` 下 Space 是切换勾选而非选中（`OkrTreeNode.vue:543-546`）；`shared/api.ts` 的键盘导航行同步这条修正；`viewport.md` 方法表补 `getZoom()` / `getOffset()`（`OkrTreeViewport.vue:401-402` 早已暴露）；`migration.md` 补 1.14.0 的 `BUILT_IN_THEMES`；`getNodeKey` 的说明删掉「此前表格漏记」这类变更历史旁白，公开 API 表只写行为。
+- **`playground/components/api/Group.vue` 改读 `shared/api.ts`**：这张表此前是手写副本，改单一来源不会传导（且已实际漂移到键盘导航那一行）。现在六个 API 表全部同源。
+- README 的指路表补「复选框与拖拽」与「类型化」两行（后者此前整站有页、README 不指）。
+- **与 react 文档站互扫后补齐三处**：画布页新增「交互契约」（3px 平移阈值、平移后吞掉随后一次 `click` 以免误触 `node-click`、以指针为锚缩放、双指捏合、只响应鼠标左键）与「工具栏」作用域参数表（`zoom` / `zoomIn()` / `zoomOut()` / `reset()` / `fit()`，前四个都不接参数）；快速开始页新增「SSR / 服务端渲染」一节（此前只有迁移页一行「SSR 可用」，而 `tests/ssr/render-to-string.spec.ts` 实打实覆盖了六种情形），并点明 `exportImage` / `scrollToNode` / ResizeObserver 重测属客户端专属；注意事项页补 `default-expanded-keys` 的运行时语义——**只追加展开、不收回**（`tree-store.ts:320-329` 只逐个 `expand`，没有反向收起），与 `default-checked-keys` 的「先清空再应用」是两回事。最后这条是两端各跑一条探针用例实测出来的，结果一致（`[1] → [3]` 都得到 `[true, true]`），探针文件用完即删。
+- **文档站补上对姊妹包的指涉**：导航栏加「React 版」外链、快速开始页加一句锁步关系说明——此前 react 站多处讲与 vue3 的关系，而 vue3 站内对 `react-okr-tree` 零指涉，只在 GitHub README 里有。
+- **首页标签标题与 react 站同格式**：`<title>` 原先只有 `vue3-okr-tree`，现在是「vue3-okr-tree — Vue 3 组织架构树 / OKR 树组件」（对齐 react 的 `react-okr-tree — 组织架构图 / OKR 树组件`），内页仍挂短名后缀（`快速开始 | vue3-okr-tree`）。踩到的坑记一下：VitePress 1.6 的 `titleTemplate` 占位符是 **`:title` 而不是文档里常见的 `%s`**（写 `%s` 会原样出现在标题里），且首页会被再拼一次后缀，需用 `index.md` 的 frontmatter `titleTemplate: ':title'` 单独关掉——两处都实测了 `document.title` 才定稿。导航「指南」入口改指新的总览页。
+- **补齐互扫发现的最后四项**：新增[指南总览](https://vue3-okr-tree.baiwumm.com/guide/)（按「想做什么 → 用哪个 prop / 方法 → 去哪页」的三张速查表 + 子页清单）与[仓库与本地开发](https://vue3-okr-tree.baiwumm.com/guide/repo)（目录结构、三份真源表、命令、发布，此前这些只存在于仓库 README 与 `docs-site/README.md`）；`controlled` / `typed` / `group` / `keyboard` 四页补到能覆盖 react 对应页的全部事实——受控判定三态（含「只传值不监听 = 锁定态」、传空数组即全部收起）、导出类型与值的完整清单（按 `src/lib/index.ts` 核对）、`OkrTreeGroup` 的测量机制与 `is-measuring` / `is-measured` 及四个自动重测触发点、漫游 tabindex 的唯一性与「Tab 回来落在上次节点」的两种回落情形。**按精简原则写**：每条一句、能链接就不复述（`default-expanded-keys` 语义只留在注意事项页一处），四页合计约 130 行，不是 react 对应页的 540 行。
+- README 与 react README 的指路表互相对齐（两边都补「指南总览」与「仓库与本地开发」两行）。
+
+- **全站字体换成自托管的 Maple Mono CN**：与姊妹站 react-okr-tree 用同一份 woff2 子集（GB2312 + 常用标点，`unicode-range` 之外自然回退系统字体），文件放 `docs-site/public/fonts/` 随站点静态部署，不引外部 CDN；VitePress 的 `--vp-font-family-base` / `--vp-font-family-mono` 一并覆写。换字体后 VitePress 自带的 Inter 已无人引用却仍被预载，故加一条 `transformHtml` 在构建期摘掉这条 preload（实测每页少一次约 40KB 的白下载）。
+
+### 工程化
+
+- **`pnpm gen:readme` 改为只生成 API 分组概览**（分组 / 条数 / 成员名，数字由 `shared/api.ts` 统计），README 不再承载完整表格；`API-DOC-BEGIN/END` 标记与单一来源链路保留。顺带修掉一个 CI 陷阱：原脚本的输出不是 Prettier 规范形态，跑完 `gen:readme` 再跑 `format:check`（CI 有一步）必然报未格式化，现在生成 → 格式化 → 再生成往返为空。
+- **`shared/api.ts` 两处行内代码由 Markdown 反引号改为 `<code>`**：文档站 `<ApiDoc>` 与 Playground `ApiTable` 都按 `v-html` 渲染单元格，反引号会露成字面字符（react 侧渲染器 split `<code>` 再剥标签，所以那边一直是对的）。该文件本就约定单元格用 HTML 片段，现已零反引号。
+- 新增仓库根 `AGENTS.md`，固化「生成物不手改，改 `shared/api.ts` 与生成器后跑 `pnpm gen:readme`」这条约定。
+
 ## 1.14.0（2026-09-22）
 
 对外只多一个导出（`BUILT_IN_THEMES`），其余全是发布前收口的测试与门禁断言。本版本同时是**第一个由 CI 通过 OIDC Trusted Publishing 真实发包**的版本。
