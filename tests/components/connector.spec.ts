@@ -151,11 +151,12 @@ describe('展开 / 收起与过滤后的重绘', () => {
       for (let i = 0; i < 4; i++) await flushFrame()
       /**
        * 前置自检：探针必须真的在计数（实测此处为 10），否则下面的「增量为 0」会退化成
-       * 「探针从没响过」的假绿。姊妹包 react-okr-tree 的同名用例就踩过这条——那边的
-       * `vi.spyOn(Element.prototype, …)` 因 realm 不同而恒为 0（见该用例注释），
-       * 所以这条断言两边都留着才有意义：哪天 jsdom 换实现，这里会先响。
+       * 「探针从没响过」的假绿。姊妹包 react-okr-tree 补同形用例时，同一种自增计数器
+       * 在那边**一步都不动**——它的 stubCards 对同名方法做实例级 `vi.spyOn`，会把原型层
+       * 那个 mock 的自定义实现作废（`mock.calls` 仍增长），那边只能改数 `mock.calls`。
+       * 两边写法看着同形，能响的东西并不相同，所以这条自检两边都留着。
        */
-      expect(calls, 'rect 一次都没被读到——探针挂错了地方').toBeGreaterThan(0)
+      expect(calls, 'rect 一次都没被读到——探针没生效').toBeGreaterThan(0)
       const settled = calls
       for (let i = 0; i < 8; i++) await flushFrame()
       // 无条件换 connectorEdges 引用会让「写 ref → 重渲染 → onUpdated 再排帧」闭成环，

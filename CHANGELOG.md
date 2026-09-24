@@ -21,7 +21,7 @@
 ### 工程化（无对外行为变更）
 
 - **补 `tests/components/okr-left-structure.spec.ts`**：OKR 左树顶层的 `remove` / `append` / `insertBefore` 三条 DOM 断言，与 react-okr-tree 同形。本包侧本就共用 `leftRoot.childNodes` 引用，三条用例不改一行源码直接通过——它是姊妹包修该缺陷时的基线，也反向证明这组断言测的是真行为。
-- **稳态计数用例补「探针确实响过」的前置断言**：`tests/components/connector.spec.ts` 那条「静置 8 帧 rect 增量为 0」原先只断增量，探针若挂错地方就会以 `0 - 0 === 0` 假绿。现先断挂载后计数 `> 0`（实测此处为 10）。这条不是理论担忧——姊妹包 react-okr-tree 补同形用例时实测到那边的 `vi.spyOn(Element.prototype, 'getBoundingClientRect')` **因 realm 不同而恒为 0**（挂载后组件的元素原型链上那个 `Element` 与测试模块全局的不是同一个对象），同一写法在本包有效、在那边空转。把桩改到不在链条上的原型做变异后，新增这条当场红（`expected 0 to be greater than 0`），旧版则整条用例静默通过。
+- **稳态计数用例补「探针确实响过」的前置断言**：`tests/components/connector.spec.ts` 那条「静置 8 帧 rect 增量为 0」原先只断增量，探针若挂错地方就会以 `0 - 0 === 0` 假绿。现先断挂载后计数 `> 0`（实测此处为 10）。这条不是理论担忧——姊妹包 react-okr-tree 补同形用例时，同一种自增计数器在那边**一步都不动**：它的 `stubCards` 会对每个卡片做实例级 `vi.spyOn(el, 'getBoundingClientRect')`，而该方法在元素上是继承来的，实例级 spy 会把原型层那个 mock 的自定义实现作废（`mock.calls` 仍增长），那边只能改数 `spy.mock.calls.length`。两边写法看着同形，能响的东西并不相同。把桩改到不在链条上的原型做变异后，本仓新增这条当场红（`expected 0 to be greater than 0`），去掉这条则整条用例静默通过。
 
 ### 文档
 
