@@ -23,6 +23,8 @@
 
 ### 工程化（无对外行为变更）
 
+- **CSS 几何常量钉进 `verify:dist`（与 react 侧 G17 同批同形）**：连接线的几何值全是相互咬合的硬编码，改一个就错位，而组件层没有任何断言能发现它。新增 **21** 条断言：六个变量（`--okr-gap-level:20px` / `--okr-gap-sibling:5px` / `--okr-line-width:1px` / `--okr-line-radius:5px` / `--okr-btn-size:20px` / `--okr-gap-node-y:10px`）各断「每处使用都带兜底」+「兜底值处处同值」；左子树短头 `width:12px` / `height:10px` / `left:calc(100% - 11px)` 与两处 `-1px` / `!important` 修正各断**恰好出现一次**（两次＝有人复制规则没删原件，同特异度下后者说了算）；`okr-unstyled` 的中和规则断为**五类**选择器且基础 + `:hover` 共两处；再断 `.is-measuring` 排在 `.is-measured` **之前**——组对齐修复的承重前提正是这条同特异度顺序，颠倒之后 `measure()` 无论怎么改都会读回被钉住的宽度。匹配前先归一两种形态：声明体抹掉全部空白（绕开压缩器「逗号后有无空格」的差异），选择器只把空白折成单空格（`.a b` 压成 `.ab` 就走形了）。**顺带说明为什么不做「两仓 CSS 逐字 diff」**：两仓 `src` 的 style.css 实测只差头注释与 `@import` 路径两处、`transition.css` 全等，但产物由两套压缩器各写一遍（本仓 esbuild、react 走 rolldown 内置那套），会合并同声明体的相邻规则、重排声明、`transparent`→`0 0`、`.3s height`→`height .3s`、颜色折成 `#fffffff0`，逐字比必然假红。五条变异在两仓各跑一遍、全部打红（兜底值 `20px→24px`、规则顺序颠倒、五类降四类、`-11px→-12px`、`12px→14px`）。CSS 段现两端各 33 条、逐条同序同字面（此前两端各缺一条：本仓少「含打印与减弱动效块」、react 少「连接线颜色无残留硬编码」，现已补齐）。`verify:dist` 41 → **62** 条 ok。
+
 - **补 `tests/components/okr-left-structure.spec.ts`**：OKR 左树顶层的 `remove` / `append` / `insertBefore` 三条 DOM 断言，与 react-okr-tree 同形。本包侧本就共用 `leftRoot.childNodes` 引用，三条用例不改一行源码直接通过——它是姊妹包修该缺陷时的基线，也反向证明这组断言测的是真行为。
 - **稳态计数用例补「探针确实响过」的前置断言**：`tests/components/connector.spec.ts` 那条「静置 8 帧 rect 增量为 0」原先只断增量，探针若挂错地方就会以 `0 - 0 === 0` 假绿。现先断挂载后计数 `> 0`（实测此处为 10）。这条不是理论担忧——姊妹包 react-okr-tree 补同形用例时，同一种自增计数器在那边**一步都不动**：它的 `stubCards` 会对每个卡片做实例级 `vi.spyOn(el, 'getBoundingClientRect')`，而该方法在元素上是继承来的，实例级 spy 会把原型层那个 mock 的自定义实现作废（`mock.calls` 仍增长），那边只能改数 `spy.mock.calls.length`。两边写法看着同形，能响的东西并不相同。把桩改到不在链条上的原型做变异后，本仓新增这条当场红（`expected 0 to be greater than 0`），去掉这条则整条用例静默通过。
 

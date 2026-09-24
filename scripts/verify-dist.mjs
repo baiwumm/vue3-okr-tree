@@ -136,7 +136,94 @@ assert(
   css.includes('var(--okr-line-color') && css.includes('var(--okr-node-shadow'),
   '样式已变量化'
 )
+/** 这两条此前只有 react 侧有：两仓 style.css 同源，门禁集合也不该一边多一边少 */
+assert(css.includes('@media print') && css.includes('prefers-reduced-motion'), '含打印与减弱动效块')
 assert(!css.includes('1px solid #ccc'), '连接线颜色无残留硬编码')
+
+/**
+ * CSS 几何常量门禁（react 侧权威清单 G17 / 第 1 轮审计报告 §7 第 3 条）。
+ *
+ * 两仓的 `style.css` 逐字同源（实测只差头注释与 `@import` 路径两处），`transition.css` 全等，
+ * 但**产物** CSS 是两套压缩器各写一遍（本仓 esbuild，react 仓走 rolldown 内置的那套），实测
+ * 差异全在写法层面：合并声明体相同的相邻规则、重排声明顺序、`transparent` 写成 `0 0`、
+ * `.3s height` 写成 `height .3s`、`rgba(255,255,255,.94)` 折成 `#fffffff0`。所以
+ * 「两仓产物逐字 diff」这条路走不通（那正是 G17 原本设想的「重装做法」的坑），这里退一步
+ * 钉**相互咬合的几何值本身**：这些数字改一个就是连接线错位，组件层没有任何断言能发现它。
+ *
+ * 匹配前先归一两种形态：`cssFlat` 抹掉全部空白（声明体用它，绕开两侧「逗号后有无空格」的
+ * 差异）；`cssSquash` 只把空白串折成一个空格（选择器用它——`.a b` 压成 `.ab` 就不是原意了）。
+ */
+const cssFlat = css.replace(/\s+/g, '')
+const cssSquash = css.replace(/\s+/g, ' ')
+/**
+ * 几何类变量的兜底值要**处处存在且处处同值**：兜底就是这些值的单一来源（消费方不设变量时
+ * 靠它），少一处或改一处都算漂移。只钉兜底里不含嵌套 `var()` 的那几个 ——
+ * `--okr-*-shadow` / `--okr-line-color` 一类默认值带括号，简单正则会截断，且两仓压缩后
+ * 颜色写法还不一致（实测 `rgba(31,35,41,.08)` vs `#1f232914`），不在这里管。
+ */
+const GEOMETRY_VARS = [
+  ['--okr-gap-level', '20px'],
+  ['--okr-gap-sibling', '5px'],
+  ['--okr-line-width', '1px'],
+  ['--okr-line-radius', '5px'],
+  ['--okr-btn-size', '20px'],
+  ['--okr-gap-node-y', '10px'],
+]
+for (const [name, expect] of GEOMETRY_VARS) {
+  const hits = [...cssFlat.matchAll(new RegExp(`var\\(${name},([^()]*)\\)`, 'g'))].map((m) => m[1])
+  const uses = cssFlat.split(`var(${name}`).length - 1
+  assert(
+    uses > 0 && hits.length === uses,
+    `${name} 每处使用都带兜底（uses=${uses}，带兜底=${hits.length}）`
+  )
+  assert(
+    new Set(hits).size === 1 && hits[0] === expect,
+    `${name} 的兜底值处处为 ${expect}（实测 ${[...new Set(hits)].join(' / ') || '无'}）`
+  )
+}
+/**
+ * 左子树连接线短头：`12px`（宽）/ `calc(100% - 11px)`（左偏移）/ `10px`（高）三个值相互咬合，
+ * 源文件里就注明「保持硬编码」。断「恰好出现一次」而不是「出现过」——出现两次说明有人复制
+ * 了这条规则却没删原件，那种重复在同特异度下会让后一条说了算。
+ */
+for (const [label, token] of [
+  ['短头宽 12px', 'width:12px'],
+  ['短头高 10px', 'height:10px'],
+  ['短头左偏移 calc(100% - 11px)', 'left:calc(100%-11px)'],
+  ['垂直独子的 -1px 修正', 'margin-right:-1px'],
+  ['水平独子去圆角', 'border-radius:0!important'],
+]) {
+  const n = cssFlat.split(token).length - 1
+  assert(n === 1, `几何常量 ${label} 恰好转录一次（实测 ${n} 次）`)
+}
+/**
+ * unstyled 的中和规则必须带满 5 个类：方向专属规则是 4 个类且排在它之后，同特异度后者胜，
+ * 少一个类 unstyled 就压不住 hover 阴影。基础 + `:hover` 各一处。
+ */
+assert(
+  cssSquash.split(
+    '.org-chart-container.okr-unstyled .org-chart-node .org-chart-node-label .org-chart-node-label-inner'
+  ).length -
+    1 ===
+    2,
+  'okr-unstyled 的中和规则是五类选择器（基础与 :hover 各一处）'
+)
+/**
+ * 组对齐的两条规则顺序：`.is-measuring`（`width: max-content`，测量时按自然宽度排）必须排在
+ * `.is-measured`（`width: var(--okr-group-left-width)`，把宽度钉住）**之前** —— 两条特异度相同，
+ * 后者胜，所以测量期间必须把 `is-measured` 摘掉才读得到自然宽度。顺序一旦颠倒，`measure()`
+ * 无论怎么改都会读回被钉住的值。压缩器实测保留规则顺序，故能在产物层钉。
+ */
+const measuringAt = cssFlat.indexOf('.is-measuring')
+const measuredAt = cssFlat.indexOf('.is-measured')
+assert(
+  measuringAt >= 0 && measuredAt > measuringAt,
+  `.is-measuring 排在 .is-measured 之前（实测 ${measuringAt} / ${measuredAt}）`
+)
+assert(
+  cssFlat.includes('width:max-content') && cssFlat.includes('width:var(--okr-group-left-width)'),
+  '组对齐的自然宽度与钉宽两条规则都在产物里'
+)
 
 const themed = mountTree({ data, theme: 'feishu' })
 assert(
