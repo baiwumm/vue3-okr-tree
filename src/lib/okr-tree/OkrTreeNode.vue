@@ -12,8 +12,8 @@
     :aria-expanded="ariaExpanded"
     :aria-checked="ariaChecked"
     :aria-disabled="node.disabled ? 'true' : undefined"
-    :aria-setsize="ariaSet?.size"
-    :aria-posinset="ariaSet?.pos"
+    :aria-setsize="ariaSetSize"
+    :aria-posinset="ariaPosInSet"
     @contextmenu="handleContextMenu"
     @focus="handleFocus"
     @keydown="handleKeydown"
@@ -27,9 +27,11 @@
         role="group"
       >
         <OkrTreeNode
-          v-for="child in leftChildNodes"
-          :key="getNodeKey(child)"
-          :node="child"
+          v-for="entry in leftPositions"
+          :key="getNodeKey(entry.node)"
+          :node="entry.node"
+          :aria-set-size="entry.size"
+          :aria-pos-in-set="entry.pos"
           :show-collapsable="showCollapsable"
           :label-width="labelWidth"
           :label-height="labelHeight"
@@ -145,9 +147,11 @@
         role="group"
       >
         <OkrTreeNode
-          v-for="child in node.childNodes"
-          :key="getNodeKey(child)"
-          :node="child"
+          v-for="entry in rightPositions"
+          :key="getNodeKey(entry.node)"
+          :node="entry.node"
+          :aria-set-size="entry.size"
+          :aria-pos-in-set="entry.pos"
           :show-collapsable="showCollapsable"
           :label-width="labelWidth"
           :label-height="labelHeight"
@@ -184,6 +188,7 @@ import {
   type PropType,
 } from 'vue'
 import { OKR_TREE_INJECTION_KEY } from './context'
+import { setPositions } from './aria-set'
 import { NodeContent, NodeBtnContent } from './node-content'
 import { getNodeKey as _getNodeKey } from './model/util'
 import { usePrefersReducedMotion } from './use-reduced-motion'
@@ -199,6 +204,10 @@ defineOptions({ name: 'OkrTreeNode' })
 
 const props = defineProps({
   node: { type: Object as PropType<TreeNode>, required: true },
+  /** 同层可见兄弟数，由父节点算好下发；undefined 表示本节点不可见、不输出该属性 */
+  ariaSetSize: { type: Number, default: undefined },
+  /** 本节点在同层可见兄弟里的 1-based 序号，口径同 ariaSetSize */
+  ariaPosInSet: { type: Number, default: undefined },
   /** 子节点是否可折叠 */
   showCollapsable: { type: Boolean, default: false },
   /** 是否是左子树的节点（样式与展开方向不同） */
@@ -485,14 +494,13 @@ const ariaChecked = computed(() => {
  * aria-setsize / aria-posinset：按父节点子列表里可见的兄弟节点给出 1-based 序号，
  * 被 filter 隐藏的兄弟不计入（否则读屏会播报不存在的项）。左右子树各自成组。
  */
-const ariaSet = computed(() => {
-  const siblings = node.value.parent?.childNodes
-  if (!siblings) return undefined
-  const visible = siblings.filter((child) => child.visible)
-  const index = visible.indexOf(node.value)
-  if (index === -1) return undefined
-  return { size: visible.length, pos: index + 1 }
-})
+/**
+ * aria-setsize / aria-posinset 由本节点在渲染子列表时按层算一次，作为 props 传下去。
+ * 旧写法是每个节点各自读 parent.childNodes 扫两遍 ⇒ 同层 O(s²)；父下发同时保证了
+ * 「被 filter 隐藏的兄弟不计入、左右两树各自成组」的原口径。
+ */
+const leftPositions = computed(() => setPositions(leftChildNodes.value))
+const rightPositions = computed(() => setPositions(node.value.childNodes))
 
 const tabIndex = computed(() => {
   const focused = tree!.focusedNode.value

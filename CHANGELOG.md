@@ -6,6 +6,7 @@
 
 ### 性能
 
+- **`aria-setsize` / `aria-posinset` 改为按层算一次下发**：旧实现是每个节点一个 computed，各自读 `parent.childNodes` 做 `filter` + `indexOf` ⇒ 同层 s 个节点扫两遍、O(s²)。新增 `src/lib/okr-tree/aria-set.ts` 的 `setPositions(list)`，由父节点（含根层的 `OkrTree`）在渲染子列表时算好 `{size,pos}` 作为 props 传下去；不可见节点仍不输出这两个属性（props 为 `undefined`），左右两树各自成组，口径与旧实现一致。react 侧本就是父下发形状，同批把其 `map` 内的 `indexOf` 换成同一套单遍计算。
 - **复选框一次点击从 4 次全树遍历降到 1 次**：`check` 事件的 payload 原先由 `getCheckedNodes()` / `getCheckedKeys()` / `getHalfCheckedNodes()` / `getHalfCheckedKeys()` 四次调用拼成，而两个 key 版内部各自还要再调一次节点版 ⇒ 一次点击要走 4 遍全树（含整棵 OKR 左树）。新增 `collectCheckState(leafOnly)` 一次遍历算齐四份，四个公开方法原样保留。语义逐字不变：`String(key)` 去重、遍历顺序、跳过空 key、checked 的节点不进半选列表。
 - **同层整批换引用时 `updateChildren` 的 key 回退降为线性**：回退原本是 `oldNodes.find(n => !used.has(n) && n.key === k)`，同层 s 项全部换引用时第 i 项平均要扫 i 次 ⇒ 该层退化到 O(s²)。现改成一次建好的 `Map<key, TreeNode[]>` 索引。实测（把 `key` getter 包住计数）：`s=3200` 整轮换引用时 key 访问 **16,005 次（=5s）**，而旧实现按公式是 **5,121,600 次（s(s+1)/2）**，`setData` 耗时从 35.9ms 降到 15.0ms。两处语义刻意保住——键不做 `String` 归一（原判断是 `===`，`11` 与 `'11'` 不该互配）、桶存数组而非单值（同层重复 key 时第二项要能命中第二个旧节点），各有一条用例钉住，换成朴素的 `Map<string, TreeNode>` 就当场红。
 

@@ -18,9 +18,11 @@
         <slot name="empty" />
       </div>
       <OkrTreeNode
-        v-for="child in root.childNodes"
-        :key="getNodeKey(child)"
-        :node="child"
+        v-for="entry in rootPositions"
+        :key="getNodeKey(entry.node)"
+        :node="entry.node"
+        :aria-set-size="entry.size"
+        :aria-pos-in-set="entry.pos"
         :show-collapsable="showCollapsable"
         :label-width="labelWidth"
         :label-height="labelHeight"
@@ -59,6 +61,7 @@ import {
   type PropType,
 } from 'vue'
 import OkrTreeNode from './OkrTreeNode.vue'
+import { setPositions } from './aria-set'
 import { DEFAULT_PROPS, TreeStore } from './model/tree-store'
 import { getNodeKey as _getNodeKey, warn } from './model/util'
 import { usePrefersReducedMotion } from './use-reduced-motion'
@@ -383,6 +386,8 @@ const root = store.root
 store.onExpandSettled = syncExpandedKeys
 
 const isEmpty = computed(() => root.childNodes.length === 0)
+// 根层的 aria-setsize / aria-posinset 同样按层算一次下发（与 OkrTreeNode 里的口径一致）
+const rootPositions = computed(() => setPositions(root.childNodes))
 
 // 受控初始态：expanded-keys / current-key 优先于 default-expanded-keys / current-node-key
 if (props.nodeKey) {
