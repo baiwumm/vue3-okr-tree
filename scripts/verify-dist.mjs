@@ -156,6 +156,36 @@ assert(
   'index.d.cts 与 index.d.ts 内容一致（CJS require 类型条件）'
 )
 
+// optional peer（html-to-image）在产物里要同时满足三件事，缺一都会在下游炸：
+// 1. 说明符经变量传递，不出现静态 import/require —— 否则 Vite/Rollup 会把可选依赖内联成
+//    额外 chunk，或让没装它的消费者连加载都过不了；
+// 2. 三种产物都保留 @vite-ignore / webpackIgnore / turbopackIgnore 三条注释 ——
+//    Next 16 的 Turbopack 只认后两家，缺了会在**构建期**直接 Module not found
+//    （文档站是第一个撞上的真实消费者）；注释被压缩吃掉是这个门禁的真正来由
+//    （esbuild 四档压缩全丢，故 build.minify 用 terser + comments 白名单）；
+// 3. 动态 import 的调用点确实存在（防止哪天改成顶层 await 被摇掉）。
+const esSource = readFileSync(distEs, 'utf8')
+const cjsSource = readFileSync(distCjs, 'utf8')
+const umdSource = readFileSync(distUmd, 'utf8')
+for (const [label, source] of [
+  ['ESM', esSource],
+  ['.cjs', cjsSource],
+  ['.umd', umdSource],
+]) {
+  assert(
+    !/from\s*['"]html-to-image['"]/.test(source) &&
+      !/require\(\s*['"]html-to-image['"]\s*\)/.test(source),
+    `${label} 未把可选 peer 静态引入`
+  )
+  assert(
+    /@vite-ignore/.test(source) &&
+      /webpackIgnore:\s*true/.test(source) &&
+      /turbopackIgnore:\s*true/.test(source),
+    `${label} 保留可选 peer 的三家打包器 ignore 注释`
+  )
+}
+assert(/import\(/.test(esSource), 'ESM 保留 html-to-image 的动态 import 调用点')
+
 // Q9：本包是 "type": "module"，Node 会把 .umd.js 按 ESM 解析，require() 只能走 .cjs 这份。
 // 此前该路径全靠人工验证，一旦构建端把 .cjs 的 exports 条件写坏，发包后才会被用户发现。
 const req = createRequire(import.meta.url)
@@ -175,7 +205,6 @@ assert(
 
 // UMD 此前只 existsSync 一下、从未被执行：它外部化 vue，工厂签名或依赖声明一旦出问题，
 // 只有浏览器 <script> 用户会撞上而 CI 全绿。走 CJS 分支真跑一遍即可证明签名正确。
-const umdSource = readFileSync(distUmd, 'utf8')
 assert(/require\((["'`])vue\1\)/.test(umdSource), 'UMD 的 CJS 分支把 vue 作为外部依赖 require')
 const umdModule = { exports: {} }
 new Function('module', 'exports', 'require', umdSource)(umdModule, umdModule.exports, req)
