@@ -44,9 +44,11 @@ export default defineConfig({
      * 消费者用 Next 16 的 Turbopack 时只认后两家，缺了就变成构建期 "Module not found"
      * （库能发出去但下游装不上，文档站是第一个撞上的真实消费者）。
      * esbuild 保不住——实测 minifyWhitespace / legalComments:'inline' / 连注释改写成
-     * legal 形态四档全丢；Terser 可以按正则留。门禁在 scripts/verify-dist.mjs。
+     * legal 形态 / 全量压缩四档全丢；Terser 可以按正则留。门禁在 scripts/verify-dist.mjs。
      * 历史上这里还有一条 scripts/post-build.mjs 里的 esbuild 补压（因为 Vite lib 模式下
      * es 输出不随 cjs/umd 压缩），一并删掉——那道压缩正是把注释吃掉的东西。
+     * 姊妹包 react-okr-tree 同批换成 Terser（它还要额外配 compress.directives: false
+     * 才留得住 'use client' banner，见其 vite.config.ts）。
      */
     minify: 'terser',
     terserOptions: {
