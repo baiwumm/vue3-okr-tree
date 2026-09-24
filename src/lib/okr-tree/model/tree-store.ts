@@ -217,6 +217,21 @@ export class TreeStore {
     }
   }
 
+  /**
+   * 只注销本节点自身，不动后代。
+   * 供 key 未变、仅换绑 data 引用的场景使用：此时后代的注册表项仍指向自身实例，
+   * 走递归版会把它们一并摘掉，而复用路径不会重新登记，后代就永久掉出 nodesMap。
+   */
+  deregisterNodeSelf(node: TreeNode) {
+    const key = this.key
+    if (!key || !node || !node.data) return
+    const map = node.isLeftChild ? this.leftNodesMap : this.nodesMap
+    const nodeKey = node.key as string
+    if (nodeKey !== undefined && map[nodeKey] === node) {
+      delete map[nodeKey]
+    }
+  }
+
   setData(newVal: TreeNodeData[]) {
     const instanceChanged = newVal !== this.root.data
     if (instanceChanged) {

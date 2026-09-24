@@ -276,6 +276,32 @@ describe('setData / updateChildren（Q4 与异步改 data）', () => {
     expect(d2.expanded).toBe(true)
   })
 
+  it('父节点换绑 data 引用时，子代仍留在注册表里（1.1 回归）', () => {
+    const cData = { id: 3, label: 'C' }
+    const children = [
+      { id: 2, label: 'B', children: [cData] },
+      { id: 4, label: 'D' },
+    ]
+    const data = [{ id: 1, label: 'A', children }]
+    const store = createStore({ data })
+    const b = store.getNode(2)!
+    b.expand()
+    // 只换 B 这一层对象、B 的 children 沿用原引用 —— 轮询接口的典型局部更新
+    children[0] = { id: 2, label: 'B-renamed', children: [cData] }
+    store.setData(data)
+
+    const b2 = store.getNode(2)!
+    expect(b2).toBe(b)
+    expect(b2.label).toBe('B-renamed')
+    // 换绑走「只摘自身」版注销：后代没离开注册表，按 key 的公开方法照常可用
+    const c = store.getNode(3)
+    expect(c).not.toBeNull()
+    expect(c).toBe(b2.childNodes[0])
+    store.remove(3)
+    expect(store.getNode(3)).toBeNull()
+    expect(b2.childNodes).toHaveLength(0)
+  })
+
   it('直接构造的 Node 缺少 store 时抛错', () => {
     expect(() => new TreeNode({ data: {} })).toThrow('[Node]store is required!')
   })

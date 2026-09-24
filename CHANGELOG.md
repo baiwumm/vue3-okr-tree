@@ -4,6 +4,10 @@
 
 ## Unreleased
 
+### 修复
+
+- **换绑 data 引用不再把整棵后代摘出注册表**：`data` 数组引用保持不变、只把某一层对象换成同 key 的新对象（轮询接口的典型局部更新）时，`TreeNode.updateChildren()` 的换绑分支原先调递归版 `store.deregisterNode()`——它连带删掉该节点全部后代在 `nodesMap` 里的登记，而复用路径不会重新登记，于是这些后代的 `getNode` / `getNodePath` / `setCurrentKey` / `remove` / `moveNode` 等按 key 的公开方法一律静默失效，而节点仍照常渲染、仍可点击。改用新增的 `deregisterNodeSelf()`（只摘本节点）：该分支的匹配条件本就是 key 相等，后代的实例与 key 都没变，留在注册表里才是正确状态；真正被移除的节点仍由尾部注销循环递归清理。姊妹包 react-okr-tree 同批同形修复。
+
 ### 文档
 
 - **README 由 642 行精简到 147 行**：只留定位、特性清单、安装、快速开始、OKR 模式、API 概览与「需要注意的行为」要点，完整用法一律指向在线文档站对应页面（新增一节「完整文档」按场景列指路表）。此前 README 与文档站是同一份内容两处维护，篇幅涨到没人读完，而文档站才是合适的承载位置——按页组织、内嵌可交互 Demo、API 表随 `shared/api.ts` 渲染。姊妹包 react-okr-tree 同批精简，两端章节顺序与措辞对齐。

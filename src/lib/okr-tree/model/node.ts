@@ -173,7 +173,7 @@ export class TreeNode {
         used.add(node)
         if (node.data !== childData) {
           // key 相同但引用变化：换绑源数据并重新注册
-          store.deregisterNode(node)
+          store.deregisterNodeSelf(node)
           node.data = childData
           markNodeData(node, childData)
           store.registerNode(node)
