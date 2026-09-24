@@ -168,16 +168,20 @@ function zoomAt(nextZoom: number, anchorX: number, anchorY: number) {
   applyOffset({ x: anchorX - contentX * clamped, y: anchorY - contentY * clamped })
 }
 
-function zoomIn() {
+/** 缩放锚点：可视区中心。用 clientWidth / clientHeight 与 fitToScreen 同口径——有滚动条时 rect 含滚动条宽，两者会差半条，缩放中心就偏 */
+function viewportCenter(): [number, number] {
   const vp = viewportEl.value
-  const rect = vp?.getBoundingClientRect()
-  zoomAt(currentZoom.value * props.zoomStep, rect ? rect.width / 2 : 0, rect ? rect.height / 2 : 0)
+  return vp ? [vp.clientWidth / 2, vp.clientHeight / 2] : [0, 0]
+}
+
+function zoomIn() {
+  const [cx, cy] = viewportCenter()
+  zoomAt(currentZoom.value * props.zoomStep, cx, cy)
 }
 
 function zoomOut() {
-  const vp = viewportEl.value
-  const rect = vp?.getBoundingClientRect()
-  zoomAt(currentZoom.value / props.zoomStep, rect ? rect.width / 2 : 0, rect ? rect.height / 2 : 0)
+  const [cx, cy] = viewportCenter()
+  zoomAt(currentZoom.value / props.zoomStep, cx, cy)
 }
 
 function reset() {

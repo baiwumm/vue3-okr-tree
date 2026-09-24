@@ -12,6 +12,7 @@
 
 ### 修复
 
+- **`zoomIn` / `zoomOut` 的锚点改用可视区尺寸**：原先取 `getBoundingClientRect().width / 2`，而 `fitToScreen` 与 react 侧都取 `clientWidth / 2`——视口内出现滚动条时两者相差半条滚动条宽，同一个包的两条路径与姊妹包之间会各偏一点。现统一走新增的 `viewportCenter()`（`clientWidth / clientHeight`），与 react 侧的 `center()` 同形。
 - **`contains` 把 OKR 左子树算进子树范围**：`moveNode` 的自环硬守卫与 `dropValid` 都靠 `TreeStore.contains()` 回答「目标是不是被拖节点的后代」，但它只递归 `childNodes`，而 OKR 左子树挂在 `leftChildNodes` 上——于是 `moveNode(OKR 根, 其左子树内的节点, 'inner')` 放行，根与左子树互相指向，`getVisibleNodes` 这类同时走两侧的遍历不再收敛。现一并递归 `leftChildNodes`；同时钉一条「右树节点仍可移进左子树」的用例，防止把 `reassignSide` 那条合法的跨侧路径一起堵死。
 - **`connector="svg"` 稳态不再自持重排**：`redrawConnectors` 结尾原先无条件把新数组写进 `connectorEdges`，于是「写 ref → 重渲染 → `onUpdated` 再排一帧 → 再写」闭成环——空载页面也以每秒一帧的节奏重排全树、逐节点读一遍 `getBoundingClientRect`（react 版实测同规模约 10,400 次/秒）。现改为逐条比对 `d`，完全相同就保持原引用，与 react 版的 `sameEdges` 短路同形。**顺带补上这条环原先兜着的缺口**：`onUpdated` 其实指望不上——节点的 `expanded` 只被 `OkrTreeNode` 读，父组件不重渲染就不触发它，所以展开态变更改走新增的 `onExpansionChanged()`（同步受控 keys + 显式排一帧重绘），同时覆盖节点点击与 `expandNode` / `collapseNode` 两条路径；实测空闲 12 帧之后再收起节点，实体边仍会正确替换成收起残枝。
 - **换绑 data 引用不再把整棵后代摘出注册表**：`data` 数组引用保持不变、只把某一层对象换成同 key 的新对象（轮询接口的典型局部更新）时，`TreeNode.updateChildren()` 的换绑分支原先调递归版 `store.deregisterNode()`——它连带删掉该节点全部后代在 `nodesMap` 里的登记，而复用路径不会重新登记，于是这些后代的 `getNode` / `getNodePath` / `setCurrentKey` / `remove` / `moveNode` 等按 key 的公开方法一律静默失效，而节点仍照常渲染、仍可点击。改用新增的 `deregisterNodeSelf()`（只摘本节点）：该分支的匹配条件本就是 key 相等，后代的实例与 key 都没变，留在注册表里才是正确状态；真正被移除的节点仍由尾部注销循环递归清理。姊妹包 react-okr-tree 同批同形修复。
