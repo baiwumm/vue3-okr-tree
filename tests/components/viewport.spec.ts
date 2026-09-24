@@ -208,6 +208,50 @@ describe('OkrTreeViewport：拖拽平移', () => {
   })
 })
 
+/**
+ * 平移后那次 click 由「标志 + 常驻的捕获阶段处理」吞掉，而不是每次平移都
+ * addEventListener('click', …, { once: true })——触摸平移不派发 click，那种写法
+ * 会按平移次数往元素上累积监听，卸载时仍挂在那里。
+ */
+describe('OkrTreeViewport：平移后吞掉一次 click', () => {
+  const mountWithNodeClick = (onNodeClick: () => void) =>
+    mount({
+      render() {
+        return h(OkrTreeViewport, { ref: 'vp' }, () => [
+          h(VueOkrTree, { data: makeData(), nodeKey: 'id', onNodeClick }),
+        ])
+      },
+    })
+
+  /** 一次完整的触摸平移：按下 → 过阈值 → 抬手，其后不派发任何 click */
+  const panOnce = (vpEl: { element: Element }) => {
+    fireMouse(vpEl, 'pointerdown', { pointerId: 1, clientX: 0, clientY: 0 })
+    fireMouse(vpEl, 'pointermove', { pointerId: 1, clientX: 60, clientY: 40 })
+    fireMouse(vpEl, 'pointerup', { pointerId: 1, clientX: 60, clientY: 40 })
+  }
+
+  it('只吞掉平移后的那一次点击，第二次照常送到节点', () => {
+    const onNodeClick = vi.fn()
+    const wrapper = mountWithNodeClick(onNodeClick)
+    const label = wrapper.find('.org-chart-node-label-inner')
+    panOnce(wrapper.find('.okr-viewport'))
+    fireMouse(label, 'click')
+    expect(onNodeClick).not.toHaveBeenCalled()
+    fireMouse(label, 'click')
+    expect(onNodeClick).toHaveBeenCalledTimes(1)
+  })
+
+  it('平移后没有 click 时不在视口元素上留监听', () => {
+    const onNodeClick = vi.fn()
+    const wrapper = mountWithNodeClick(onNodeClick)
+    const vpEl = wrapper.find('.okr-viewport')
+    // @click.capture 挂载时就挂好了，这里只统计平移过程中新增的注册
+    const addSpy = vi.spyOn(vpEl.element as HTMLElement, 'addEventListener')
+    for (let i = 0; i < 3; i++) panOnce(vpEl)
+    expect(addSpy.mock.calls.filter(([type]) => type === 'click')).toHaveLength(0)
+  })
+})
+
 describe('OkrTreeViewport：centerNode 与 exportImage', () => {
   beforeEach(() => {
     vi.spyOn(console, 'warn').mockImplementation(() => {})

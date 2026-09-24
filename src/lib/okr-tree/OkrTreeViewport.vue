@@ -8,6 +8,7 @@
     @pointermove="handlePointerMove"
     @pointerup="handlePointerUp"
     @pointercancel="handlePointerUp"
+    @click.capture="handleClickCapture"
     @dblclick="handleDblClick"
   >
     <div class="okr-viewport-canvas" :style="canvasStyle">
@@ -222,6 +223,12 @@ let pinchStart: {
 /** 拖拽位移超过该阈值才算平移（避免干扰节点点击） */
 const PAN_THRESHOLD = 3
 let moved = false
+/**
+ * 平移结束后待吞掉的那一次 click，记成标志由 handleClickCapture 消费。
+ * 不用 addEventListener('click', …, { once: true })：触摸平移根本不派发 click，
+ * 那样每平移一次就往元素上留一个监听，按次数累积、卸载也没人摘。
+ */
+let swallowNextClick = false
 
 function handlePointerDown(event: PointerEvent) {
   if (event.pointerType === 'mouse' && event.button !== 0) return
@@ -295,19 +302,16 @@ function handlePointerUp(event: PointerEvent) {
   }
   // 平移过则吞掉随后的一次 click，避免误触 node-click
   if (moved) {
-    const el = viewportEl.value
-    if (el) {
-      el.addEventListener(
-        'click',
-        (e) => {
-          e.stopPropagation()
-          e.preventDefault()
-        },
-        { capture: true, once: true }
-      )
-    }
+    swallowNextClick = true
     moved = false
   }
+}
+
+function handleClickCapture(event: MouseEvent) {
+  if (!swallowNextClick) return
+  swallowNextClick = false
+  event.stopPropagation()
+  event.preventDefault()
 }
 
 function handleDblClick() {
