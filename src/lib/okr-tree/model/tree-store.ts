@@ -528,10 +528,17 @@ export class TreeStore {
     })
   }
 
-  /** target 是否在 node 的子树内（含 node 自身） */
+  /**
+   * target 是否在 node 的子树内（含 node 自身）。
+   * OKR 左子树挂在 leftChildNodes 上，只看 childNodes 会漏掉「把 OKR 根移进自己的左子树」
+   * 这条成环路径——moveNode 的硬守卫与 dropValid 都依赖这里。
+   */
   contains(node: TreeNode, target: TreeNode): boolean {
     if (node === target) return true
-    return node.childNodes.some((child) => this.contains(child, target))
+    return (
+      node.childNodes.some((child) => this.contains(child, target)) ||
+      node.leftChildNodes.some((child) => this.contains(child, target))
+    )
   }
 
   /** 跨左右树移动时递归切换 isLeftChild 标记并把整棵子树迁到另一侧注册表 */

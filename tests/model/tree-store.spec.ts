@@ -256,3 +256,43 @@ describe('选中态', () => {
     expect(store.getCurrentNode()!.label).toBe('研发-前端')
   })
 })
+
+describe('contains 与 moveNode 的自环守卫（OKR 左子树）', () => {
+  const createOkrStore = () =>
+    new TreeStore({
+      key: 'id',
+      data: [{ id: 'R', label: 'R', children: [{ id: 'R1', label: 'R1' }] }],
+      leftData: [
+        {
+          id: 'L',
+          label: 'L',
+          children: [{ id: 'L1', label: 'L1', children: [{ id: 'L1a', label: 'L1a' }] }],
+        },
+      ],
+      onlyBothTree: true,
+    })
+
+  it('contains 把 leftChildNodes 里的后代算作自己的后代', () => {
+    const store = createOkrStore()
+    const r = store.getNode('R')!
+    expect(store.contains(r, store.getNode('R1')!)).toBe(true)
+    expect(store.contains(r, store.getNode('L1')!)).toBe(true)
+    expect(store.contains(r, store.getNode('L1a')!)).toBe(true)
+    // 反向不该成立：左子树节点与右树根的兄弟无祖先关系
+    expect(store.contains(store.getNode('L1')!, r)).toBe(false)
+  })
+
+  it('moveNode 拒绝把 OKR 根移进它自己的左子树', () => {
+    const store = createOkrStore()
+    const visibleBefore = store.getVisibleNodes().length
+    expect(store.moveNode('R', 'L1', 'inner')).toBe(false)
+    expect(store.getVisibleNodes().length).toBe(visibleBefore)
+    expect(store.getNode('L1')!.childNodes.map((n) => n.key)).not.toContain('R')
+  })
+
+  it('跨侧移动仍然合法：右树节点可以移进左子树某节点内部', () => {
+    const store = createOkrStore()
+    expect(store.moveNode('R1', 'L1', 'inner')).toBe(true)
+    expect(store.getNode('L1')!.childNodes.map((n) => n.key)).toContain('R1')
+  })
+})
