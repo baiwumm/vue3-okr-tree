@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { TreeStore } from '../../src/lib/okr-tree/model/tree-store'
 import { TreeNode } from '../../src/lib/okr-tree/model/node'
-import { NODE_KEY } from '../../src/lib/okr-tree/model/util'
+import { NODE_KEY, resetWarnings } from '../../src/lib/okr-tree/model/util'
+import type { TreeNodeData } from '../../src/types'
 import { isReactive, isProxy } from 'vue'
 
 const makeData = () => [
@@ -300,6 +301,81 @@ describe('setData / updateChildren（Q4 与异步改 data）', () => {
     store.remove(3)
     expect(store.getNode(3)).toBeNull()
     expect(b2.childNodes).toHaveLength(0)
+  })
+
+  it('同层整批换引用：按 key 回退仍复用原实例、顺序与标签都跟上（2.3）', () => {
+    const children = [
+      { id: 11, label: 'A' },
+      { id: 12, label: 'B' },
+      { id: 13, label: 'C' },
+    ]
+    const data: TreeNodeData[] = [{ id: 1, label: 'R', children }]
+    const store = createStore({ data })
+    const b1 = store.getNode(11)!
+    const b2 = store.getNode(12)!
+    b2.expand()
+    data[0] = {
+      id: 1,
+      label: 'R',
+      children: [
+        { id: 13, label: 'C2' },
+        { id: 12, label: 'B2' },
+        { id: 11, label: 'A2' },
+        { id: 14, label: 'E' },
+      ],
+    }
+    store.setData(data)
+    const live = store.getNode(1)!.childNodes
+    expect(live.map((n) => n.label)).toEqual(['C2', 'B2', 'A2', 'E'])
+    // 复用而不是重建：12 的展开态是证据
+    expect(live[1]).toBe(b2)
+    expect(live[1].expanded).toBe(true)
+    expect(live[2]).toBe(b1)
+    expect(store.getNode(14)).not.toBeNull()
+  })
+
+  it('key 回退不做字符串归一：数字 11 不会被 ' + "'11'" + ' 命中（2.3）', () => {
+    const data: TreeNodeData[] = [{ id: 1, label: 'R', children: [{ id: 11, label: 'num' }] }]
+    const store = createStore({ data })
+    const old = store.getNode(1)!
+    const numNode = old.childNodes[0]
+    data[0] = { id: 1, label: 'R', children: [{ id: '11', label: 'str' }] }
+    store.setData(data)
+    const after = store.getNode(1)!.childNodes[0]
+    // 原实现是 n.key === k，11 !== '11'：不该复用，必须换成新实例
+    expect(after).not.toBe(numNode)
+    expect(after.label).toBe('str')
+  })
+
+  it('同层重复 key：第二项仍能命中第二个旧节点（2.3 的桶语义）', () => {
+    resetWarnings()
+    const data: TreeNodeData[] = [
+      {
+        id: 1,
+        label: 'R',
+        children: [
+          { id: 7, label: 'x' },
+          { id: 7, label: 'y' },
+        ],
+      },
+    ]
+    const store = createStore({ data })
+    const first = store.getNode(1)!.childNodes[0]
+    const second = store.getNode(1)!.childNodes[1]
+    data[0] = {
+      id: 1,
+      label: 'R',
+      children: [
+        { id: 7, label: 'x2' },
+        { id: 7, label: 'y2' },
+      ],
+    }
+    store.setData(data)
+    const live = store.getNode(1)!.childNodes
+    expect(live.map((n) => n.label)).toEqual(['x2', 'y2'])
+    // 命中即从桶里取走：若索引只存单值，第二项就会匹配不到而新建实例
+    expect(live[0]).toBe(first)
+    expect(live[1]).toBe(second)
   })
 
   it('直接构造的 Node 缺少 store 时抛错', () => {

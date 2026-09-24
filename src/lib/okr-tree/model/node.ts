@@ -160,14 +160,26 @@ export class TreeNode {
     const byData = new Map<any, TreeNode>()
     oldNodes.forEach((n) => byData.set(n.data, n))
     const used = new Set<TreeNode>()
+    // key 回退索引：同层整批换引用时，原来的 oldNodes.find 会让该层退化到 O(s²)。
+    // 桶而不是单值：find 的语义是「跳过已用过的」，同层重复 key 时后面的项要能命中第二个。
+    // 键不做 String 归一：Map 的 SameValueZero 与原来的 === 一样区分 11 与 '11'。
+    const byKey = new Map<any, TreeNode[]>()
+    if (store.key) {
+      oldNodes.forEach((n) => {
+        if (n.key === undefined) return
+        const bucket = byKey.get(n.key)
+        if (bucket) bucket.push(n)
+        else byKey.set(n.key, [n])
+      })
+    }
 
     const next: TreeNode[] = []
     for (let i = 0; i < newData.length; i++) {
       const childData = newData[i]
       let node = byData.get(childData)
       if ((!node || used.has(node)) && store.key && childData && typeof childData === 'object') {
-        const k = childData[store.key]
-        node = oldNodes.find((n) => !used.has(n) && n.key !== undefined && n.key === k)
+        const bucket = byKey.get(childData[store.key])
+        node = bucket && bucket.find((n) => !used.has(n))
       }
       if (node && !used.has(node)) {
         used.add(node)
