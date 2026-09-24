@@ -538,9 +538,9 @@ function buildPath(x1: number, y1: number, x2: number, y2: number, orient: 'h' |
   return `M ${round(x1)} ${round(y1)} C ${round(x1)} ${round(y1 + g * s)}, ${round(x2)} ${round(y2 - g * s)}, ${round(x2)} ${round(y2)}`
 }
 
-/** 收起残枝：与 CSS 模式的 stub 同形（垂直向下 20、水平侧向 10、OKR 根左侧 20） */
+/** 收起残枝：与 CSS 模式的 stub 同形（垂直向下 20、水平侧向 10；OKR 根的左侧指向线不走这里） */
 function stubPath(from: { x: number; y: number }, side: 'right' | 'left' | 'bottom'): string {
-  const len = side === 'bottom' ? 20 : side === 'right' ? 10 : 10
+  const len = side === 'bottom' ? 20 : 10
   const dx = side === 'right' ? len : side === 'left' ? -len : 0
   return `M ${round(from.x)} ${round(from.y)} l ${dx} ${side === 'bottom' ? len : 0}`
 }
