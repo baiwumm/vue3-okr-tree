@@ -90,6 +90,8 @@
 
 剩余待办：**G8 / G9**，都不是收口类的小活，建议排期而非塞进本批。另留一处未决不对称：`DEFAULT_PROPS` 仍是 react 导出、vue3 未导出（非缺陷，需要时再定）。
 
+**跨实现形状比对的门禁不在本仓，在姊妹仓**：`react-okr-tree/packages/react-okr-tree/tests/visual/cross-impl.spec.ts`（DOM 结构 + 内联样式，10 个模式）与 `cross-impl-svg.spec.ts`（`connector="svg"` 的 path `d`，5 个模式）拿本包 `pnpm build` 后在真实 Chromium 里捕获的 outerHTML / `d` 列表当夹具，比对的对手是 react 侧现算的结果，两套仓的 CI 互相看不到对方产物，夹具靠人工刷新（`pnpm gen:cross-impl`，需同机有两仓）。**因此它守不住本包单侧漂移**：本包改了 DOM 形状 / 状态类名 / svg 几何而没人刷新夹具时，两侧 CI 都照样全绿。所以本包这类改动的收尾步骤里要加一条——回 react 仓跑一次 `pnpm gen:cross-impl` 再看门禁，红了先判断哪边是对的，别直接刷新基线。
+
 ## 7. 本文用到的实跑命令
 
 ```bash
