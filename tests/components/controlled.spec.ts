@@ -39,6 +39,54 @@ describe('v-model:expanded-keys（受控展开）', () => {
     expect(wrapper.emitted('node-expand')).toHaveLength(1)
   })
 
+  /**
+   * 锁定态（requirements 第 5 节点名的「传值但不传回调」写法）实测行为：**不冻结视图**。
+   * 展开态的渲染源是 store，受控 prop 只在创建期与宿主传入值变化时回灌，宿主不回写就没有
+   * 第二次同步 —— 点击照常折叠，emit 照发。react 侧同批把三种写法（只绑 prop / 绑了不回写
+   * 的监听 / 真受控写回）逐字测过，折叠结果与此一致，所以这不是复刻偏差而是两仓共同语义。
+   * 这两条钉住现状：不报错、不警告、监听器照常收到新值、视图跟着交互走；哪天要改成
+   * 「不回写即冻结」，这里会红，届时无需动代码先拍语义。
+   */
+  it('锁定态：传 expandedKeys 而不接 update 时不警告，点击照常生效', async () => {
+    /**
+     * 必须自己清一次去重表：`warn()` 默认按文案去重、且是**模块级**的，本文件前面的用例
+     * 已经把「expanded-keys（v-model）需要同时设置 node-key」那条发掉了，不清表的话
+     * `not.toHaveBeenCalled()` 是白断的（实测把 node-key 守卫改成无条件警告，这条照样绿）。
+     */
+    resetWarnings()
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const wrapper = mount(VueOkrTree, {
+      props: { data: makeData(), nodeKey: 'id', showCollapsable: true, expandedKeys: [1] },
+    })
+    const vm = wrapper.vm as any
+    expect(vm.getNode(1).expanded).toBe(true)
+    await nodeByLabel(wrapper, 'A').find('.org-chart-node-btn').trigger('click')
+    expect(vm.getNode(1).expanded, '宿主没回写，视图仍按 store 走').toBe(false)
+    expect(warnSpy, '锁定态是合法配置，不该警告').not.toHaveBeenCalled()
+    warnSpy.mockRestore()
+  })
+
+  it('锁定态：绑了不回写的 update 监听时，监听收到新值而视图不被拉回', async () => {
+    const onUpdate = vi.fn()
+    const Host = defineComponent({
+      render() {
+        return h(VueOkrTree, {
+          data: makeData(),
+          nodeKey: 'id',
+          showCollapsable: true,
+          expandedKeys: [1],
+          'onUpdate:expandedKeys': onUpdate,
+        })
+      },
+    })
+    const wrapper = mount(Host)
+    const tree = wrapper.findComponent(VueOkrTree).vm as any
+    await nodeByLabel(wrapper, 'A').find('.org-chart-node-btn').trigger('click')
+    expect(onUpdate).toHaveBeenCalledTimes(1)
+    expect([...(onUpdate.mock.calls[0][0] as TreeKey[])], '收起 A 之后新值就是空列表').toEqual([])
+    expect(tree.getNode(1).expanded, 'prop 恒为 [1]，但没人回灌就不该被拉回').toBe(false)
+  })
+
   it('父组件更新 expandedKeys 后同步展开态（双向）', async () => {
     const Parent = defineComponent({
       setup() {
