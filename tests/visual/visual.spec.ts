@@ -200,4 +200,62 @@ test.describe('1.4.0 新能力', () => {
     expect(await shadow()).toBe('none')
     expect(await height()).toBe(h0)
   })
+
+  /**
+   * 与姊妹包 react-okr-tree 同批同形（其 G13 里不依赖像素的那一半）：焦点环此前只有
+   * 「类名 + 人眼看图」，一条断言都没有。
+   *
+   * **环不在焦点元素自己身上**：`style.css` 把 `.org-chart-node:focus` 清成
+   * `outline: none`，真正的环挂在
+   * `.org-chart-node:focus-visible > .org-chart-node-label > .org-chart-node-label-inner`
+   * 上（react 侧探针实测：读焦点元素本身得到 `outlineStyle: 'none'`，照「聚焦元素有
+   * outline」写会当场得到一条假红）。所以这里量的是**被聚焦那个节点的卡片本体**。
+   */
+  test('键盘 Tab 走到节点时，卡片上有可见焦点环；焦点离开后收掉', async ({ page }) => {
+    await page.goto('/')
+    await settle(page, 'demo-1')
+
+    /** 只有焦点确实落在树节点上时才返回读数，否则 null——「走到节点」与「有环」分开判 */
+    const readRing = () =>
+      page.evaluate(() => {
+        const el = document.activeElement as HTMLElement | null
+        if (!el?.classList?.contains('org-chart-node')) return null
+        const inner = el.querySelector<HTMLElement>(
+          ':scope > .org-chart-node-label > .org-chart-node-label-inner'
+        )!
+        const s = getComputedStyle(inner)
+        return {
+          focusVisible: el.matches(':focus-visible'),
+          cardOutline: s.outlineStyle,
+          cardOutlineWidth: s.outlineWidth,
+          cardOutlineColor: s.outlineColor,
+          /** 焦点元素自己被那条 `:focus { outline: none }` 清掉——现状记录，别当笔误改回去 */
+          nodeOutline: getComputedStyle(el).outlineStyle,
+        }
+      })
+
+    let ring: Awaited<ReturnType<typeof readRing>> = null
+    for (let i = 0; i < 80 && !ring; i++) {
+      await page.keyboard.press('Tab')
+      ring = await readRing()
+    }
+    // 可达性本身先断住：Tab 走不到节点时上面的循环会安静地跑完，环的判据就成了空断
+    expect(ring, 'Tab 80 次仍未走到任何 .org-chart-node，说明键盘可达性变了').not.toBeNull()
+    expect(ring!.focusVisible).toBe(true)
+    expect(ring!.cardOutline).toBe('solid')
+    expect(ring!.cardOutlineWidth).toBe('2px')
+    expect(ring!.cardOutlineColor).not.toBe('rgba(0, 0, 0, 0)')
+    expect(ring!.nodeOutline).toBe('none')
+
+    // 环只在 :focus-visible 期间存在：拿住这张卡片的句柄，Tab 走焦点后它必须是 none，
+    // 否则「有环」根本不是判据（常驻环同样能通过上面四条）。
+    const card = await page.evaluateHandle(() => {
+      const el = document.activeElement as HTMLElement
+      return el.querySelector(':scope > .org-chart-node-label > .org-chart-node-label-inner')
+    })
+    await page.keyboard.press('Tab')
+    await expect
+      .poll(() => card.evaluate((node) => getComputedStyle(node as HTMLElement).outlineStyle))
+      .toBe('none')
+  })
 })
