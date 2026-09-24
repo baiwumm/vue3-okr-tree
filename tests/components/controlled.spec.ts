@@ -87,6 +87,109 @@ describe('v-model:expanded-keys（受控展开）', () => {
     expect(tree.getNode(1).expanded, 'prop 恒为 [1]，但没人回灌就不该被拉回').toBe(false)
   })
 
+  /**
+   * 锁定态的**第二种强度**（react 文档站 `guide/controlled.mdx:91-93` 的说法，两仓实测逐字一致）：
+   * `expandedKeys` 传「每次渲染新建的数组字面量」＝完全锁定，传「引用稳定的数组」＝交互结果保留
+   * 到 prop 真的变化为止。机制上就是 `props.expandedKeys` 那条 watch 的触发条件——引用变了、
+   * 或（`deep: true`）内容变了，才会把 store 按 prop 回灌一次。
+   *
+   * **前提是宿主那份 `data` 也必须是稳定引用**：第一批探针里宿主重渲染时 `data` 同时换了引用，
+   * 走的是 `props.data` 那条 watch ⇒ 整树重建 ⇒ 两条路径混在一起分不出来（两个分支的观测结果
+   * 逐字相同，正是被整树重建主导的那种「相同」）。这里 `data` 在外层一次创建、闭包捕获。
+   */
+  const lockHost = (keysOf: () => TreeKey[]) => {
+    const data = makeData()
+    const tick = ref(0)
+    const Host = defineComponent({
+      render() {
+        // tick 必须被渲染出去，宿主才真的会重渲染；keysOf() 每次调用都现场决定引用
+        return h('div', [
+          h('span', String(tick.value)),
+          h(VueOkrTree, { data, nodeKey: 'id', showCollapsable: true, expandedKeys: keysOf() }),
+        ])
+      },
+    })
+    return { Host, tick }
+  }
+
+  it('锁定态·内联字面量：宿主一重渲染就把交互结果拉回（＝完全锁定）', async () => {
+    const { Host, tick } = lockHost(() => [1])
+    const wrapper = mount(Host)
+    const tree = wrapper.findComponent(VueOkrTree).vm as VueOkrTreeInstance
+    expect(tree.getNode(1)!.expanded).toBe(true)
+
+    await nodeByLabel(wrapper, 'A').find('.org-chart-node-btn').trigger('click')
+    expect(tree.getNode(1)!.expanded, '交互本身照常生效').toBe(false)
+
+    tick.value += 1
+    await nextTick()
+    expect(tree.getNode(1)!.expanded, '引用变了 ⇒ 按 prop 回灌，折叠被拉回').toBe(true)
+    // 拉回不是一次性的：还能再收，收完再渲染又回来
+    await nodeByLabel(wrapper, 'A').find('.org-chart-node-btn').trigger('click')
+    expect(tree.getNode(1)!.expanded).toBe(false)
+  })
+
+  it('锁定态·引用稳定的数组：不回灌到 prop 真的换引用为止（原地改不算）', async () => {
+    let keys: TreeKey[] = [1]
+    const { Host, tick } = lockHost(() => keys)
+    const wrapper = mount(Host)
+    const tree = wrapper.findComponent(VueOkrTree).vm as VueOkrTreeInstance
+
+    await nodeByLabel(wrapper, 'A').find('.org-chart-node-btn').trigger('click')
+    expect(tree.getNode(1)!.expanded).toBe(false)
+
+    tick.value += 1
+    await nextTick()
+    expect(tree.getNode(1)!.expanded, '引用与内容都没变 ⇒ watcher 不触发，折叠结果保留').toBe(false)
+
+    /**
+     * 原地 push 也不回灌：这条不是想当然，是实测——watcher 确实带 `deep: true`，但深遍历
+     * 要能挂上依赖，源得先是响应式的。宿主传进来的就是一份普通数组（没经 `ref` /
+     * `reactive`），Vue 没有任何东西可通知，`deep` 便无事可做。
+     * 换句话说「引用稳定 = 保留到 prop 真的变化」里的“变化”，实际等价于**换引用**
+     * （或由 `ref` 包着的数组改内容）。
+     */
+    keys.push(2)
+    await nextTick()
+    expect(tree.getNode(2)!.expanded, '非响应式数组的原地变更不会回灌').toBe(false)
+    expect(tree.getNode(1)!.expanded).toBe(false)
+
+    keys = [1, 2]
+    tick.value += 1
+    await nextTick()
+    expect(tree.getNode(1)!.expanded, '换引用 ⇒ 按新 prop 回灌，根节点重新展开').toBe(true)
+    expect(tree.getNode(2)!.expanded).toBe(true)
+  })
+
+  /**
+   * 上一条的对照面：数组换成 `ref` 包着的（即响应式的），原地改内容**就**算变化——
+   * `watch(() => props.expandedKeys, …, { deep: true })` 的深遍历要挂得上依赖，源得先是
+   * 响应式的。两条一起才说清「保留到 prop 真的变化为止」里“变化”到底是什么。
+   */
+  it('锁定态·响应式数组：原地 push 即变化，deep 那条 watch 会回灌', async () => {
+    const keys = ref<TreeKey[]>([1])
+    const { Host, tick } = lockHost(() => keys.value)
+    const wrapper = mount(Host)
+    const tree = wrapper.findComponent(VueOkrTree).vm as VueOkrTreeInstance
+
+    await nodeByLabel(wrapper, 'A').find('.org-chart-node-btn').trigger('click')
+    expect(tree.getNode(1)!.expanded).toBe(false)
+
+    keys.value.push(2)
+    await nextTick()
+    expect(
+      tree.getNode(1)!.expanded,
+      '响应式数组的原地变更被 deep watcher 收到 ⇒ 按 prop 回灌'
+    ).toBe(true)
+    expect(tree.getNode(2)!.expanded).toBe(true)
+
+    // 引用与内容都没动的那次重渲染，仍然不该打扰交互结果
+    await nodeByLabel(wrapper, 'B').find('.org-chart-node-btn').trigger('click')
+    tick.value += 1
+    await nextTick()
+    expect(tree.getNode(2)!.expanded, '这次没人改 prop，B 的折叠结果保留').toBe(false)
+  })
+
   it('父组件更新 expandedKeys 后同步展开态（双向）', async () => {
     const Parent = defineComponent({
       setup() {
