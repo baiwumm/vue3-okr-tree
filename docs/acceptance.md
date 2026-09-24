@@ -97,6 +97,8 @@
 
 **拖拽悬停的渲染判据（react 侧 G9 的对称面）**：新增 `tests/components/local-update.spec.ts`，按事件顺序断「被写了 class 的元素」恰好是撤下与挂上那两个 label —— dragstart 0 处、首次悬停 1 处、同节点同分区重复 dragover 0 处、换目标 2 处、同节点换分区 1 处、dragEnter 0 处、dragend 1 处，五条变异各打红一次（驱动 `_scratch/probe-drag-mutation-vue3.mjs`）。**判据落点与 react 不同是机制决定的**：react 每节点订阅自己的版本号、断「谁被 bump」，本包的拖拽指示是 `OkrTree.vue` provide 下来的 `shallowRef`，18 个节点的 `labelWrapperClass` 都读它——实测一次换目标全员重新求值，只有值真变了的 2 个元素被写入 DOM（计数探针 `_scratch/probe-recompute-count.mjs`）。因此本包钉的是**DOM 写入落点**这条可观察契约；要把求值也收敛成局部得改 provide 形状（每节点一个指示 ref），属实现面改动，本轮不动，只补断言。另记一条 jsdom 陷阱：`MutationObserver` 回调按微任务派发，`await nextTick()` 后直接 `takeRecords()` 会随机拿到空数组，第一版探针因此把整棵树的写入读成 0 条，差点写成一条永真的假门禁。
 
+**OKR 根卡片的水平坐标不变量（react 侧 G14 的对称面）**：`tests/visual/visual.spec.ts` 新增一条非像素的几何断言 —— 根卡片相对 `.org-chart-container` 的水平偏移在「收起右子树 → 展开 → 收起左子树 → 展开」四次读取上一字不动，每步同时断 `is-hidden` 的确切出现与消失。视觉套件因此 18 → **19** 条，**png 一张没加**（仍是 28 张，本条只读坐标不截图）。射程实测过、别夸大：`flex:1 1 0` → `0 0 auto`、根节点 `width:100%` → `auto` 这两条静态形状变异本条与两张 OKR 基线都抓不住，是 `group-align.spec.ts` 把它们打红的；本条独有的是「收起把子树从布局里拿走」（补一条 `.is-hidden{display:none}` 即红）。变异改的是 `playground/dist` 里的产物 CSS，跑完逐字还原。
+
 **G10 · 锁定态的第二种强度还没验出来（本批留下的待办）**：`controlled.spec.ts` 新增的锁定态用例已确认「只传 `expanded-keys`、不接 `update:expanded-keys`」**不冻结视图** —— 渲染源是 store，prop 只在创建期与宿主传入值变化时回灌，宿主不回写就没有第二次同步，点击照常折叠（react 侧同样三种写法逐字测过，结论一致，所以不是复刻偏差）。但 react 文档站 `guide/controlled.mdx:91-93` 另有一档说法：「`expandedKeys` 写成每次渲染新建的数组字面量 → 完全锁定；引用稳定的数组 → 交互结果保留到 prop 真的变化为止」。**这一档本批没验成**：探针里宿主重渲染时 `data={makeData()}` 同时也换了引用，触发整树重建，两条路径混在一起分不出来（两个分支的观测结果逐字相同，正是被整树重建主导的那种「相同」）。要证它，得先给宿主一份引用稳定的 `data`，再对比「内联字面量」与 `useMemo` 一份数组两种写法在宿主重渲染后的展开态。本包文档没有这条表述，所以 G10 只是「未验」，不是「文档与实现不符」；也**没有**因此改任何文档措辞。
 
 ## 7. 本文用到的实跑命令
