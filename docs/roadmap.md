@@ -7,23 +7,27 @@
 
 ## 进度总览
 
-| 版本   | 主题                                                                              | 状态            |
-| ------ | --------------------------------------------------------------------------------- | --------------- |
-| 1.0.0  | Vue 3 完整复刻 + 6 项原版缺陷修复                                                 | ✅ 已发布到仓库 |
-| 1.1.0  | CSS 变量主题化 + 六套内置主题                                                     | ✅              |
-| 1.2.0  | 受控状态、扩展方法、插槽、开发期警告、CI                                          | ✅              |
-| 1.3.0  | OkrTreeGroup 根对齐、键盘可访问性、node-component、类型化                         | ✅              |
-| 1.4.0  | 懒加载 + 画布组件                                                                 | ✅              |
-| 1.5.0  | 文档站 + 发布流程                                                                 | ✅ 发布待维护者 |
-| 1.6.0  | 健壮性与运行时行为补齐                                                            | ✅              |
-| 1.7.0  | 2.x #13 低风险档 + Logo 接入 + 单测 CI 与本地视觉回归转绿                         | ✅ 发布待维护者 |
-| 1.8.0  | 2.x #13 交互档（accordion / expand-on-click-node）+ SSR 冒烟 + peer 收紧 vue≥3.3  | ✅ 发布待维护者 |
-| 1.9.0  | 2.x #14 复选框选择模式（联动/半选/strictly/事件/方法/OKR 语义）                   | ✅ 发布待维护者 |
-| 1.10.0 | 2.x #10 拖拽调整层级（draggable / allow 钩子 / 6 事件 / moveNode / OKR 跨树规则） | ✅ 发布待维护者 |
-| 1.11.0 | 2.x #11 SVG 连接线（connector 双模式 / 三形状 / OKR 左树镜像）                    | ✅ 发布待维护者 |
-| 1.12.0 | 2.x #13 查询方法（getVisibleNodes / getNodePath）+ 打印样式 + node-key 策略文档化 | ✅ 发布待维护者 |
-| 1.13.0 | 2.x #13 `unstyled` prop（去卡片外观、保留布局与连接线）                           | ✅ 发布待维护者 |
-| 2.x    | 更多布局、虚拟滚动（复选框 1.9.0、拖拽 1.10.0、SVG 1.11.0 已完成）                | ⬜ 视需求       |
+| 版本   | 主题                                                                              | 状态      |
+| ------ | --------------------------------------------------------------------------------- | --------- |
+| 1.0.0  | Vue 3 完整复刻 + 6 项原版缺陷修复                                                 | ✅ 已完成 |
+| 1.1.0  | CSS 变量主题化 + 六套内置主题                                                     | ✅        |
+| 1.2.0  | 受控状态、扩展方法、插槽、开发期警告、CI                                          | ✅        |
+| 1.3.0  | OkrTreeGroup 根对齐、键盘可访问性、node-component、类型化                         | ✅        |
+| 1.4.0  | 懒加载 + 画布组件                                                                 | ✅        |
+| 1.5.0  | 文档站 + 发布流程                                                                 | ✅ 已完成 |
+| 1.6.0  | 健壮性与运行时行为补齐                                                            | ✅        |
+| 1.7.0  | 2.x #13 低风险档 + Logo 接入 + 单测 CI 与本地视觉回归转绿                         | ✅ 已完成 |
+| 1.8.0  | 2.x #13 交互档（accordion / expand-on-click-node）+ SSR 冒烟 + peer 收紧 vue≥3.3  | ✅ 已完成 |
+| 1.9.0  | 2.x #14 复选框选择模式（联动/半选/strictly/事件/方法/OKR 语义）                   | ✅ 已完成 |
+| 1.10.0 | 2.x #10 拖拽调整层级（draggable / allow 钩子 / 6 事件 / moveNode / OKR 跨树规则） | ✅ 已完成 |
+| 1.11.0 | 2.x #11 SVG 连接线（connector 双模式 / 三形状 / OKR 左树镜像）                    | ✅ 已完成 |
+| 1.12.0 | 2.x #13 查询方法（getVisibleNodes / getNodePath）+ 打印样式 + node-key 策略文档化 | ✅ 已完成 |
+| 1.13.0 | 2.x #13 `unstyled` prop（去卡片外观、保留布局与连接线）                           | ✅ 已发布 |
+| 1.14.0 | `BUILT_IN_THEMES` 导出补齐 + 发布链路收口（CI 经 OIDC 首次真实发包）              | ✅ 已发布 |
+| 1.14.1 | 7 缺陷修复 + 3 项性能收敛 + 门禁补强（对外 API 零变化）                           | ✅ 已发布 |
+| 2.x    | 更多布局、虚拟滚动（复选框 1.9.0、拖拽 1.10.0、SVG 1.11.0 已完成）                | ⬜ 视需求 |
+
+> npm 首个线上版本是 **1.13.0**（2026-09-21）：1.0.0–1.12.0 未单独发版，内容随 1.13.0 一次上线；1.14.0 起由 CI 经 Trusted Publishing（OIDC）自动发包，操作见 [release-guide.md](./release-guide.md)。
 
 ---
 
@@ -72,13 +76,13 @@
 - [x] `package.json` 核对：`repository` / `homepage` / `bugs` / `author` / `keywords`；`publishConfig.access: public`
 - [x] 首次 `npm publish`：2026-09-21 手动发 **1.13.0**（registry 时间 `06:29:10Z`），react-okr-tree 同日同号首发
 - [x] 发布后三路径验证：`import('vue3-okr-tree')` 与 `require()` 实测均通过（exports 齐全）；unpkg 上 `dist/vue3-okr-tree.es.js` 与 `dist/style.css` 均 200。`pnpm add vue3-okr-tree` 实测**只自动装必选 peer `vue`，可选 peer `html-to-image` 不装**（`auto-install-peers` 默认跳过 `optional: true`），导出图能力需用户自行安装
-- [x] ~~创建 Granular Token + 配 `NPM_TOKEN`~~ → **作废**：2026-09-21 发布链路改走 Trusted Publishing（OIDC 免 token），且两个包的包级 Publishing access 已设为「Require 2FA and disallow bypass 2fa tokens」，绕过 2FA 的 granular token 已发不了包。见 `docs/release-guide.md` 第四节
+- [x] ~~创建 Granular Token + 配 `NPM_TOKEN`~~ → **作废**：2026-09-21 发布链路改走 Trusted Publishing（OIDC 免 token），且两个包的包级 Publishing access 已设为「Require 2FA and disallow bypass 2fa tokens」，绕过 2FA 的 granular token 已发不了包。见 `docs/release-guide.md`「发布机制」
 - [x] `release.yml` 加「registry 已存在该版本则跳过 publish」守卫：手动发过的版本再推 tag 不再 EPUBLISHCONFLICT 直接红，而是跳过发布、继续建 GitHub Release
 - [x] npm 包页面关联 GitHub 仓库；Trusted Publisher 已登记 `baiwumm/vue3-okr-tree` + `release.yml`（react-okr-tree 同）。Permissions 含 `npm publish` 与 `npm stage publish`，**Environment 留空**（publish job 未声明 `environment:`，填了会因 OIDC claim 不匹配被拒）
 - [x] 推 `v1.13.0` tag 让 workflow 自己建 GitHub Release（2026-09-21 完成）：run `35579119550` success，守卫命中 → publish 步 `skipped` → `gh release create` 建出 v1.13.0；registry 仍是 1.13.0 且 `attestations: none`，即这次演练没有改动发布物。react-okr-tree 同改动同结果（run `35579145408`）
-- [x] **OIDC 端到端验证（2026-09-22 完成）**：本包 **1.14.0** 由 CI 经 Trusted Publishing 真实发布（run `35708582755`，`+ vue3-okr-tree@1.14.0`，provenance 入 sigstore `logIndex=2908846083`，`gh secret list` 为空即无 token 参与）；react-okr-tree 同号跟随（run `35711304130`）。原「不为验证单独烧版本号」的决策由这个有真实内容的 minor 版本顺带完成了验证。判据与排错入口见 `docs/release-guide.md` 第四、五、七节
+- [x] **OIDC 端到端验证（2026-09-22 完成）**：本包 **1.14.0** 由 CI 经 Trusted Publishing 真实发布（run `35708582755`，`+ vue3-okr-tree@1.14.0`，provenance 入 sigstore `logIndex=2908846083`，`gh secret list` 为空即无 token 参与）；react-okr-tree 同号跟随（run `35711304130`）。原「不为验证单独烧版本号」的决策由这个有真实内容的 minor 版本顺带完成了验证。判据与排错入口见 `docs/release-guide.md`「发布后验证」与「常见问题」
 - **验收**：npm 页面可见 1.x，安装后类型提示与样式正常。
-  > ✅ 2026-09-21 完成：1.13.0 已手动首发（1.7.0–1.13.0 此前均未发过 tag，故首个线上版本即 1.13.0；1.8.0 起新增 peer `vue>=3.3.0` 收紧，accordion / expand-on-click-node / 复选框 / 拖拽 / SVG 连接线 / 查询方法 / 打印样式 / unstyled 详见 CHANGELOG）。原计划的「GitHub 配置 NPM_TOKEN」一步已被 Trusted Publishing（OIDC）取代，**不再需要任何 secret**。剩余两个未勾项见上：推 `v1.13.0` tag 让 workflow 建 GitHub Release，以及 OIDC 端到端验证留给下一个功能版本。
+  > ✅ 2026-09-21 完成：1.13.0 已手动首发（1.7.0–1.13.0 此前均未发过 tag，故首个线上版本即 1.13.0；1.8.0 起新增 peer `vue>=3.3.0` 收紧，accordion / expand-on-click-node / 复选框 / 拖拽 / SVG 连接线 / 查询方法 / 打印样式 / unstyled 详见 CHANGELOG）。原计划的「GitHub 配置 NPM_TOKEN」一步已被 Trusted Publishing（OIDC）取代，**不再需要任何 secret**。上列「推 `v1.13.0` tag 补建 GitHub Release」与「OIDC 端到端验证」两条也均已收口（分别于 2026-09-21 / 2026-09-22 完成，见上两条勾选项）。
 
 ### 5. 视觉回归测试（M）
 
@@ -138,10 +142,10 @@
 
 ## 2.x — 大功能（视需求排期）
 
-> **进度停点（2026-09-19 收工）**：2.x 已完成 #13 低风险档（1.7.0）→ #13 交互档 + #16 SSR/peer（1.8.0）→ #14 复选框（1.9.0）→ #10 拖拽（1.10.0）→ #11 SVG 连接线（1.11.0）→ #13 查询方法与打印样式（1.12.0）→ #13 unstyled（1.13.0）。全量冒烟已跑通：单测 226 通过、覆盖率 stmts 90.7%、build/verify:dist/size/verify:package 全绿，24 个 Demo 用例浏览器交互零控制台报错，Visual 17 项全绿；`origin/main` 已同步，CI 全绿。仍未打 tag——npm 解封前推 tag 会让 release workflow 直接失败。
-> **下一步顺序**：① #16 剩余的 Vue Devtools 插件（双语 README 已决定不做，见文末）→ ② **等 09-21 发布完成** → ③ #12 更多布局（M–L）→ ④ #15 虚拟滚动先做半天预研 spike（伪元素连接线与虚拟化兼容性），再决定排期。#13 已于 1.13.0 全部完成。
+> **进度停点（2026-09-19 收工）**：2.x 已完成 #13 低风险档（1.7.0）→ #13 交互档 + #16 SSR/peer（1.8.0）→ #14 复选框（1.9.0）→ #10 拖拽（1.10.0）→ #11 SVG 连接线（1.11.0）→ #13 查询方法与打印样式（1.12.0）→ #13 unstyled（1.13.0）。全量冒烟已跑通：单测 226 通过、覆盖率 stmts 90.7%、build/verify:dist/size/verify:package 全绿，24 个 Demo 用例浏览器交互零控制台报错，Visual 17 项全绿；`origin/main` 已同步，CI 全绿（数字为 09-19 当时点，最新门禁见 `acceptance.md`）。~~仍未打 tag——npm 解封前推 tag 会让 release workflow 直接失败~~ → 该卡点（npm 账号冻结）已解除：`v1.13.0` 起均已打 tag 并由 release workflow 发布。
+> **下一步顺序**：① #16 剩余的 Vue Devtools 插件（双语 README 已决定不做，见文末）→ ② ~~等 09-21 发布完成~~（✅ 已完成，见 1.5.0 #4）→ ③ #12 更多布局（M–L）→ ④ #15 虚拟滚动先做半天预研 spike（伪元素连接线与虚拟化兼容性），再决定排期。#13 已于 1.13.0 全部完成。
 > **为什么把 #12 / #15 排在发布之后**：M–L 的功能改动会引入回归面，而首次发布本身就要观察「新包第一次上线」这一件事。两件事叠在一起时，出问题无法归因。发布窗口内只接受零运行时风险的文档类改动。
-> 发布侧：npm 账号 **2026-09-21 14:22（北京时间）** 解封，当天重跑门禁后手动首版 + 配 `NPM_TOKEN`，见 1.5.0 #4 的 ⏸ 注记。
+> 发布侧：已收口——1.13.0 于 2026-09-21 手动首发，1.14.0 起由 CI 经 Trusted Publishing（OIDC）全自动发包，全程无 token / Secrets（1.5.0 #4 里「配 `NPM_TOKEN`」一步已作废划掉）。操作手册见 `docs/release-guide.md`。
 
 ### 10. 拖拽调整层级（L）
 
