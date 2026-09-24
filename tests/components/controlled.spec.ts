@@ -244,6 +244,51 @@ describe('组件级开发期警告', () => {
     spy.mockRestore()
   })
 
+  /**
+   * 与 react 侧 G4 同批：另外三条各挂一次、每次先清 spy，断的是「这一支自己的条件」。
+   * 一条 pooled 断言会把它们全蒙过去——`current-key` 那条的文案本身就写着
+   * 「current-key / current-node-key」，只传 currentNodeKey 时靠子串也能命中，
+   * 摘掉 `|| props.currentNodeKey !== undefined` 也不会红。反向守卫同理：
+   * node-key 齐备时三条都不许出现，否则「无条件警告」的写法也能过关。
+   */
+  it('default-expanded-keys / default-checked-keys / currentNodeKey 缺 node-key 时各自警告', () => {
+    const spy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const warnedOf = (props: Record<string, unknown>): string[] => {
+      spy.mockClear()
+      /**
+       * 每次挂载前都要清 `warn` 的去重表：`warn(msg)` 默认 once，同一条文案在整个
+       * 模块里只出一次。不清的话最后那次「node-key 已补齐」的反向挂载根本不会再
+       * 产生消息，反向守卫就变成永真——实测把 `if (!props.nodeKey)` 改成无条件警告时，
+       * 这条守卫照样绿，红的是文件里另一条老用例。
+       */
+      resetWarnings()
+      mount(VueOkrTree, { props: { data: makeData(), ...props } })
+      return spy.mock.calls.map((c) => String(c[0]))
+    }
+    expect(
+      warnedOf({ defaultExpandedKeys: [1] }).some((m) => m.includes('default-expanded-keys')),
+      '只传 default-expanded-keys 时应警告它需要 node-key'
+    ).toBe(true)
+    expect(
+      warnedOf({ defaultCheckedKeys: [1] }).some((m) => m.includes('default-checked-keys')),
+      '只传 default-checked-keys 时应警告它需要 node-key'
+    ).toBe(true)
+    expect(
+      warnedOf({ currentNodeKey: 1 }).some((m) => m.includes('current-node-key')),
+      '只传 currentNodeKey（不传 currentKey）时也应警告'
+    ).toBe(true)
+    expect(
+      warnedOf({
+        nodeKey: 'id',
+        defaultExpandedKeys: [1],
+        defaultCheckedKeys: [1],
+        currentNodeKey: 1,
+      }).some((m) => m.includes('需要同时设置 node-key')),
+      '补齐 node-key 后这三条警告都不该出现'
+    ).toBe(false)
+    spy.mockRestore()
+  })
+
   it('配置正确时无警告', () => {
     const spy = vi.spyOn(console, 'warn').mockImplementation(() => {})
     mount(VueOkrTree, {
