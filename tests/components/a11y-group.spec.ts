@@ -259,9 +259,18 @@ describe('OkrTreeGroup', () => {
   it('测量组内左子树容器最大宽度并写入 --okr-group-left-width', async () => {
     // jsdom 无布局：按左容器内节点数模拟宽度
     const original = Element.prototype.getBoundingClientRect
+    /**
+     * 每次读宽度都记一笔「此刻组上有没有 is-measuring」。
+     * 这是这条用例的真正判据：加类与读 rect 之间必须落一次 DOM 更新，否则
+     * .is-measured 的钉宽还挂着的，读到的一直是分配宽度而不是 max-content 自然宽度
+     * （实测后果是首量之后宽度再也涨不上去）。同步块里加了又撤的话这里全是 false。
+     */
+    const measuringAtRead: boolean[] = []
     Element.prototype.getBoundingClientRect = function (this: Element) {
       const rect = original.call(this)
       if (this.classList.contains('org-chart-node-left-children')) {
+        const g = document.querySelector('.okr-tree-group')
+        measuringAtRead.push(!!g && g.classList.contains('is-measuring'))
         return { ...rect, width: this.querySelectorAll('.org-chart-node').length * 100 } as DOMRect
       }
       return rect
@@ -285,6 +294,11 @@ describe('OkrTreeGroup', () => {
       // 第二棵树左侧 2 个节点 → 200px
       expect(group.attributes('style')).toContain('--okr-group-left-width: 200px')
       expect(typeof (wrapper.vm.$refs.group as any).refresh).toBe('function')
+      // 前置自检 + 机制判据：读到 rect 的那一刻，测量态必须已经在 DOM 上
+      expect(measuringAtRead.length, '一次 rect 都没读到——探针没生效').toBeGreaterThan(0)
+      expect(measuringAtRead, '读 rect 时 is-measuring 不在 DOM 上（量到的是分配宽度）').toEqual(
+        measuringAtRead.map(() => true)
+      )
       wrapper.unmount()
     } finally {
       Element.prototype.getBoundingClientRect = original
