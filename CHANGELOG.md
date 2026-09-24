@@ -2,7 +2,9 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
-## Unreleased
+## 1.14.1（2026-09-24）
+
+对外 API 零变化的一批：修掉 7 个真实缺陷（组对齐宽度被首量钉死、`contains` 未递归左子树导致可成环、换绑 `data` 把整棵后代摘出注册表、`zoomIn` / `zoomOut` 锚点取错、平移后吞点击堆积监听、产物丢失三家打包器的 ignore 注释、`connector="svg"` 稳态自持重排），另有 3 项性能收敛、10 条门禁补强与两站文档对齐。姊妹包 react-okr-tree 同号跟随。
 
 ### 性能
 
