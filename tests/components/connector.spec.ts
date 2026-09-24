@@ -136,6 +136,34 @@ describe('展开 / 收起与过滤后的重绘', () => {
     await flushFrame()
     expect(paths(wrapper).length).toBe(3)
   })
+
+  it('稳态不自持重排：静置后不再产生任何测量', async () => {
+    const orig = Element.prototype.getBoundingClientRect
+    let calls = 0
+    const spy = vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: Element
+    ) {
+      calls += 1
+      return orig.call(this)
+    })
+    try {
+      const wrapper = mountSvg({ showCollapsable: true, defaultExpandedKeys: [1, 11] })
+      for (let i = 0; i < 4; i++) await flushFrame()
+      const settled = calls
+      for (let i = 0; i < 8; i++) await flushFrame()
+      // 无条件换 connectorEdges 引用会让「写 ref → 重渲染 → onUpdated 再排帧」闭成环，
+      // 每一帧都把全树重测一遍；短路后静置窗内应当一次测量都没有。
+      expect(calls - settled).toBe(0)
+      // 短路不能冻住覆盖层：几何真的变了仍要重绘（A→A1 实体边换成收起残枝）
+      const vm = wrapper.vm as VueOkrTreeInstance
+      expect(stubDs(wrapper).length).toBe(0)
+      vm.collapseNode(11)
+      await flushFrame()
+      expect(stubDs(wrapper).length).toBe(1)
+    } finally {
+      spy.mockRestore()
+    }
+  })
 })
 
 describe('OKR 模式左树', () => {

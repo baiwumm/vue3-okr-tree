@@ -545,11 +545,22 @@ function stubPath(from: { x: number; y: number }, side: 'right' | 'left' | 'bott
   return `M ${round(from.x)} ${round(from.y)} l ${dx} ${side === 'bottom' ? len : 0}`
 }
 
+/**
+ * 稳态短路：逐条 `d` 相同就保持原数组引用。
+ * 无条件换引用会让「写 ref → 重渲染 → onUpdated 再排一帧 → 再写」闭合成环，
+ * 空载页面也以每秒一帧的节奏重排全树（对齐 react 版的 sameEdges）。
+ */
+function commitConnectorEdges(next: { id: string; d: string }[]) {
+  const prev = connectorEdges.value
+  if (prev.length === next.length && prev.every((edge, i) => edge.d === next[i].d)) return
+  connectorEdges.value = next
+}
+
 function redrawConnectors() {
   if (props.connector !== 'svg') return
   const baseEl = orgChartRoot.value
   if (!baseEl) {
-    connectorEdges.value = []
+    commitConnectorEdges([])
     return
   }
   const base = baseEl.getBoundingClientRect()
@@ -612,7 +623,7 @@ function redrawConnectors() {
   }
   store.root.childNodes.forEach(walk)
   if (store.isLeftChilds) store.isLeftChilds.childNodes.forEach(walk)
-  connectorEdges.value = edges
+  commitConnectorEdges(edges)
 }
 
 /** 重绘调度：合并到 rAF；animate 开启时在过渡时长内连续重绘以贴合动画（避免残影） */
@@ -638,6 +649,16 @@ watch(
   () => requestRedraw(true)
 )
 
+/**
+ * 展开态变更的统一收口：同步受控 keys，并显式排一帧重绘 svg 连线。
+ * onUpdated 指望不上——节点的 expanded 由 OkrTreeNode 自己读，父组件不重渲染就不触发 onUpdated；
+ * 而 connectorEdges 换成稳态短路后，也没有「每帧自动重排」这条兜底了。
+ */
+function onExpansionChanged() {
+  syncExpandedKeys()
+  requestRedraw(true)
+}
+
 provide(OKR_TREE_INJECTION_KEY, {
   store,
   root,
@@ -649,7 +670,7 @@ provide(OKR_TREE_INJECTION_KEY, {
   get instance() {
     return instance?.proxy ?? null
   },
-  onExpandChange: syncExpandedKeys,
+  onExpandChange: onExpansionChanged,
   onCurrentChange: syncCurrentKey,
   registerNodeEl: (node, el) => {
     nodeEls.set(node, el)
@@ -958,14 +979,14 @@ function collapseAll() {
 /** 展开指定节点（key / data / Node），默认连同祖先一起展开 */
 function expandNode(data: TreeNode | TreeKey | TreeNodeData, expandParent = true) {
   const node = store.expandNode(data, expandParent)
-  if (node) syncExpandedKeys()
+  if (node) onExpansionChanged()
   return node
 }
 
 /** 收起指定节点（key / data / Node） */
 function collapseNode(data: TreeNode | TreeKey | TreeNodeData) {
   const node = store.collapseNode(data)
-  if (node) syncExpandedKeys()
+  if (node) onExpansionChanged()
   return node
 }
 
