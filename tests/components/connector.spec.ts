@@ -149,6 +149,13 @@ describe('展开 / 收起与过滤后的重绘', () => {
     try {
       const wrapper = mountSvg({ showCollapsable: true, defaultExpandedKeys: [1, 11] })
       for (let i = 0; i < 4; i++) await flushFrame()
+      /**
+       * 前置自检：探针必须真的在计数（实测此处为 10），否则下面的「增量为 0」会退化成
+       * 「探针从没响过」的假绿。姊妹包 react-okr-tree 的同名用例就踩过这条——那边的
+       * `vi.spyOn(Element.prototype, …)` 因 realm 不同而恒为 0（见该用例注释），
+       * 所以这条断言两边都留着才有意义：哪天 jsdom 换实现，这里会先响。
+       */
+      expect(calls, 'rect 一次都没被读到——探针挂错了地方').toBeGreaterThan(0)
       const settled = calls
       for (let i = 0; i < 8; i++) await flushFrame()
       // 无条件换 connectorEdges 引用会让「写 ref → 重渲染 → onUpdated 再排帧」闭成环，
