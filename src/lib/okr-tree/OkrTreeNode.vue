@@ -596,11 +596,12 @@ function handleNodeClick() {
 function handleCheckToggle() {
   if (!store.showCheckbox || node.value.disabled) return
   node.value.setChecked(!node.value.checked, !store.checkStrictly)
+  const state = store.collectCheckState()
   tree!.emit('check', node.value.data, {
-    checkedNodes: store.getCheckedNodes().map((n) => n.data),
-    checkedKeys: store.getCheckedKeys(),
-    halfCheckedNodes: store.getHalfCheckedNodes(),
-    halfCheckedKeys: store.getHalfCheckedKeys(),
+    checkedNodes: state.checkedNodes.map((n) => n.data),
+    checkedKeys: state.checkedKeys,
+    halfCheckedNodes: state.halfCheckedNodes,
+    halfCheckedKeys: state.halfCheckedKeys,
   })
 }
 

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { TreeStore } from '../../src/lib/okr-tree/model/tree-store'
 
 const makeData = () => [
@@ -294,5 +294,78 @@ describe('contains 与 moveNode 的自环守卫（OKR 左子树）', () => {
     const store = createOkrStore()
     expect(store.moveNode('R1', 'L1', 'inner')).toBe(true)
     expect(store.getNode('L1')!.childNodes.map((n) => n.key)).toContain('R1')
+  })
+})
+
+describe('collectCheckState（2.5：check 事件合并为一次遍历）', () => {
+  const createCheckedStore = () => {
+    const store = new TreeStore({
+      key: 'id',
+      data: [
+        {
+          id: 1,
+          label: 'R',
+          children: [
+            { id: 11, label: 'A' },
+            { id: 12, label: 'B' },
+          ],
+        },
+      ],
+      leftData: [
+        {
+          id: 100,
+          label: 'L',
+          children: [
+            { id: 101, label: 'LA' },
+            { id: 102, label: 'LB' },
+          ],
+        },
+      ],
+      onlyBothTree: true,
+      showCheckbox: true,
+    })
+    store.setCheckedKeys([11, 101])
+    // 再直接勾上一个非叶子父节点：夹具若只有叶子被勾，leafOnly 两侧会同时错，等价断言咬不住它
+    store.getNode(1)!.checked = true
+    return store
+  }
+
+  it('四份输出与四个公开 getter 逐字一致（含 leafOnly 与左右两树）', () => {
+    const store = createCheckedStore()
+    for (const leafOnly of [false, true]) {
+      const state = store.collectCheckState(leafOnly)
+      expect(state.checkedNodes.map((n) => n.id)).toEqual(
+        store.getCheckedNodes(leafOnly).map((n) => n.id)
+      )
+      expect(state.checkedKeys).toEqual(store.getCheckedKeys(leafOnly))
+      expect(state.halfCheckedNodes.map((n) => n.id)).toEqual(
+        store.getHalfCheckedNodes().map((n) => n.id)
+      )
+      expect(state.halfCheckedKeys).toEqual(store.getHalfCheckedKeys())
+    }
+    // 内容本身也要对得上，否则上面四条可能同时错在一处（sort 必须给比较器，默认按字符串排）
+    expect(store.collectCheckState().checkedKeys.sort((a, b) => Number(a) - Number(b))).toEqual([
+      1, 11, 101,
+    ])
+    // 1 既 checked 就不该再出现在半选里（getHalfCheckedNodes 的 !checked 条件）
+    expect(store.collectCheckState().halfCheckedKeys).toEqual([100])
+    // leafOnly=true 要把「直接勾上的非叶子 1」排除掉，只留两个叶子
+    expect(store.collectCheckState(true).checkedKeys.sort((a, b) => Number(a) - Number(b))).toEqual(
+      [11, 101]
+    )
+  })
+
+  it('一次收集只走一遍全树，而朴素四调法走四遍', () => {
+    const store = createCheckedStore()
+    const spy = vi.spyOn(store, 'forEachNode')
+    store.collectCheckState()
+    expect(spy).toHaveBeenCalledTimes(1)
+    spy.mockClear()
+    store.getCheckedNodes()
+    store.getCheckedKeys()
+    store.getHalfCheckedNodes()
+    store.getHalfCheckedKeys()
+    expect(spy).toHaveBeenCalledTimes(4)
+    spy.mockRestore()
   })
 })

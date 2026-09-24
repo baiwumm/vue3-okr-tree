@@ -503,6 +503,46 @@ export class TreeStore {
     return keys
   }
 
+  /**
+   * 一次遍历算齐 check 事件要的四份数据。
+   * 四个公开方法各自都要走一遍全树，而两个 key 版内部还会再调一次节点版 ⇒
+   * 朴素写法一次点击要遍历四遍。语义与四个方法逐字一致：key 仍按 String(key) 去重、
+   * 保持遍历顺序、跳过空 key；leafOnly 只作用于勾选列表（与 getHalfCheckedNodes 无此参数一致）。
+   */
+  collectCheckState(leafOnly = false): {
+    checkedNodes: TreeNode[]
+    checkedKeys: TreeKey[]
+    halfCheckedNodes: TreeNode[]
+    halfCheckedKeys: TreeKey[]
+  } {
+    const checkedNodes: TreeNode[] = []
+    const checkedKeys: TreeKey[] = []
+    const halfCheckedNodes: TreeNode[] = []
+    const halfCheckedKeys: TreeKey[] = []
+    const seenChecked = new Set<string>()
+    const seenHalf = new Set<string>()
+    const takeKey = (node: TreeNode, out: TreeKey[], seen: Set<string>) => {
+      const nodeKey = node.key
+      if (nodeKey === undefined || nodeKey === null) return
+      const sig = String(nodeKey)
+      if (seen.has(sig)) return
+      seen.add(sig)
+      out.push(nodeKey)
+    }
+    this.forEachNode((node) => {
+      if (node.checked) {
+        if (!leafOnly || node.isLeaf) {
+          checkedNodes.push(node)
+          if (this.key) takeKey(node, checkedKeys, seenChecked)
+        }
+      } else if (node.indeterminate) {
+        halfCheckedNodes.push(node)
+        if (this.key) takeKey(node, halfCheckedKeys, seenHalf)
+      }
+    })
+    return { checkedNodes, checkedKeys, halfCheckedNodes, halfCheckedKeys }
+  }
+
   /** 节点（Node / key / data）当前是否被勾选；未找到时为 false */
   isChecked(data: TreeNode | TreeKey | TreeNodeData): boolean {
     return this.getNode(data)?.checked ?? false
