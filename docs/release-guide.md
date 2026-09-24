@@ -1,8 +1,8 @@
 # 发布操作手册（release-guide）
 
 > vue3-okr-tree 首发与后续版本的完整操作步骤。写给维护者本人照着执行。
-> 当前状态（2026-09-24）：**1.13.0 与 1.14.0 均已上线**（1.13.0 于 2026-09-21 手动首发，registry 时间 `06:29:10Z`；1.14.0 由 CI 经 OIDC Trusted Publishing 真实发布——vue3 run `35708582755`、react-okr-tree run `35711304130`，provenance 已入 sigstore，`gh secret list` 为空即无 token 参与）。1.6.0–1.12.0 从未单独发布，首个线上版本是 1.13.0。
-> 下一版 **1.14.1** 按第七节的 tag 触发流程发布（patch：对外 API 零变化，内容是发布前收口的 7 个缺陷修复、3 项性能收敛与一批门禁补强）。发包前请以
+> 当前状态（2026-09-24）：**1.13.0 / 1.14.0 / 1.14.1 均已上线**。1.13.0 于 2026-09-21 手动首发（registry 时间 `06:29:10Z`）；1.14.0 与 1.14.1 均由 CI 经 OIDC Trusted Publishing 真实发布——1.14.0 是 vue3 run `35708582755` / react run `35711304130`，1.14.1 是 vue3 run `36011667878`（provenance logIndex `2939652824`）/ react run `36011695748`（logIndex `2939668829`），`gh secret list` 始终为空即无 token 参与。1.6.0–1.12.0 从未单独发布，首个线上版本是 1.13.0。
+> 下一版按第七节的 tag 触发流程发布即可（版本规则：新功能 +1 minor，修复 +1 patch）。发包前请以
 > `node -p "require('./package.json').version"` 复核版本号，不要照抄本文任何版本号。
 
 ---
@@ -145,7 +145,7 @@ curl -s "https://registry.npmjs.org/-/npm/v1/attestations/vue3-okr-tree@<ver>" |
 | publish 步骤被跳过                | 守卫用 `npm view <name>@<version>` 查到 registry 上已有该版本号（手动首发过、或重复推同一个 tag）。属预期，`gh release create` 仍会继续把 GitHub Release 建出来 |
 | publish 步骤报 `EPUBLISHCONFLICT` | 守卫没兜住——通常是 `npm view` 那次请求被 registry 抖动判成「未发布」，于是仍尝试发布。把版本号提新再 tag                                                        |
 | publish 步骤 401/403              | Trusted Publisher 未登记，或仓库 / workflow 文件名与实际触发的不一致；npm < 11.5.1 也会在 OIDC 处失败                                                           |
-| tag 校验失败                      | git tag 与 package.json version 不一致，改对后再 tag                                                                                                            |
+| tag 校验失败                      | git tag 与 package.json version 不一致，改对后再 tag                                                                                                            |     | **run 已 success、`npm i <pkg>@<ver>` 却报 `notarget`** | 两层不同的延迟别混成一件：① registry 传播（实测约 1 分钟内 `dist-tags.latest` 才翻，attestations 端点也短暂 404）；② **本地 npm 缓存里那份 packument**——传播都过去了本地仍可能拿旧清单，于是回一句"该版本不存在"。区分办法是绕开缓存直读：`curl -s https://registry.npmjs.org/<pkg>` 看 `versions.<ver>` 与 `dist-tags`；直连有、本地无 ⇒ 加 `--prefer-online` 重装即可（1.14.1 发布时实测：直连已是 1.14.1，本地 `npm i` 仍 `notarget`）。 |
 
 ---
 
@@ -161,3 +161,4 @@ curl -s "https://registry.npmjs.org/-/npm/v1/attestations/vue3-okr-tree@<ver>" |
 - [x] 发布后验证（2026-09-21 实测）：`import()` 与 `require()` 均通过（`VueOkrTree` / `OkrTree` 等导出齐全）；unpkg 上 `dist/vue3-okr-tree.es.js` 与 `dist/style.css` 均 200。`pnpm add vue3-okr-tree` **只自动装必选 peer `vue`，可选 peer `html-to-image` 不装**（`auto-install-peers` 默认跳过 `optional: true`），导出图片能力需用户自行安装
 - [x] 推 `v1.13.0` tag 让 workflow 建 GitHub Release（2026-09-21 实测通过）。原先「手动发过的版本不要再打 tag」的禁令已随守卫解除：`git tag v1.13.0 <含守卫的提交> && git push origin v1.13.0` → run `35579119550` 全绿，守卫命中把 publish 步标成 `skipped`，`gh release create` 照常建出 v1.13.0；registry 侧版本号与 `attestations: none` 均未变动。react-okr-tree 同改动同结果（run `35579145408`）。注意别改用 `gh release create v1.13.0` 手动建——tag 不存在时它会自己创建并推送 tag、再触发一次 workflow，等于两边各来一遍
 - [x] **OIDC 端到端验证（2026-09-22 完成）**：两包 **1.14.0** 均由 CI 经 Trusted Publishing 真实发包。vue3 run `35708582755`（publish 步 success → `+ vue3-okr-tree@1.14.0`，provenance 入 sigstore `logIndex=2908846083`）；react-okr-tree run `35711304130`（`+ react-okr-tree@1.14.0`，`logIndex=2908890080`）。两端 `gh secret list` 均为空，证明确实没有 token 参与。判据见第七节
+- [x] **1.14.1 发布（2026-09-24 完成）**：两包同号由 CI 经 OIDC 发布。vue3 run `36011667878`（publish success → `+ vue3-okr-tree@1.14.1`，provenance logIndex `2939652824`）、react-okr-tree run `36011695748`（logIndex `2939668829`）；GitHub Release 两边均已建、正文取到 CHANGELOG 的 `## 1.14.1（2026-09-24）` 段。发布前把四条 workflow 的 action 从仍在 node20 的 v4 升到 v5（upload-artifact v6），实测 CI 日志里的 Node 20 弃用警告由 5 行降到 0 行、Visual 由 1 行降到 0 行。

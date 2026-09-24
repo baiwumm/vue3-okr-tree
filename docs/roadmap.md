@@ -207,21 +207,23 @@
 
 ## 完成记录
 
-| 日期       | 版本   | 内容                                                                                                                                                           | Commit              |
-| ---------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
-| 2026-09-17 | 1.0.0  | 原版复刻、Q1–Q9 修复、Demo 20 用例、dist 三格式 + d.ts                                                                                                         | `803ce65`           |
-| 2026-09-17 | 1.1.0  | CSS 变量化（23 个变量）、`theme` prop、六套主题、Demo 主题切换器                                                                                               | `ea1df51`           |
-| 2026-09-17 | 1.2.0  | `v-model:expanded-keys/current-key`、expandAll 等 5 方法、`#expand-btn`/`#empty`、开发期警告、CI、CHANGELOG                                                    | `4874895`           |
-| 2026-09-17 | 1.3.0  | `OkrTreeGroup`、WAI-ARIA 键盘导航、`node-component`、`createTypedOkrTree<T>`                                                                                   | `115cd54`           |
-| 2026-09-18 | 1.4.0  | `lazy`/`load` 懒加载、`OkrTreeViewport` 画布（缩放/平移/导出）、`getNodeEl` 方法、Demo +2                                                                      | `498e9cc` `3ea31cd` |
-| 2026-09-18 | 1.7.0  | #13 低风险档（reduced-motion 直切、`aria-setsize`/`aria-posinset`、`show-node-num` 只计可见、未知 `theme` 警告、死代码清理）、Logo 接入、CI 与视觉回归红灯修复 | `6830337` `698aec4` |
-| 2026-09-18 | 1.8.0  | #13 交互档（`accordion` 手风琴、`expand-on-click-node`）、SSR `renderToString` 冒烟测试、peer 实测收紧 `vue>=3.3.0` + CI peer-matrix、Demo +2                  | `e531e0c`           |
-| 2026-09-19 | 1.9.0  | #14 复选框选择模式（联动/半选/strictly、check/check-change、六方法、OKR 语义、键盘/a11y）、Demo +1、ESM 预算上调 22 kB                                         | `a14c0cc`           |
-| 2026-09-19 | 1.10.0 | #10 拖拽调整层级（draggable / allow 钩子 / 六事件 / moveNode / 分区指示线 / OKR 跨树规则）、Demo +1、ESM 预算 24 kB、样式 4 kB                                 | `888cf33`           |
-| 2026-09-19 | 1.11.0 | #11 SVG 连接线（connector 双模式 / connector-shape 三形状 / 无残影重绘 / OKR 左树镜像）、ESM 产物压缩修复（gzip 24.2→16.2 kB，预算回 19 kB）、Demo +1          | `90dcc85`           |
-| 2026-09-19 | —      | 视觉门禁修复：`.demo-nav` 行高取整消除半像素误报、`tests/visual/snap.ts` 尺寸不符时补真因提示、补齐 Linux 基线（Visual job 自建起首次转绿）                    | `39d8b08` `be50ee0` |
-| 2026-09-19 | 1.12.0 | #13 三项：`getVisibleNodes` / `getNodePath`、`@media print` 打印样式（含 print 媒体断言）、README「需要注意的行为」补 node-key 缺失策略与只读数据边界、单测 +6 | `55f20bc`           |
-| 2026-09-19 | 1.13.0 | #13 收尾：`unstyled` prop（okr-unstyled 中和卡片外观、保留布局与连接线，含计算样式断言），#13 全部完成；样式 gzip 3.88/4 kB                                    | `f02e10c`           |
+| 日期       | 版本   | 内容                                                                                                                                                                                                                                                                           | Commit              |
+| ---------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------- |
+| 2026-09-17 | 1.0.0  | 原版复刻、Q1–Q9 修复、Demo 20 用例、dist 三格式 + d.ts                                                                                                                                                                                                                         | `803ce65`           |
+| 2026-09-17 | 1.1.0  | CSS 变量化（23 个变量）、`theme` prop、六套主题、Demo 主题切换器                                                                                                                                                                                                               | `ea1df51`           |
+| 2026-09-17 | 1.2.0  | `v-model:expanded-keys/current-key`、expandAll 等 5 方法、`#expand-btn`/`#empty`、开发期警告、CI、CHANGELOG                                                                                                                                                                    | `4874895`           |
+| 2026-09-17 | 1.3.0  | `OkrTreeGroup`、WAI-ARIA 键盘导航、`node-component`、`createTypedOkrTree<T>`                                                                                                                                                                                                   | `115cd54`           |
+| 2026-09-18 | 1.4.0  | `lazy`/`load` 懒加载、`OkrTreeViewport` 画布（缩放/平移/导出）、`getNodeEl` 方法、Demo +2                                                                                                                                                                                      | `498e9cc` `3ea31cd` |
+| 2026-09-18 | 1.7.0  | #13 低风险档（reduced-motion 直切、`aria-setsize`/`aria-posinset`、`show-node-num` 只计可见、未知 `theme` 警告、死代码清理）、Logo 接入、CI 与视觉回归红灯修复                                                                                                                 | `6830337` `698aec4` |
+| 2026-09-18 | 1.8.0  | #13 交互档（`accordion` 手风琴、`expand-on-click-node`）、SSR `renderToString` 冒烟测试、peer 实测收紧 `vue>=3.3.0` + CI peer-matrix、Demo +2                                                                                                                                  | `e531e0c`           |
+| 2026-09-19 | 1.9.0  | #14 复选框选择模式（联动/半选/strictly、check/check-change、六方法、OKR 语义、键盘/a11y）、Demo +1、ESM 预算上调 22 kB                                                                                                                                                         | `a14c0cc`           |
+| 2026-09-19 | 1.10.0 | #10 拖拽调整层级（draggable / allow 钩子 / 六事件 / moveNode / 分区指示线 / OKR 跨树规则）、Demo +1、ESM 预算 24 kB、样式 4 kB                                                                                                                                                 | `888cf33`           |
+| 2026-09-19 | 1.11.0 | #11 SVG 连接线（connector 双模式 / connector-shape 三形状 / 无残影重绘 / OKR 左树镜像）、ESM 产物压缩修复（gzip 24.2→16.2 kB，预算回 19 kB）、Demo +1                                                                                                                          | `90dcc85`           |
+| 2026-09-19 | —      | 视觉门禁修复：`.demo-nav` 行高取整消除半像素误报、`tests/visual/snap.ts` 尺寸不符时补真因提示、补齐 Linux 基线（Visual job 自建起首次转绿）                                                                                                                                    | `39d8b08` `be50ee0` |
+| 2026-09-19 | 1.12.0 | #13 三项：`getVisibleNodes` / `getNodePath`、`@media print` 打印样式（含 print 媒体断言）、README「需要注意的行为」补 node-key 缺失策略与只读数据边界、单测 +6                                                                                                                 | `55f20bc`           |
+| 2026-09-19 | 1.13.0 | #13 收尾：`unstyled` prop（okr-unstyled 中和卡片外观、保留布局与连接线，含计算样式断言），#13 全部完成；样式 gzip 3.88/4 kB                                                                                                                                                    | `f02e10c`           |
+| 2026-09-22 | 1.14.0 | 补 `BUILT_IN_THEMES` 导出（与 react 端导出面对齐）+ 发布前收口的断言与门禁；**本包第一个由 CI 经 OIDC 真实发包的版本**（run `35708582755`，provenance 入 sigstore）                                                                                                            | `5488a09`           |
+| 2026-09-24 | 1.14.1 | 对外 API 零变化的 patch：7 个缺陷修复（组对齐被首量钉死 / `contains` 可成环 / 换绑 `data` 摘空注册表 / `zoomIn`·`zoomOut` 锚点 / 平移吞点击堆监听 / 产物丢 ignore 注释 / svg 稳态自持重排）+ 3 项性能收敛 + 第 2、3 轮审计的门禁补强；CI 的 action 同步升到脱离 Node 20 的档位 | `1f4cdf1`           |
 
 ## 已决定不做
 
