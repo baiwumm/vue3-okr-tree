@@ -5,7 +5,9 @@
   "type": "module",
   "license": "MIT",
   "author": {
-    "name": "baiwumm"
+    "name": "baiwumm",
+    "email": "me@baiwumm.com",
+    "url": "https://www.baiwumm.com"
   },
   "keywords": [
     "vue",
