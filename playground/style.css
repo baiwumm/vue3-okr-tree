@@ -55,7 +55,10 @@
   text-align: left;
   vertical-align: top;
   color: #5e6d82;
-  line-height: 1.6;
+  /* 行高必须是整数 px：14px × 1.6 = 22.4px，单元格每多折一行就把下方内容顶 .4px，
+     元素落在小数视口位置上时 Playwright 的元素截图向外取整，基线就会凭空多/少 1 行
+     （与 .demo-nav 那次同源）。 */
+  line-height: 22px;
 }
 .vue-okr-tree-demo table td:first-child,
 .vue-okr-tree-demo table th:first-child {
