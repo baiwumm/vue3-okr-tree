@@ -71,6 +71,7 @@ export default defineConfig({
             { text: '多树根对齐 OkrTreeGroup', link: '/guide/group' },
             { text: '键盘导航与可访问性', link: '/guide/keyboard' },
             { text: '类型化 createTypedOkrTree', link: '/guide/typed' },
+            { text: 'Vue Devtools 面板', link: '/guide/devtools' },
             { text: '需要注意的行为', link: '/guide/behavior' },
             { text: '仓库与本地开发', link: '/guide/repo' },
           ],

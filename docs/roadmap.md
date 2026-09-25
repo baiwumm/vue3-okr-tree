@@ -204,7 +204,7 @@
 
 ### 16. 开发体验（S）
 
-- [ ] Vue Devtools 插件（dev only）：面板查看节点注册表、展开/选中状态
+- [x] Vue Devtools 插件（dev only）：面板查看节点注册表、展开/选中状态（✅ 2026-09-26，零依赖直挂 `__VUE_DEVTOOLS_GLOBAL_HOOK__`，见 `src/lib/okr-tree/devtools.ts` 与文档站 guide/devtools；npm 产物 +1.5 kB gzip，消费端生产构建整段消除）
 - [x] peerDependencies 实测：`defineSlots` 等编译宏需要 vue ≥ 3.3，当前声明 `>=3.0.0` 偏宽 → CI 用 pnpm overrides 在 vue@3.3 / 3.4 / 3.5 矩阵跑单测，按结果收紧 peer 范围（已收紧为 `>=3.3.0`；注意 vue <3.5 矩阵腿需配 `@vue/test-utils` ~2.3，≥2.4 依赖 vue 3.5 的 `app.onUnmount`）
 - **验收**：Vue Devtools 可见树状态；peer 范围与实测一致。
 

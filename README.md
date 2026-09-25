@@ -126,6 +126,10 @@ const data = ref([
 
 完整清单见 [需要注意的行为](https://vue3-okr-tree.baiwumm.com/guide/behavior)。
 
+## Vue Devtools 面板
+
+开发环境自动生效：打开 Vue Devtools 会多一个 **OkrTree** 面板，查看每棵存活实例的节点注册表、展开 / 选中 / 勾选状态（含 OKR 左树分节）。零依赖、零初始化；门控与开发期警告同一套（`process.env.NODE_ENV`），消费方的生产构建会把它整体消除，详见 [文档站](https://vue3-okr-tree.baiwumm.com/guide/devtools)。
+
 ## 开发
 
 ```bash

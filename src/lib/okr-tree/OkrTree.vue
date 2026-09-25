@@ -63,6 +63,7 @@ import {
 import OkrTreeNode from './OkrTreeNode.vue'
 import { setPositions } from './aria-set'
 import { DEFAULT_PROPS, TreeStore } from './model/tree-store'
+import { registerOkrTreeDevtools, unregisterOkrTreeDevtools } from './devtools'
 import { getNodeKey as _getNodeKey, warn } from './model/util'
 import { usePrefersReducedMotion } from './use-reduced-motion'
 import { BUILT_IN_THEMES } from '../../types'
@@ -384,6 +385,10 @@ const root = store.root
 
 // 懒加载展开完成后同步受控展开态（syncExpandedKeys 内部自检是否受控）
 store.onExpandSettled = syncExpandedKeys
+
+// ---- Vue Devtools 面板（仅开发环境）：注册/注销本实例，面板数据见 devtools.ts ----
+registerOkrTreeDevtools(rawStore)
+onBeforeUnmount(() => unregisterOkrTreeDevtools(rawStore))
 
 const isEmpty = computed(() => root.childNodes.length === 0)
 // 根层的 aria-setsize / aria-posinset 同样按层算一次下发（与 OkrTreeNode 里的口径一致）

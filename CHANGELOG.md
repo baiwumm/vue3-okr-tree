@@ -2,6 +2,11 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## Unreleased
+
+- **新增 Vue Devtools 面板（dev only）**：开发环境自动向 Vue Devtools 注册 **OkrTree** 面板——树实例列表（根节点文案 + 注册表节点数 tag，OKR 模式带标记）、概要（节点数 / 展开数 / 当前节点 / 勾选与半选计数）与右树 / 左树的**节点注册表全量转储**（文案 / 层级 / 展开 / 可见 / 勾选 / 半选 / 子节点数），数据按需拉取、不占渲染路径。实现**零依赖**：不引 `@vue/devtools-api`，直接按其 v6 线协议与 `window.__VUE_DEVTOOLS_GLOBAL_HOOK__` 握手（`devtools-plugin:setup` 事件与 `__VUE_DEVTOOLS_PLUGINS__` 排队条目形状逐字同源，api 由 Devtools 后端回调传入）。门控与开发期警告同一套（运行时 `process.env.NODE_ENV`，使用方打包器替换后整段消除，SSR 与无 `process` 的 UMD 场景视为生产环境不注册）——**npm 产物增大约 1.5 kB gzip（ESM 16.31 → 17.81 / 预算 19），不会进入消费方的生产包**，与 Pinia / Vue Router 内置 Devtools 集成同一模型。姊妹包 react-okr-tree 无对应物（React DevTools 不提供第三方自定义面板 API）。
+- **补导出 `DEFAULT_PROPS`**：字段映射的默认值常量（`{ children: 'children', label: 'label', disabled: 'disabled' }`）此前只在内部使用，而姊妹包 react-okr-tree 侧已导出——这是两仓导出面审计记录的最后一个不对称，本次清零。宿主自定义字段映射时可以 `{ ...DEFAULT_PROPS, label: 'name' }` 而不必写全所有字段。纯增量，无任何行为变化。
+
 ## 1.14.2（2026-09-25）
 
 四条修复的一批：Demo 交互层批次（G8）实测出来的三处库语义缺口 + 一处画布交互卡死。对外 API 形状零变化，按「修复 +1 patch」定档。**其中 `default-checked-keys` 一条改的是可观察行为**（运行时重放的判据从按引用改成按内容），唯一会感知到差异的用法是「传一个等值新数组来强制清空勾选」——那等于依赖每次渲染回滚用户操作，故仍按 patch 走，但如果你确实这么写，请改用 `setCheckedKeys()`。姊妹包 react-okr-tree 同号跟随。

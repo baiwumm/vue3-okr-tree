@@ -4,7 +4,7 @@ import OkrTreeGroup from './okr-tree/OkrTreeGroup.vue'
 import OkrTreeViewport from './okr-tree/OkrTreeViewport.vue'
 
 export { TreeNode, createNode } from './okr-tree/model/node'
-export { TreeStore } from './okr-tree/model/tree-store'
+export { DEFAULT_PROPS, TreeStore } from './okr-tree/model/tree-store'
 export type { TreeStoreOptions } from './okr-tree/model/tree-store'
 export { NODE_KEY, getNodeKey, markNodeData } from './okr-tree/model/util'
 export { clampZoom, computeFit, renderToDataUrl, loadHtmlToImage } from './okr-tree/viewport'
