@@ -1,7 +1,5 @@
 allowBuilds:
   esbuild: true
-  better-sqlite3: true
-  vue-demi: set this to true or false
 minimumReleaseAgeExclude:
   - '@types/node@24.13.5'
   - '@vue/test-utils@2.5.1'

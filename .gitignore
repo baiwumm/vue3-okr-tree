@@ -27,6 +27,7 @@ Thumbs.db
 # test / coverage
 coverage/
 test-results/
+_scratch/
 .vitest/
 
 # local env
