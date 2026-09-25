@@ -14,6 +14,7 @@
           </div>
           <EventLog ref="log" />
           <VueOkrTree
+            ref="treeRef"
             :data="testData"
             :check-strictly="strictly"
             direction="horizontal"
@@ -69,7 +70,7 @@ function handleCheckChange(data: TreeNodeData, checked: boolean, indeterminate: 
 }
 function setChecked() {
   treeRef.value?.setCheckedKeys([7, 8])
-  log.value?.push('setCheckedKeys', '勾选 [7, 8]，父节点 6 半选（联动模式）')
+  log.value?.push('setCheckedKeys', '勾选 [7, 8]，父节点 6 全选、根 1 半选（联动模式）')
 }
 function logKeys() {
   const tree = treeRef.value
