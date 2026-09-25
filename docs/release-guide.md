@@ -1,7 +1,7 @@
 # 发布操作手册（release-guide）
 
 > vue3-okr-tree 后续版本的发布操作步骤。写给维护者本人照着执行。
-> 当前状态（2026-09-24）：两个包（vue3-okr-tree / react-okr-tree）最新版均为 1.14.1，发布链路已全自动——推 `v*` tag 即可，无需登录 npm，也没有任何 token / GitHub Secrets。
+> 当前状态（2026-09-25）：两个包（vue3-okr-tree / react-okr-tree）最新版均为 1.14.2，发布链路已全自动——推 `v*` tag 即可，无需登录 npm，也没有任何 token / GitHub Secrets。
 > 版本规则：新功能 +1 minor，修复 +1 patch。发包前请以
 > `node -p "require('./package.json').version"` 复核版本号，不要照抄本文任何版本号。
 
