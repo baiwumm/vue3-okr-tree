@@ -51,6 +51,16 @@ const mountViewport = (props: Record<string, any> = {}) =>
     },
   })
 
+/**
+ * 一次平移到「松手落在画布外」的形态：元素侧的 @pointerup 收不到那一次，
+ * 只有 window 上的常驻监听能收尾（浏览器在 down / up 目标不同时不会在画布里派发 click）。
+ */
+const panAndReleaseOutside = (vpEl: { element: Element }) => {
+  fireMouse(vpEl, 'pointerdown', { pointerId: 1, clientX: 0, clientY: 0 })
+  fireMouse(vpEl, 'pointermove', { pointerId: 1, clientX: 60, clientY: 40 })
+  fireMouse({ element: window as unknown as Element }, 'pointerup', { pointerId: 1 })
+}
+
 const setDims = (wrapper: any, width: number, height: number) => {
   const vpEl = wrapper.find('.okr-viewport').element as HTMLElement
   const contentEl = wrapper.find('.okr-viewport-content').element as HTMLElement
@@ -203,8 +213,23 @@ describe('OkrTreeViewport：拖拽平移', () => {
     fireMouse(vpEl, 'pointerdown', { pointerId: 1, clientX: 0, clientY: 0 })
     fireMouse(vpEl, 'pointermove', { pointerId: 1, clientX: 50, clientY: 30 })
     fireMouse(vpEl, 'pointerup', { pointerId: 1 })
+    await wrapper.vm.$nextTick()
     expect(emitted.length).toBeGreaterThan(0)
     expect(emitted[emitted.length - 1]).toEqual({ x: 50, y: 30 })
+  })
+
+  it('松手落在画布外：手势照样收尾，之后不按键的悬停不再拖动画布', async () => {
+    const wrapper = mountViewport()
+    const vp = wrapper.vm.$refs.vp as OkrTreeViewportInstance
+    const vpEl = wrapper.find('.okr-viewport')
+    panAndReleaseOutside(vpEl)
+    await wrapper.vm.$nextTick()
+
+    // 卡住的 is-panning 与残留的 panStart 是一件事的两面：都清掉了才不会再被悬推动
+    expect(vpEl.classes()).not.toContain('is-panning')
+    expect(vp.getOffset()).toEqual({ x: 60, y: 40 })
+    fireMouse(vpEl, 'pointermove', { pointerId: 1, clientX: 400, clientY: 300 })
+    expect(vp.getOffset()).toEqual({ x: 60, y: 40 })
   })
 })
 
@@ -238,6 +263,16 @@ describe('OkrTreeViewport：平移后吞掉一次 click', () => {
     fireMouse(label, 'click')
     expect(onNodeClick).not.toHaveBeenCalled()
     fireMouse(label, 'click')
+    expect(onNodeClick).toHaveBeenCalledTimes(1)
+  })
+
+  it('画布外松手不武装吞点击：紧接着的第一次点击照常送到节点', () => {
+    const onNodeClick = vi.fn()
+    const wrapper = mountWithNodeClick(onNodeClick)
+    panAndReleaseOutside(wrapper.find('.okr-viewport'))
+    // 松手在画布外，浏览器不会在画布里补出一次 click 来消费这个标志；
+    // 若把它武装上，用户回到画布里的第一次正常点击就会被无故吃掉
+    fireMouse(wrapper.find('.org-chart-node-label-inner'), 'click')
     expect(onNodeClick).toHaveBeenCalledTimes(1)
   })
 

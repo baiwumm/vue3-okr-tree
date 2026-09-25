@@ -289,7 +289,11 @@ function handlePointerMove(event: PointerEvent) {
   }
 }
 
-function handlePointerUp(event: PointerEvent) {
+/**
+ * @param armSwallow 是否武装「吞掉随后一次 click」。只有松手落点在画布内时才该武装：
+ * 落点在画布外，浏览器不会在画布里派发那次 click，武装了就会吃掉用户下一次正常点击。
+ */
+function handlePointerUp(event: PointerEvent, armSwallow = true) {
   pointers.delete(event.pointerId)
   if (pointers.size < 2) pinchStart = null
   if (pointers.size === 1) {
@@ -301,10 +305,20 @@ function handlePointerUp(event: PointerEvent) {
     panning.value = false
   }
   // 平移过则吞掉随后的一次 click，避免误触 node-click
-  if (moved) {
-    swallowNextClick = true
-    moved = false
-  }
+  if (armSwallow && moved) swallowNextClick = true
+  moved = false
+}
+
+/**
+ * 松手落在画布外时，元素上的 `@pointerup` 根本收不到（没挂 pointer capture，浏览器也不补派发），
+ * 于是 `panStart` 与 `is-panning` 都留在原地——之后**不带按键**的悬停移动会继续拖着画布走。
+ * 这里挂一个常驻 window 监听收尾（常驻而非按次添加，避免 1.14.1 修掉的监听堆叠换一种形式回来）。
+ */
+function handleWindowPointerUp(event: PointerEvent) {
+  const el = viewportEl.value
+  if (el && event.target instanceof Node && el.contains(event.target)) return
+  if (!panStart && !pinchStart && !panning.value) return
+  handlePointerUp(event, false)
 }
 
 function handleClickCapture(event: MouseEvent) {
@@ -376,6 +390,8 @@ async function exportImage(options: ExportImageOptions = {}): Promise<string> {
 }
 
 onMounted(() => {
+  window.addEventListener('pointerup', handleWindowPointerUp)
+  window.addEventListener('pointercancel', handleWindowPointerUp)
   // 初始受控值越界时钳制
   if (
     props.zoom !== undefined &&
@@ -386,6 +402,8 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('pointerup', handleWindowPointerUp)
+  window.removeEventListener('pointercancel', handleWindowPointerUp)
   trees.clear()
 })
 

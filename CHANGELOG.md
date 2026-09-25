@@ -2,6 +2,12 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## Unreleased
+
+### 修复
+
+- **画布平移把手势甩出画布边界再松手，会卡住平移态并让悬停继续拖动画布**：`OkrTreeViewport` 的 `pointerup` / `pointercancel` 只挂在画布根元素上（既没有 `setPointerCapture`，也没有 window 级监听），指针在画布外松开时这两个处理器根本不执行——`is-panning` 留在原地、`panStart` 也不清，于是之后**不带按键**的悬停移动仍按 `panStart` 继续改写偏移（实测从 `translate(125px, -379.5px)` 一路走到 `translate(290px, 0px)`）。现在由一个挂载期注册、卸载时摘掉的常驻 window 监听收尾（常驻而不是按次添加，免得 1.14.1 修掉的监听堆叠换个形式回来）；这条收尾**不**武装「吞掉一次 click」——松手在画布外时浏览器不会在画布里派发那次 click，武装了就会吃掉用户回到画布里的第一次正常点击。姊妹包 react-okr-tree 同批同形。
+
 ## 1.14.1（2026-09-24）
 
 对外 API 零变化的一批：修掉 7 个真实缺陷（组对齐宽度被首量钉死、`contains` 未递归左子树导致可成环、换绑 `data` 把整棵后代摘出注册表、`zoomIn` / `zoomOut` 锚点取错、平移后吞点击堆积监听、产物丢失三家打包器的 ignore 注释、`connector="svg"` 稳态自持重排），另有 3 项性能收敛、10 条门禁补强与两站文档对齐。姊妹包 react-okr-tree 同号跟随。

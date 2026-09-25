@@ -93,7 +93,7 @@
 
 剩余待办：~~**G8**（24 个 Demo 的交互层自动化断言）不是收口类的小活，建议排期而非塞进本批~~ → **G8 已于 2026-09-25 收口**（见上表与本节末三段）；**G9 / G10** 均已在第 3 轮第二批收口。另留一处未决不对称：`DEFAULT_PROPS` 仍是 react 导出、vue3 未导出（非缺陷，需要时再定）。
 
-**跨实现形状比对的门禁不在本仓，在姊妹仓**：`react-okr-tree/packages/react-okr-tree/tests/visual/cross-impl.spec.ts`（DOM 结构 + 内联样式，10 个模式）与 `cross-impl-svg.spec.ts`（`connector="svg"` 的 path `d`，5 个模式）拿本包 `pnpm build` 后在真实 Chromium 里捕获的 outerHTML / `d` 列表当夹具，比对的对手是 react 侧现算的结果，两套仓的 CI 互相看不到对方产物，夹具靠人工刷新（`pnpm gen:cross-impl`，需同机有两仓）。**因此它守不住本包单侧漂移**：本包改了 DOM 形状 / 状态类名 / svg 几何而没人刷新夹具时，两侧 CI 都照样全绿。所以本包这类改动的收尾步骤里要加一条——回 react 仓跑一次 `pnpm gen:cross-impl` 再看门禁，红了先判断哪边是对的，别直接刷新基线。
+**跨实现形状比对的门禁不在本仓，在姊妹仓**：`react-okr-tree/packages/react-okr-tree/tests/visual/cross-impl.spec.ts`（DOM 结构 + 内联样式，10 个模式）与 `cross-impl-svg.spec.ts`（`connector="svg"` 的 path `d`，5 个模式）拿本包 `pnpm build` 后在真实 Chromium 里捕获的 outerHTML / `d` 列表当夹具，比对的对手是 react 侧现算的结果，两套仓的 CI 互相看不到对方产物，夹具靠人工刷新（`pnpm gen:cross-impl`，需同机有两仓）。**因此它守不住本包单侧漂移**：本包改了 DOM 形状 / 状态类名 / svg 几何而没人刷新夹具时，两侧 CI 都照样全绿。所以本包这类改动的收尾步骤里要加一条——回 react 仓跑一次 `pnpm gen:cross-impl` 再看门禁，红了先判断哪边是对的，别直接刷新基线。**2026-09-25 的 Demo 交互批次已按这条收尾步骤跑过一次 `pnpm gen:cross-impl`**：15 个模式的载荷逐字未变，只有 `version`（1.14.0 → 1.14.1）与 `capturedAt` 两行元数据刷新，即那批改动（含画布平移收尾的库修复）对 DOM 形状与 svg 几何零漂移。
 
 **CSS 几何常量门禁落在两仓的 `verify:dist`（react 侧清单 G17 的轻量分支）**：本仓 `scripts/verify-dist.mjs` 的 CSS 段与 react 端各 33 条、逐条同序同字面（唯一差别是消息里内插的实测数字）。钉的是相互咬合的那批几何值：六个变量（`--okr-gap-level:20px` 等）断「每处使用都带兜底 + 兜底值处处同值」，左子树短头 `12px` / `calc(100% - 11px)` / `10px` 与两处 `-1px` / `!important` 修正断**恰好出现一次**，`okr-unstyled` 断**五类**选择器，另断 `.is-measuring` 排在 `.is-measured` **之前**（组对齐修复的承重前提就是这条同特异度顺序，顺序一颠倒则 `measure()` 怎么改都会读回被钉住的宽度）。**为什么不做跨仓逐字 diff**：两仓 `src` 的 style.css 实测只差头注释与 `@import` 路径两处、`transition.css` 全等，但产物由两套压缩器各写一遍（本仓 esbuild、react 走 rolldown 内置那套），会合并同声明体的相邻规则、重排声明、`transparent`→`0 0`、`.3s height`→`height .3s`、颜色折成 `#fffffff0`——逐字比会假红一片，比不了。五条变异两仓各跑一遍全部打红（兜底值 `20px→24px`、两条规则顺序颠倒、五类降四类、`-11px→-12px`、`12px→14px`），探针在仓库外 `okr-audit-reports/_scratch/probe-css-mutation*.mjs` 与 `probe-css-gate-parity.mjs`。本仓 `verify:dist` 41 → **62** 条。
 
@@ -115,10 +115,10 @@
 3. `Base081.vue`（demo-12）的说明称 `show-node-num`「配合 `node-btn-content` 时显示自定义按钮内容」，而模板里 `showNodeNum` 分支在前，`renderBtnContent` 永不执行——该函数是死代码。react 侧对应的 `expand-btn` 用例文案写的是真话（`showNodeNum 优先，两个自定义口完全不会被调用`），本仓文档站因此比姊妹包多说了一半假话。
 4. `node-drag-end` 的载荷：`handleDrop` 在 `dragend` 之前清空 `dragOverNode` / `dragOverType`，于是成功放置后 `onDragEnd` 恒收 null，`BaseDraggable.vue` 每次成功拖动都记一行「未完成放置」。本批只把**现状**钉成断言（拖拽结果改写 DOM + `node-drop` 有记录），事件语义要不要改留待决策——react 侧在同样场景下更彻底：`handleDrop` 先清 `draggingNode`，`dragend` 的 `dragging !== node` 守卫短路，**这条事件根本不发**。两仓的六个拖拽事件各坏在不同位置。
 
-**顺带实测到、本批没钉成门禁的三条观察**（都不是 Demo 层问题，动的是库语义，等一次单独决策）：
+**顺带实测到的三条库层面观察**（都不是 Demo 层问题，动的是库语义）：
 
-- **画布平移把指针拖出 `.okr-viewport` 再松手**：组件只在根元素上挂 `pointerup`（既没有 `setPointerCapture` 也没有 window 级监听），于是 `handlePointerUp` 根本不执行——`is-panning` 类残留、`panStart` 不清，之后**不带按键**的悬停移动会继续拖着画布跑（实测 offset 从 `translate(125px, -379.5px)` 走到 `translate(290px, 0px)`）。用户拖大画布时甩出边界是常见手势。
-- **过滤词只命中 OKR 左子树时整棵树消失**：如用关键字「左」匹配 `(左)销售部` 们，共用的根节点自身不匹配 ⇒ 被判不可见 ⇒ 连左子树一起从 DOM 卸载。两仓行为逐字一致，说明 Q1「父节点保持可见」那条修复只走通了右子树。
+- ✅ **画布平移把指针拖出 `.okr-viewport` 再松手会卡住**——**同日第二批已修并钉成门禁**。原状：组件只在根元素上挂 `pointerup`（既没有 `setPointerCapture` 也没有 window 级监听），于是 `handlePointerUp` 根本不执行——`is-panning` 类残留、`panStart` 不清，之后**不带按键**的悬停移动会继续拖着画布跑（实测 offset 从 `translate(125px, -379.5px)` 走到 `translate(290px, 0px)`）。修法是一个挂载期注册、卸载时摘掉的常驻 window 监听做收尾，且它不带 `armSwallow`（松手在画布外时浏览器不会在画布里派发 click，武装了会吃掉用户回来后的第一次正常点击）。门禁三条：`tests/components/viewport.spec.ts` 的「松手落在画布外：手势照样收尾…」与「画布外松手不武装吞点击…」，加上 `tests/visual/demo-interaction.spec.ts` demo-19 末尾那段真实浏览器悬停回归。变异各有归属：摘掉 window 监听 → 前两条与浏览器那条各自打红（`is-panning` 残留 / 偏移被悬停推动）；把收尾改成 `handlePointerUp(event, true)` → 「不武装吞点击」那条打红。react 侧同批同形同变异。
+- **过滤词只命中 OKR 左子树时整棵树消失**：如用关键字「左」匹配 `(左)销售部` 们，共用的根节点自身不匹配 ⇒ 被判不可见 ⇒ 连左子树一起从 DOM 卸载。两仓行为逐字一致，说明 Q1「父节点保持可见」那条修复只走通了右子树。**仍未决**，本批只把它记在案上（两条 Demo 交互用例刻意用左右都命中的关键字，没有把这个形态钉成期望行为）。
 - **`default-checked-keys` 两仓分歧**：react 侧有一个按**引用**比较的 effect（`packages/react-okr-tree/src/OkrTree.tsx:747-750`），宿主每次重渲染都重新应用初始勾选、把用户刚勾的抹掉；vue3 侧只在创建期消费，没有这个 effect。react 文档站的 checkbox demo 正因把数组写成行内字面量而整页勾选点不动——本批已在 react 侧把常量提到模块作用域（demo 侧修复），**库的语义没动**，两仓到底谁该向谁对齐仍未决。
 
 ## 7. 本文用到的实跑命令

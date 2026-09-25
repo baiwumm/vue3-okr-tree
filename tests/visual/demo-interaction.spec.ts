@@ -514,6 +514,39 @@ test.describe('受控状态、懒加载与画布', () => {
     await wheelBtn.click()
     await expect(wheelBtn).toHaveClass(/is-active/)
 
+    /**
+     * 松手落在画布外（2026-09-25 修的那条）：元素侧收不到 pointerup，手势必须照样收尾——
+     * 之后不按键的悬停不能再拖动画布，而且这一次不该武装「吞一次点击」，
+     * 否则用户回到画布里的第一次正常点击会被无故吃掉。
+     */
+    await toolbarBtn('重置').click()
+    const box2 = (await viewport.boundingBox())!
+    const y2 = box2.y + box2.height - 14
+    await page.mouse.move(box2.x + 30, y2)
+    await page.mouse.down()
+    await page.mouse.move(box2.x + 130, y2, { steps: 6 })
+    await page.mouse.move(box2.x + 170, box2.y - 40, { steps: 4 })
+    await page.mouse.up()
+    await expect(viewport).not.toHaveClass(/is-panning/)
+    const styleAfterRelease = await viewport.locator('.okr-viewport-canvas').getAttribute('style')
+    expect(styleAfterRelease).toMatch(/translate\(1\d\dpx/)
+    // 不按键地移回画布：偏移必须一动不动
+    await page.mouse.move(box2.x + 300, y2, { steps: 6 })
+    await page.mouse.move(box2.x + 420, y2, { steps: 6 })
+    await expect(viewport.locator('.okr-viewport-canvas')).toHaveAttribute(
+      'style',
+      styleAfterRelease!
+    )
+    // 画布外松手不该武装「吞一次点击」：回到画布里的第一次点击就得管用，
+    // 工具栏的复位点击正是那一次（被吞掉的话偏移会停在原处）
+    await toolbarBtn('重置').click()
+    await expect(viewport.locator('.okr-viewport-canvas')).toHaveAttribute(
+      'style',
+      /translate\(0px, 0px/
+    )
+    await nodeA.click()
+    await expect.poll(currentTexts).toEqual(['xxx科技有有限公司-A'])
+
     expect(errors).toHaveLength(0)
   })
 })
