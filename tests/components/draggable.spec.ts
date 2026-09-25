@@ -106,6 +106,72 @@ describe('draggable 基础', () => {
     expect(onDragEnd).toHaveBeenCalledTimes(1)
   })
 
+  it('成功放置后 node-drag-end 报出真实落点（不是 null 载荷）', async () => {
+    const onDragEnd = vi.fn()
+    const onDrop = vi.fn()
+    const wrapper = mount(VueOkrTree, {
+      props: {
+        data: makeData(),
+        draggable: true,
+        nodeKey: 'id',
+        onNodeDrop: onDrop,
+        onNodeDragEnd: onDragEnd,
+      },
+    })
+    // B 拖进 A 的 inner 区：drop 先派发，dragend 紧随其后
+    await dragDrop(wrapper, 'B', 'A', 50)
+    expect(onDrop).toHaveBeenCalledTimes(1)
+    expect(onDragEnd).toHaveBeenCalledTimes(1)
+    // 旧实现这里两个参数恒为 null——handleDrop 在 dragend 之前就把 dragOver 清了，
+    // 于是宿主侧每次成功拖动只能记一句「未完成放置」，第六个事件的载荷等于没有
+    const [dragged, dropNode, dropType] = onDragEnd.mock.calls[0]
+    expect(dragged.key).toBe(12)
+    expect(dropNode.key).toBe(11)
+    expect(dropType).toBe('inner')
+  })
+
+  it('连续两次放置：每次都收到一对 drop / drag-end（手势状态不泄漏到下一轮）', async () => {
+    const onDragEnd = vi.fn()
+    const onDrop = vi.fn()
+    const wrapper = mount(VueOkrTree, {
+      props: {
+        data: makeData(),
+        draggable: true,
+        nodeKey: 'id',
+        onNodeDrop: onDrop,
+        onNodeDragEnd: onDragEnd,
+      },
+    })
+    await dragDrop(wrapper, 'B', 'A', 50)
+    await dragDrop(wrapper, 'C', 'A', 50)
+    expect(onDrop).toHaveBeenCalledTimes(2)
+    expect(onDragEnd).toHaveBeenCalledTimes(2)
+    expect(onDragEnd.mock.calls.map((c: any[]) => [c[0].key, c[1]?.key, c[2]])).toEqual([
+      [12, 11, 'inner'],
+      [13, 11, 'inner'],
+    ])
+  })
+
+  it('被 allow-drop 拒掉的放置：node-drag-end 仍然报 null', async () => {
+    const onDragEnd = vi.fn()
+    const onDrop = vi.fn()
+    const wrapper = mount(VueOkrTree, {
+      props: {
+        data: makeData(),
+        draggable: true,
+        nodeKey: 'id',
+        allowDrop: () => false,
+        onNodeDrop: onDrop,
+        onNodeDragEnd: onDragEnd,
+      },
+    })
+    await dragDrop(wrapper, 'B', 'A', 50)
+    expect(onDrop).not.toHaveBeenCalled()
+    expect(onDragEnd).toHaveBeenCalledTimes(1)
+    expect(onDragEnd.mock.calls[0][1]).toBeNull()
+    expect(onDragEnd.mock.calls[0][2]).toBeNull()
+  })
+
   it('allow-drag 返回 false：不可拖拽且不触发 node-drag-start', async () => {
     const onDragStart = vi.fn()
     const wrapper = mount(VueOkrTree, {

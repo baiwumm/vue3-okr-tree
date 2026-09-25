@@ -60,6 +60,18 @@ export const DEFAULT_PROPS: Readonly<TreeOptionProps> = {
 type ChildName = 'childNodes' | 'leftChildNodes'
 
 /**
+ * 两组 key 是否等价：`String(key)` 归一 + 去重后逐个比对，与 `getCheckedKeys` 的口径一致。
+ * 供 `setDefaultCheckedKeys` 判断「默认勾选这份列表真的变了没有」。
+ */
+function isSameKeyList(a?: TreeKey[] | null, b?: TreeKey[] | null): boolean {
+  const left = new Set((a || []).map((key) => String(key)))
+  const right = new Set((b || []).map((key) => String(key)))
+  if (left.size !== right.size) return false
+  for (const key of left) if (!right.has(key)) return false
+  return true
+}
+
+/**
  * 树的数据仓库：节点注册表、过滤、选中态、增删改。
  * 纯 TS 类，不依赖组件；节点实例由 createNode 产生（shallowReactive 代理）。
  */
@@ -180,7 +192,11 @@ export class TreeStore {
         }
         if (value && rootNode.visible) rootNode.expand()
       } else if (value && list.some((child) => child.visible)) {
-        // 左树过滤：命中时展开根节点的左侧容器（不改动右树节点可见性）
+        // 左树命中时先把共用的根节点保住可见：根一被判不可见，
+        // `v-if="node.visible"` 会把整棵树（含刚命中的左子树）一起卸载，页面直接空掉。
+        // 顺序是承重的：OKR 下 filter 先右后左（见 OkrTree.vue 的 filter），
+        // 右树那一趟已经把 rootNode.visible 定过，这里只做「或」不做覆盖。
+        rootNode.visible = true
         rootNode.leftExpanded = true
       }
     })
@@ -441,8 +457,14 @@ export class TreeStore {
     })
   }
 
-  /** 以新列表重新应用默认勾选：先清空全部勾选 / 半选，再按列表勾选（default-checked-keys 运行时变更） */
+  /**
+   * 以新列表重新应用默认勾选：先清空全部勾选 / 半选，再按列表勾选（default-checked-keys 运行时变更）。
+   * 比的是**内容**不是引用：宿主每次渲染新建一个等值数组（Vue 的计算属性 / 派生表达式、
+   * React 的行内字面量都会这样）不该被当成「默认勾选变了」——那会把用户刚勾掉、刚勾上的
+   * 状态整片抹回去。undefined 与 [] 视作同一份「没有默认勾选」。
+   */
   setDefaultCheckedKeys(keys?: TreeKey[] | null) {
+    if (isSameKeyList(this.defaultCheckedKeys, keys)) return
     this.defaultCheckedKeys = keys || []
     this.forEachNode((node) => {
       node.checked = false

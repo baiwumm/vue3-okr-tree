@@ -699,13 +699,13 @@ function handleDragStart(event: DragEvent) {
 }
 
 function handleDragEnd(event: DragEvent) {
+  // 放置成功那一路已经在 handleDrop 里发过 node-drag-end 并清掉了 draggingNode，
+  // 走到这里的只剩「取消 / 被拒」那一路：载荷按语义给 null
   if (tree!.draggingNode.value !== node.value) return
-  const dropNode = tree!.dragOverNode.value
-  const dropType = tree!.dragOverType.value
   tree!.draggingNode.value = null
   tree!.dragOverNode.value = null
   tree!.dragOverType.value = null
-  tree!.emit('node-drag-end', node.value, dropNode, dropType, event)
+  tree!.emit('node-drag-end', node.value, null, null, event)
 }
 
 function handleDragEnter(event: DragEvent) {
@@ -755,6 +755,15 @@ function handleDrop(event: DragEvent) {
   // inner 放置在 moveNode 内已展开目标；同步受控展开态并通知
   tree!.onExpandChange()
   tree!.emit('node-drop', dragged, node.value, type, event)
+  /**
+   * 落点在手，就在这一里把第六个事件发掉并就地收尾，不等浏览器的 dragend：
+   * 跨父级移动会把源元素卸载重建（React 那侧键只在同一父级内去重），浏览器那次 dragend
+   * 落在一个已脱离文档的节点上，宿主侧永远收不到这条事件；本仓元素被复用、事件会到，
+   * 但 dragOver 那时已被清空，载荷恒为 null。这里同时清 draggingNode，让真到达的
+   * dragend 被 `draggingNode !== node` 守卫短路——否则会再补一条 null 载荷的重复事件。
+   */
+  tree!.draggingNode.value = null
+  tree!.emit('node-drag-end', dragged, node.value, type, event)
 }
 
 function handleContextMenu(event: MouseEvent) {

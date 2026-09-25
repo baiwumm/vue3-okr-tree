@@ -201,6 +201,25 @@ describe('default-checked-keys 与方法', () => {
     expect(vm.isChecked(13)).toBe(true)
     expect(vm.getCheckedKeys()).toEqual([13])
   })
+
+  it('default-checked-keys 换引用不换内容：不把用户改过的勾选整片抹回去', async () => {
+    const wrapper = mount(VueOkrTree, {
+      props: { data: makeData(), showCheckbox: true, defaultCheckedKeys: [111], nodeKey: 'id' },
+    })
+    const vm = wrapper.vm as VueOkrTreeInstance
+    vm.getNode(13)!.setChecked(true)
+    expect(vm.getCheckedKeys()).toEqual([111, 13])
+
+    // 宿主每次渲染新建一个等值数组（计算属性、派生表达式都会这样）：内容没变就不该重放默认勾选
+    await wrapper.setProps({ defaultCheckedKeys: [111] })
+    expect(vm.isChecked(13)).toBe(true)
+    expect(vm.isChecked(111)).toBe(true)
+
+    // 内容真的变了才重放：先清空，再按新列表勾选
+    await wrapper.setProps({ defaultCheckedKeys: [12] })
+    expect(vm.isChecked(13)).toBe(false)
+    expect(vm.getCheckedKeys()).toEqual([12, 121])
+  })
 })
 
 describe('check / check-change 事件', () => {

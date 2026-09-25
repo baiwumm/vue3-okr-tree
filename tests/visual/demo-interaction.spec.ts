@@ -348,6 +348,18 @@ test.describe('过滤与实例方法', () => {
     await c.locator('.filter-wrapper input').fill('')
     expect(await labelsIn(c)).toHaveLength(before.length)
 
+    // 只命中左子树的关键字：共用的根节点必须留在页面上。旧行为是根被判不可见，
+    // 于是连刚命中的左子树一起从 DOM 卸载，整棵树凭空消失
+    await c.locator('.filter-wrapper input').fill('左')
+    const leftOnly = await labelsIn(c)
+    expect(leftOnly).toContain('(左)销售部')
+    expect(leftOnly).toContain('xxx科技有有限公司')
+    expect(leftOnly).not.toContain('销售部')
+    await expect(c.locator('.org-chart-node:not(.is-left-child-node)').first()).toBeVisible()
+
+    await c.locator('.filter-wrapper input').fill('')
+    expect(await labelsIn(c)).toHaveLength(before.length)
+
     expect(errors).toHaveLength(0)
   })
 })
@@ -661,7 +673,8 @@ test.describe('交互档（accordion / expand-on-click-node / checkbox / draggab
     await innerOf(frontend).dragTo(innerOf(sales), { targetPosition: { x: 12, y: 12 } })
     await expect(logItem('node-drag-start')).toHaveCount(1)
     await expect(logItem('node-drop')).toHaveCount(1)
-    await expect(logItem('node-drag-end')).toHaveCount(1)
+    // 载荷修好后（2026-09-25）成功放置这一路报的是「放置完成」而不是「未完成放置」
+    await expect(logItem('node-drag-end')).toHaveText(/放置完成/)
     expect(await childLabels(dev)).toEqual(['研发-后端', 'UI 设计'])
     expect(await childLabels(sales)).toEqual(['销售一部', '销售二部', '研发-前端'])
 

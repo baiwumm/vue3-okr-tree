@@ -18,7 +18,7 @@
 
 - 勾选父节点向下联动**全部后代**（含 `disabled` 节点——`disabled` 只阻止直接点击），祖先按子树重算全选 / 半选。「全部子节点选中 ⇒ 父选中」，所以唯一子链选中会让父节点直接变全选。
 - `check-strictly` 关闭联动，勾选只作用于自身；运行时切换后新交互按新模式执行。
-- `default-checked-keys` 需配 `node-key`，创建期生效；运行时变更会先清空再按新列表应用，`data` 重建后不恢复（与 `default-expanded-keys` 一致）。
+- `default-checked-keys` 需配 `node-key`，创建期生效；运行时**内容**变更会先清空再按新列表应用（宿主只是换了个等值数组引用时不重放，不会把用户改过的勾选抹回去），`data` 重建后不恢复（与 `default-expanded-keys` 一致）。
 - OKR 模式下左右两树的勾选**独立维护**（点击只作用于所在树），而 `setCheckedKeys` / `getCheckedKeys` 等按 key 对两树同时生效 / 合并去重。
 - 勾选态在增删子节点、懒加载 resolve、`data` 增量重建后自动重算祖先。
 

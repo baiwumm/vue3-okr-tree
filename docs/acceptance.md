@@ -113,13 +113,13 @@
 1. `BaseCheckbox.vue` 声明了 `treeRef` 却没绑到 `<VueOkrTree>` 上，工具条两个按钮（`setCheckedKeys` / `getCheckedKeys`）点了毫无反应，而日志仍打出一行「勾选 [7, 8]…」——**一个静默的空操作，外加一句谎**。
 2. 同一行日志的文案称「父节点 6 半选」，而 `[7, 8]` 恰是 6 的全部子节点 ⇒ 6 是**全选**，半选的是根 1。文案按实测改成「6 全选、根 1 半选」。
 3. `Base081.vue`（demo-12）的说明称 `show-node-num`「配合 `node-btn-content` 时显示自定义按钮内容」，而模板里 `showNodeNum` 分支在前，`renderBtnContent` 永不执行——该函数是死代码。react 侧对应的 `expand-btn` 用例文案写的是真话（`showNodeNum 优先，两个自定义口完全不会被调用`），本仓文档站因此比姊妹包多说了一半假话。
-4. `node-drag-end` 的载荷：`handleDrop` 在 `dragend` 之前清空 `dragOverNode` / `dragOverType`，于是成功放置后 `onDragEnd` 恒收 null，`BaseDraggable.vue` 每次成功拖动都记一行「未完成放置」。本批只把**现状**钉成断言（拖拽结果改写 DOM + `node-drop` 有记录），事件语义要不要改留待决策——react 侧在同样场景下更彻底：`handleDrop` 先清 `draggingNode`，`dragend` 的 `dragging !== node` 守卫短路，**这条事件根本不发**。两仓的六个拖拽事件各坏在不同位置。
+4. ✅ `node-drag-end` 的载荷（**同日第三批已修**）：`handleDrop` 在 `dragend` 之前清空 `dragOverNode` / `dragOverType`，于是成功放置后 `onDragEnd` 恒收 null，`BaseDraggable.vue` 每次成功拖动都记一行「未完成放置」。react 侧同一条路更彻底：跨父级移动会把源元素卸载重建（React 的键只在同一父级内去重），浏览器那次 `dragend` 落在已脱离文档的节点上，宿主侧**收不到这条事件**（jsdom 里元素被重新查询、事件照到，所以只有浏览器能看出这半边）。修法统一成「drop 里就地补发并收尾」：`node-drop` 之后立刻发 `node-drag-end`（载荷与之一致）并清 `draggingNode`，真到达的 dragend 被守卫短路只清状态；取消/被拒那一路仍报 null。
 
-**顺带实测到的三条库层面观察**（都不是 Demo 层问题，动的是库语义）：
+**顺带实测到的三条库层面观察**（都不是 Demo 层问题，动的是库语义；**同日第三批三条全部修完**，逐条给门禁与变异）：
 
 - ✅ **画布平移把指针拖出 `.okr-viewport` 再松手会卡住**——**同日第二批已修并钉成门禁**。原状：组件只在根元素上挂 `pointerup`（既没有 `setPointerCapture` 也没有 window 级监听），于是 `handlePointerUp` 根本不执行——`is-panning` 类残留、`panStart` 不清，之后**不带按键**的悬停移动会继续拖着画布跑（实测 offset 从 `translate(125px, -379.5px)` 走到 `translate(290px, 0px)`）。修法是一个挂载期注册、卸载时摘掉的常驻 window 监听做收尾，且它不带 `armSwallow`（松手在画布外时浏览器不会在画布里派发 click，武装了会吃掉用户回来后的第一次正常点击）。门禁三条：`tests/components/viewport.spec.ts` 的「松手落在画布外：手势照样收尾…」与「画布外松手不武装吞点击…」，加上 `tests/visual/demo-interaction.spec.ts` demo-19 末尾那段真实浏览器悬停回归。变异各有归属：摘掉 window 监听 → 前两条与浏览器那条各自打红（`is-panning` 残留 / 偏移被悬停推动）；把收尾改成 `handlePointerUp(event, true)` → 「不武装吞点击」那条打红。react 侧同批同形同变异。
-- **过滤词只命中 OKR 左子树时整棵树消失**：如用关键字「左」匹配 `(左)销售部` 们，共用的根节点自身不匹配 ⇒ 被判不可见 ⇒ 连左子树一起从 DOM 卸载。两仓行为逐字一致，说明 Q1「父节点保持可见」那条修复只走通了右子树。**仍未决**，本批只把它记在案上（两条 Demo 交互用例刻意用左右都命中的关键字，没有把这个形态钉成期望行为）。
-- **`default-checked-keys` 两仓分歧**：react 侧有一个按**引用**比较的 effect（`packages/react-okr-tree/src/OkrTree.tsx:747-750`），宿主每次重渲染都重新应用初始勾选、把用户刚勾的抹掉；vue3 侧只在创建期消费，没有这个 effect。react 文档站的 checkbox demo 正因把数组写成行内字面量而整页勾选点不动——本批已在 react 侧把常量提到模块作用域（demo 侧修复），**库的语义没动**，两仓到底谁该向谁对齐仍未决。
+- ✅ **过滤词只命中 OKR 左子树时整棵树消失**（**同日第三批已修**）：如用关键字「左」匹配 `(左)销售部` 们，共用的根节点自身不匹配 ⇒ 被判不可见 ⇒ 连刚命中的左子树一起从 DOM 卸载（`getVisibleNodes()` 读 0）。两仓行为逐字一致，说明 Q1「父节点保持可见」那条修复只走通了右子树。现在左树命中也把根保住，门禁是 `tests/model/tree-store.spec.ts` 的「关键字只命中左子树时，共用的根节点保持可见」+ demo-14 的浏览器段；摘掉 store 里那一行 `rootNode.visible = true` 两处各自打红（浏览器侧表现为读回空数组，正是当初的症状）。承重前提写进了注释：OKR 下 `filter` 先右后左。
+- ✅ **`default-checked-keys` 两仓分歧**（**同日第三批已修**）：两边都有按**引用**比较的运行时重放（react 是 `OkrTree.tsx` 的 effect，vue3 是 `OkrTree.vue` 的 watch + `store.setDefaultCheckedKeys`），所以宿主每次渲染新建等值数组都会先清空全部勾选再重放列表，把用户刚改的整片抹回去；react 文档站的 checkbox demo 因行内字面量而整页勾选点不动就是这个（vue3 demo 恰好没触发：它的日志状态在子组件里，点勾选不重渲染宿主）。现在两仓统一为**按内容比较**（`isSameKeyList`，`String(key)` 归一去重，与 `getCheckedKeys` 同口径），API 表与两站措辞同步更正；变异 = 摘掉 store 里那行守卫，两仓各有一条 checkbox 用例打红。
 
 ## 7. 本文用到的实跑命令
 

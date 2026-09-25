@@ -199,6 +199,21 @@ describe('OKR 模式（onlyBothTree + leftData）', () => {
     expect(store.nodesMap[9].visible).toBe(true)
   })
 
+  it('关键字只命中左子树时，共用的根节点保持可见（否则整棵树一起卸载）', () => {
+    const store = createOkr()
+    store.filter('左')
+    store.filter('左', 'leftChildNodes')
+
+    // 右树侧一个都不命中、根自身的 label 也不含「左」：旧实现到此把根判成不可见，
+    // 而组件的节点根元素是 `v-if="node.visible"`，于是连刚命中的左子树一起从 DOM 摘掉，
+    // 页面上什么都不剩（Q1「父节点保持可见」当年只修通了右树这一侧）
+    expect(store.nodesMap[6].visible).toBe(false)
+    expect(store.nodesMap[1].visible).toBe(true)
+    expect(store.leftNodesMap[16].visible).toBe(true)
+    expect(store.root.childNodes[0].visible).toBe(true)
+    expect(store.root.childNodes[0].leftExpanded).toBe(true)
+  })
+
   it('leftData 变更后重新链接左子树并注销旧左节点', () => {
     const store = createOkr()
     store.setLeftData([{ id: 1, label: 'L', children: [{ id: 200, label: '新左' }] }])

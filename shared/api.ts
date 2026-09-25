@@ -103,7 +103,7 @@ export const attributesSection: ApiSection = {
     ],
     [
       'default-checked-keys',
-      '<strong>Vue 3 版新增（1.9.0）。</strong>初始勾选的节点 key 数组（必须设置 node-key）。创建期生效；运行时变更会先清空再按新列表重新应用；data 重建后不恢复（与 default-expanded-keys 一致）',
+      '<strong>Vue 3 版新增（1.9.0）。</strong>初始勾选的节点 key 数组（必须设置 node-key）。创建期生效；运行时<strong>内容</strong>变更会先清空再按新列表重新应用（宿主只是换了一个等值数组引用时不重放，不会抹掉用户改过的勾选）；data 重建后不恢复（与 default-expanded-keys 一致）',
       'array',
       '—',
       '—',

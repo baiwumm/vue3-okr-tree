@@ -6,6 +6,9 @@
 
 ### 修复
 
+- **`node-drag-end` 在成功放置后不再报 null 载荷**：`handleDrop` 先清掉 `dragOverNode` / `dragOverType`（指示线不能留在屏幕上），而 `node-drag-end` 是 drop 之后才派发的，于是这条事件的 `dropNode` / `dropType` 恒为 null——文档站的拖拽用例每次成功拖动都记一句「未完成放置」。现在改为**在 drop 里就地发出 `node-drag-end` 并收尾手势**（同时清 `draggingNode`，让真到达的那次 dragend 被守卫短路，不会补一条重复事件），载荷与 `node-drop` 一致；取消或被拒的拖拽仍按语义报 null。选这条路线而不是「在 dragend 里读落点备份」：跨父级移动会把源元素卸载重建，浏览器那次 dragend 落在已脱离文档的节点上，宿主侧收不到（react 侧正是这种形态）。
+- **过滤词只命中 OKR 左子树时，整棵树不再从 DOM 消失**：共用的根节点自身不匹配、右树侧零命中时被判不可见，而节点根元素是 `v-if="node.visible"`——刚命中的左子树跟着被卸载，页面空掉（`getVisibleNodes()` 读 0）。Q1「父节点保持可见」当年只修通了右树这一侧；现在左树命中也会把根保住（OKR 下 `filter` 先右后左的调用顺序是承重的，已写进注释）。
+- **`default-checked-keys` 运行时按内容比较，不再按引用重放**：宿主每次渲染新建一个等值数组（计算属性、漏了 `useMemo` 的派生表达式都会这样），原先被当成「默认勾选变了」，先清空全部勾选再重放列表，把用户刚勾掉的、刚勾上的整片抹回去。现在只有列表**内容**真的变了才重放（`String(key)` 归一去重后比对，与 `getCheckedKeys` 同口径），`undefined` 与 `[]` 视作同一份「没有默认勾选」。API 表与文档站措辞同步更正。
 - **画布平移把手势甩出画布边界再松手，会卡住平移态并让悬停继续拖动画布**：`OkrTreeViewport` 的 `pointerup` / `pointercancel` 只挂在画布根元素上（既没有 `setPointerCapture`，也没有 window 级监听），指针在画布外松开时这两个处理器根本不执行——`is-panning` 留在原地、`panStart` 也不清，于是之后**不带按键**的悬停移动仍按 `panStart` 继续改写偏移（实测从 `translate(125px, -379.5px)` 一路走到 `translate(290px, 0px)`）。现在由一个挂载期注册、卸载时摘掉的常驻 window 监听收尾（常驻而不是按次添加，免得 1.14.1 修掉的监听堆叠换个形式回来）；这条收尾**不**武装「吞掉一次 click」——松手在画布外时浏览器不会在画布里派发那次 click，武装了就会吃掉用户回到画布里的第一次正常点击。姊妹包 react-okr-tree 同批同形。
 
 ## 1.14.1（2026-09-24）
