@@ -72,7 +72,7 @@ curl -s "https://registry.npmjs.org/-/npm/v1/attestations/vue3-okr-tree@<ver>" |
 
 > ⚠️ **不要用完整 packument 里的 `attestations` 字段判断**：provenance 不在 packument 的 version 条目里，`curl https://registry.npmjs.org/<pkg>/latest` 永远查不到它，对已带签名证明的版本也一样返回空——这条判据是假的，用它会把成功当失败。
 >
-> ⚠️ registry 有传播延迟（实测约 1 分钟内 `dist-tags.latest` 才更新，attestations 端点也会短暂 404）。run 刚结束就查不到不等于发布失败，先看日志里的 `+ <pkg>@<ver>`。
+> ⚠️ registry 有传播延迟（~~实测约 1 分钟内 `dist-tags.latest` 才更新，attestations 端点也会短暂 404~~ → **2026-09-25 发布 1.15.0 时实测约 15 分钟**版本端点 / packument / attestations 才全部可读，publish 步日志里 npm 明说「Your package is being processed and may take a few minutes」；历史观察值不再代表上界）。run 刚结束就查不到不等于发布失败，先看日志里的 `+ <pkg>@<ver>`，确认后只等不重发——重复推 tag 会被守卫跳过，修不了传播。
 
 > `npm publish --dry-run` 不换 OIDC token（dry-run 直接跳过发布请求），**验不出发布链路**，别拿它当预检。
 

@@ -14,6 +14,8 @@
 
 **2026-09-25 更新**：**1.14.2 已发布**（patch，对外 API 形状零变化）——vue3 run `36133163484`（`+ vue3-okr-tree@1.14.2`，provenance logIndex `2955587782`），react 同号 run `36133382553`（logIndex `2955619096`）。内容：G8 的 Demo 交互层批次 + 四条库侧修复（拖拽第六事件载荷与丢失、左子树过滤筛空整树、`default-checked-keys` 按内容重放、画布平移甩出边界卡手势）。发布途中 Visual job 红过一次，根因是 API 表格 `line-height: 1.6`（14px ⇒ 22.4px 带小数）被文案多折的一行顶到小数位，按门禁提示取整成 22px 而非直接刷基线，之后两平台都落到元素真实高度 157，Linux 那份走 Snapshot Bootstrap 补正（重生成整套只有这一张变）。
 
+**2026-09-26 更新**：**1.15.0 已发布**（minor，纯增量）——vue3 run `36162607475`（`+ vue3-okr-tree@1.15.0`，provenance logIndex `2958660393`），react 同号 run `36163428705`（logIndex `2958769511`）。内容：Vue Devtools 面板（#16 收官，见 CHANGELOG 与 `docs-site/guide/devtools.md`）+ `DEFAULT_PROPS` 导出补齐（第 4 节的最后一个不对称清零）。装验：两包 cjs/esm 双路组件可取、`DEFAULT_PROPS` 内容正确、`npm audit signatures` 的 invalid/missing 均空（vue3 18 项 attestation 全 verified）。**本次 registry 读侧传播实测约 15 分钟**（publish 受理 → 版本端点 / packument / attestations 全部可读），远超第 5 节「约 1 分钟内」的历史观察值——「publish 步的 `+ <pkg>@<ver>` + Rekor 条目存在 + run 全绿」三条合起来才是发布成功的判据，读侧不可读时只等不重发（重复推 tag 只会被守卫跳过，修不了传播）。
+
 `requirements.md` 第 7 节的 5 条验收项：~~**4 条 ✅、1 条 ⚠️**（剩第 2 条 Demo 项）~~ → **5 条全部 ✅**（2026-09-25，G8 的 Demo 交互层断言收口）；第 6 节 Q1–Q9：**9 条全部 ✅**。
 
 > 更正一处本文首版的计数错误：当时写成「4 ✅ 1 ⚠️」，但按第 2 节的表实际是 3 ✅ 2 ⚠️（第 2 条与第 5 条都是 ⚠️，我漏看了第 5 条）。本次 Q8 收口让第 5 条转 ✅，两种口径才恰好重合。
