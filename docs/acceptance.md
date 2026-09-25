@@ -12,6 +12,8 @@
 
 **2026-09-24 更新**：**1.14.1 已发布**（patch，对外 API 零变化）。发布这一批同时把四条 workflow 的 action 从仍在 Node 20 上跑的 `v4` 升到第一个脱离 node20 的档位（checkout / setup-node / pnpm 三大 action → v5，upload-artifact → v6，逐个拉各 major 的 action.yml 实测 `runs.using` 后定的档），CI run 日志里的弃用警告 5 行 → 0 行、Visual 1 行 → 0 行，两仓四条 run 全绿。
 
+**2026-09-25 更新**：**1.14.2 已发布**（patch，对外 API 形状零变化）——vue3 run `36133163484`（`+ vue3-okr-tree@1.14.2`，provenance logIndex `2955587782`），react 同号 run `36133382553`（logIndex `2955619096`）。内容：G8 的 Demo 交互层批次 + 四条库侧修复（拖拽第六事件载荷与丢失、左子树过滤筛空整树、`default-checked-keys` 按内容重放、画布平移甩出边界卡手势）。发布途中 Visual job 红过一次，根因是 API 表格 `line-height: 1.6`（14px ⇒ 22.4px 带小数）被文案多折的一行顶到小数位，按门禁提示取整成 22px 而非直接刷基线，之后两平台都落到元素真实高度 157，Linux 那份走 Snapshot Bootstrap 补正（重生成整套只有这一张变）。
+
 `requirements.md` 第 7 节的 5 条验收项：~~**4 条 ✅、1 条 ⚠️**（剩第 2 条 Demo 项）~~ → **5 条全部 ✅**（2026-09-25，G8 的 Demo 交互层断言收口）；第 6 节 Q1–Q9：**9 条全部 ✅**。
 
 > 更正一处本文首版的计数错误：当时写成「4 ✅ 1 ⚠️」，但按第 2 节的表实际是 3 ✅ 2 ⚠️（第 2 条与第 5 条都是 ⚠️，我漏看了第 5 条）。本次 Q8 收口让第 5 条转 ✅，两种口径才恰好重合。
