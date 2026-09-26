@@ -2,6 +2,12 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## Unreleased
+
+- **万级数据的挂载成本记账**：`pnpm bench` 新增两条万级场景（1 父 + 10000 平铺子节点，只差 `virtual`），`docs/perf.md` 补「万级平铺」一节——实测 `virtual` 把渲染节点 10001 → 13、首帧 10.95 s → 5.49 s，**只降一半**，剩下那 5.5 s 在挂载期的模型侧：`deep-watch` 摘掉、`data` 不套 `reactive`、渲染只剩 13 个节点，三项各自实测都在噪声内（4.9–5.6 s），都不省。**姊妹包 react-okr-tree 同形状是 978 ms / 111 ms，全量差 11 倍、窗口化后差 50 倍**——两仓模型层同源，所以这不是万级数据本来就要付的代价，而是本仓挂载路径特有的开销，记为待查项另起一批。这一条**不设门禁，只记账**（`tests/visual/perf.spec.ts` 仍守「2000 节点 < 300 ms」）；roadmap #15 验收段里「已单列为独立性能待办」那句据此改为指向 `perf.md`。
+- **文档站进入 CI**：`ci.yml` 新增 `Docs site build` job，跑与 Cloudflare 部署完全同一条 `pnpm docs:build:full`（库 dist + Playground + `nuxt generate` + 合并 `/playground/`），并断言静态产物里 `index.html` 与 `playground/index.html` 存在。此前 Docus 侧构建坏了 CI 完全抓不到（文档站与库同仓、依赖打在根 lockfile 上，本仓已为此踩过两次 install 失败）。库源码零改动。
+- 文档措辞收口：`docs/roadmap.md` 三处过期表述按就地更正体例改写（spike 探针的入库状态、store 待办的去向、Cloudflare 面板输出目录已改并线上验证），`src/lib/okr-tree/virtual.ts` 的探针引用同步。
+
 ## 1.16.0（2026-09-26）
 
 - **新增 `virtual` 虚拟滚动**：同层可见兄弟数 ≥ 50 的行只渲染视口内窗口，DOM 数量与滚动流畅度不再随总数增长（1 父 + 10000 平铺子节点实测渲染节点 10001 → 13）。实现要点：未渲染兄弟的位置由**等尺寸占位块**顶住（float 行总宽与每个渲染节点的坐标和全量渲染逐像素一致），占位块自带连线段续接横线，行首 / 行末的边界帽（`:first-child` / `:last-child` 的去线与圆角）语义由占位块自然继承；展开行的子容器按**宽度模型**显式定宽（float 的 shrink-to-fit 取 `min(max(min-content, 可用宽), max-content)`，单个巨宽占位块会把容器钉在 min-content 上、把渲染节点挤到第二行折断连线）；折叠行不渲染占位块，折叠宽度与全量渲染一致。aria（`aria-setsize` / `aria-posinset`）、`show-node-num` 计数、`getVisibleNodes()` 全部按全量可见列表输出；`scrollToNode` 与键盘漫游对窗口外目标**先揭示再定位**（逐条推进不跳焦）。要求数字型 `label-width`（horizontal 布局还要求 `label-height`），auto 尺寸下达标行退回全量渲染并警告；创建期快照，运行时变更输出警告。已知边界：万级数据首帧成本主要在 **store 构建**（1 万节点约 2.9s，与 virtual 无关、全量渲染同样存在），virtual 消除的是 DOM 数量与滚动 / 展开时的渲染卡顿；压缩后产物 +2.1 kB gzip（ESM / UMD 预算上调至 21 kB）。姊妹包 react-okr-tree 同批同形。

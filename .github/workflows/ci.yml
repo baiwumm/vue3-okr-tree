@@ -67,6 +67,35 @@ jobs:
       - name: Pack (dry run)
         run: npm pack --dry-run
 
+  # 文档站与库同仓、依赖打在根 lockfile 上，不构建就抓不到 Nuxt/Docus 侧的回归。
+  # 跑的是 Cloudflare 部署用的同一条命令（docs:build:full：库 dist + Playground +
+  # nuxt generate + 合并 /playground/），而不是只跑 generate —— 部署链路吃的是完整产物。
+  docs:
+    name: Docs site build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v5
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build docs site + playground (same command as the Cloudflare build)
+        run: pnpm docs:build:full
+
+      - name: Assert the static output Cloudflare serves
+        run: |
+          test -f docs-site/.output/public/index.html
+          test -f docs-site/.output/public/playground/index.html
+
   peer-matrix:
     name: Unit tests on vue ${{ matrix.vue }}
     runs-on: ubuntu-latest

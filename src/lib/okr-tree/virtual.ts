@@ -4,7 +4,7 @@ import type { TreeNode } from './model/node'
 /**
  * 虚拟滚动（virtual prop）：只对「同层可见兄弟数 ≥ 阈值」的行做窗口化渲染。
  *
- * 机制（2026-09-26 spike 结论，探针 _scratch/spike-virtual.spec.ts）：
+ * 机制（2026-09-26 spike 结论，探针是本地临时件、沿例不入库）：
  * - 连接线的每段线都由节点自绘（::before 左半段 / ::after 右半段 + 穿自身竖线），
  *   真正依赖 DOM 相邻的只有边界帽（:first-child / :last-child / :only-child）。
  * - 窗口化不删兄弟的"位置"：用**等尺寸 spacer 占位块**顶住未渲染兄弟的位置，float 行
