@@ -1,0 +1,70 @@
+/*
+ * Docus 官方样式钩子（layer/modules/css.ts 把它 @import 进 .nuxt/docus.css 末尾，
+ * 即 tailwindcss + @nuxt/ui 之后）——只有走这个文件才能用 @theme 覆写设计令牌。
+ *
+ * playground 排版样式与 prism 主题都是「无层级」CSS，优先级高于 Tailwind 的
+ * @layer utilities（Docus / Nuxt UI 的正文样式全在 utilities 层里），prism 的
+ * `pre[class*="language-"]` 会把 Shiki 代码块的底色/内边距/字体改成 #f5f2f0 / 1em /
+ * Consolas。用 layered import 把它们压进 Tailwind 声明在最前的 base 层，正文代码块
+ * 即恢复正常，playground 的 Demo 代码块（.code-block，无 utilities 竞争）照旧吃到 token 配色。
+ */
+@import '../../playground/style.css' layer(base);
+@import 'prismjs/themes/prism.css' layer(base);
+
+/*
+ * 正文用 Maple Mono CN（与姊妹站 react-okr-tree 同一份自托管子集，GB2312 + 常用标点，
+ * unicode-range 之外的生僻字自然回退系统字体）。代码块保持 Nuxt UI 默认等宽栈，与 docus.dev 一致。
+ */
+@theme {
+  --font-sans:
+    'Maple Mono CN', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+}
+
+@font-face {
+  font-family: 'Maple Mono CN';
+  src: url('/fonts/maple-mono-cn-regular.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  unicode-range:
+    U+0020-007E, U+00B1, U+00B7, U+00D7, U+00F7, U+2014, U+2018-2019, U+201C-201D, U+2026,
+    U+3000-303F, U+4E00-9FFF, U+FF00-FFEF;
+}
+
+/*
+ * Demo 容器：.vue-okr-tree-demo 是 playground 排版样式的类作用域（DocsDemo 与 DemoFrame 都挂它），
+ * 但它自带 max-width/padding 是给独立 Playground 页用的整页留白，在正文里多余，这里各自收掉。
+ * docs-demo（单个指南页）额外给一圈卡片边界与 Docus 正文协调。
+ */
+.docs-demo-block {
+  max-width: 100%;
+  padding: 16px;
+  margin: 12px 0;
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+}
+.docs-demo-block h3 {
+  margin-top: 0;
+}
+.demo-frame {
+  max-width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+/*
+ * prism 的 `pre[class*="language-"]` 与 Shiki 渲染的正文代码块（同样带 language-xxx 类）撞名，
+ * 它落在 base 层里没有 utilities 能盖掉的两条是：text-shadow 与 color: black
+ * （Nuxt UI 的 prose pre 只给 font-mono / text-sm/6，不设文字色，靠继承正文色）。
+ * 正文代码块 = pre.shiki；playground Demo 的 .code-block 不带该类，不受影响。
+ */
+pre.shiki,
+pre.shiki code {
+  color: inherit;
+  text-shadow: none;
+}
+
+.api-doc-section table {
+  width: 100%;
+}

@@ -34,6 +34,7 @@ _scratch/
 .env.local
 .env.*.local
 
-# VitePress 文档站构建产物
-docs-site/.vitepress/dist
-docs-site/.vitepress/cache
+# Docus 文档站构建产物
+docs-site/.nuxt/
+docs-site/.output/
+docs-site/.data/

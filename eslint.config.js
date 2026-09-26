@@ -8,9 +8,9 @@ export default tseslint.config(
     ignores: [
       'dist/**',
       'playground/dist/**',
-      'docs-site-docus/.nuxt/**',
-      'docs-site-docus/.output/**',
-      'docs-site-docus/.data/**',
+      'docs-site/.nuxt/**',
+      'docs-site/.output/**',
+      'docs-site/.data/**',
       'node_modules/**',
       'coverage/**',
       '_scratch/**',

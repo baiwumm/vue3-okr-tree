@@ -5,4 +5,8 @@ pnpm-lock.yaml
 package-lock.json
 *.tgz
 .workbuddy
-docs-site/.vitepress
+docs-site/.nuxt
+docs-site/.output
+docs-site/.data
+# 生成物：由 scripts/gen-changelog-entries.mjs 生成，勿手改
+docs-site/app/components/content/changelog-entries.data.ts
