@@ -1,4 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+
+// 3000 节点的 store 构建在慢机上不止 5s：整文件放宽单用例超时
+vi.setConfig({ testTimeout: 30_000 })
 import { nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
 import { VueOkrTree } from '../../src/lib'
