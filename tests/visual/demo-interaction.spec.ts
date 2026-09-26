@@ -721,4 +721,36 @@ test.describe('交互档（accordion / expand-on-click-node / checkbox / draggab
 
     expect(errors).toHaveLength(0)
   })
+
+  test('virtual：窗口化有界渲染，滚动揭示与开关切换都不破几何', async ({ page }) => {
+    const errors = await openPlayground(page)
+    const c = card(page, 'demo-virtual')
+    const stat = c.locator('[data-test="stat"]')
+    const toggle = c.locator('[data-test="virtual-toggle"]')
+
+    // 开启 virtual：DOM 有界（远小于总数 3001）
+    await expect(toggle).toBeChecked()
+    await expect(stat).toContainText('总数 3000')
+    const domOn = await c.locator('.virtual-stage .org-chart-node').count()
+    expect(domOn).toBeGreaterThan(1)
+    expect(domOn).toBeLessThan(60)
+    await expect(c.locator('.virtual-stage .okr-v-spacer').first()).toBeVisible()
+
+    // 滚动到随机节点：揭示后 DOM 仍有界
+    await c.locator('[data-test="scroll-btn"]').click()
+    await page.waitForTimeout(150)
+    expect(await c.locator('.virtual-stage .org-chart-node').count()).toBeLessThan(60)
+
+    // 关闭 virtual：全量渲染 3001 个节点；重新开启回到有界
+    await toggle.uncheck({ force: true })
+    await expect
+      .poll(async () => await c.locator('.virtual-stage .org-chart-node').count())
+      .toBe(3001)
+    await toggle.check({ force: true })
+    await expect
+      .poll(async () => await c.locator('.virtual-stage .org-chart-node').count())
+      .toBeLessThan(60)
+
+    expect(errors).toHaveLength(0)
+  })
 })

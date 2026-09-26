@@ -3,6 +3,7 @@ import type { DropType } from '../../types'
 import type { TreeStore } from './model/tree-store'
 import type { TreeNode } from './model/node'
 import type { ViewportTreeApi } from './viewport'
+import type { OkrTreeVirtualContext } from './virtual'
 
 export type OkrTreeEventName =
   | 'node-click'
@@ -76,3 +77,6 @@ export interface OkrTreeViewportContext {
 
 export const OKR_TREE_VIEWPORT_INJECTION_KEY: InjectionKey<OkrTreeViewportContext> =
   Symbol('okr-tree-viewport')
+
+/** 虚拟滚动上下文（virtual prop 开启时由 OkrTree provide；关闭时不提供，inject 得 undefined） */
+export const OKR_TREE_VIRTUAL_KEY: InjectionKey<OkrTreeVirtualContext> = Symbol('okr-tree-virtual')

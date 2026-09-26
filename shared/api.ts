@@ -266,6 +266,13 @@ export const attributesSection: ApiSection = {
       '—',
       'true',
     ],
+    [
+      'virtual',
+      '<strong>Vue 3 版新增（1.16.0，创建期生效）。</strong>虚拟滚动：同层可见兄弟数 ≥ 50 的行只渲染视口内窗口，用等尺寸占位块保持布局与连接线逐像素等价，aria 语义按全量可见列表输出。<strong>要求数字型 <code>label-width</code></strong>（horizontal 布局还要求 <code>label-height</code>），auto 尺寸下达标行退回全量渲染并给出开发期警告；<code>scrollToNode</code> 与键盘漫游对窗口外目标先揭示再定位。运行时变更不生效（创建期快照）',
+      'boolean',
+      '—',
+      'false',
+    ],
   ],
 }
 

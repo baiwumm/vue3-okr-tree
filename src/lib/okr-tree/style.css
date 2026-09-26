@@ -142,6 +142,23 @@
 .org-chart-container .vertical .org-chart-node:last-child::after {
   border: 0 none;
 }
+
+/* ======================= 虚拟滚动占位块（virtual） =======================
+ * 窗口化后未渲染兄弟的位置由等尺寸占位块顶住：float 行总宽、flex 列总高与全量渲染
+ * 逐像素一致；占位块自带连线段续接线。行首/行末的占位块天然占据 :first-child /
+ * :last-child，真实节点的边界帽语义自动正确，无需覆盖类。 */
+.org-chart-container .vertical .okr-v-spacer {
+  float: left;
+  height: 0;
+  border-top: var(--okr-line-width, 1px) solid var(--okr-line-color, #ccc);
+}
+.org-chart-container .horizontal .okr-h-spacer {
+  border-left: var(--okr-line-width, 1px) solid var(--okr-line-color, #ccc);
+}
+.org-chart-container .horizontal .org-chart-node-left-children .okr-h-spacer {
+  border-left: 0 none;
+  border-right: var(--okr-line-width, 1px) solid var(--okr-line-color, #ccc);
+}
 /* 将垂直连接器添加回最后的节点 */
 .org-chart-container .vertical .org-chart-node:last-child::before {
   border-right: var(--okr-line-width, 1px) solid var(--okr-line-color, #ccc);

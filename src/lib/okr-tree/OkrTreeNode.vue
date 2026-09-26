@@ -21,13 +21,21 @@
     <transition v-bind="transitionProps">
       <div
         v-if="showLeftChildNode"
+        ref="leftChildrenRef"
         class="org-chart-node-left-children"
         :class="[animClass, { 'is-hidden': !node.leftExpanded }]"
         :style="leftChildrenStyle"
         role="group"
       >
+        <div
+          v-if="node.leftExpanded && leftWindow && leftWindow.leadSize > 0"
+          class="okr-spacer"
+          :class="spacerClass"
+          :style="spacerStyle(leftWindow.leadSize)"
+          aria-hidden="true"
+        ></div>
         <OkrTreeNode
-          v-for="entry in leftPositions"
+          v-for="entry in leftEntries"
           :key="getNodeKey(entry.node)"
           :node="entry.node"
           :aria-set-size="entry.size"
@@ -50,6 +58,13 @@
             <slot name="expand-btn" v-bind="scope" />
           </template>
         </OkrTreeNode>
+        <div
+          v-if="node.leftExpanded && leftWindow && leftWindow.trailSize > 0"
+          class="okr-spacer"
+          :class="spacerClass"
+          :style="spacerStyle(leftWindow.trailSize)"
+          aria-hidden="true"
+        ></div>
       </div>
     </transition>
 
@@ -141,13 +156,21 @@
     <transition v-bind="transitionProps">
       <div
         v-if="!isLeftChildNode && node.childNodes && node.childNodes.length > 0"
+        ref="childrenRef"
         class="org-chart-node-children"
         :class="[animClass, { 'is-hidden': !node.expanded }]"
         :style="childrenStyle"
         role="group"
       >
+        <div
+          v-if="node.expanded && rightWindow && rightWindow.leadSize > 0"
+          class="okr-spacer"
+          :class="spacerClass"
+          :style="spacerStyle(rightWindow.leadSize)"
+          aria-hidden="true"
+        ></div>
         <OkrTreeNode
-          v-for="entry in rightPositions"
+          v-for="entry in rightEntries"
           :key="getNodeKey(entry.node)"
           :node="entry.node"
           :aria-set-size="entry.size"
@@ -169,6 +192,13 @@
             <slot name="expand-btn" v-bind="scope" />
           </template>
         </OkrTreeNode>
+        <div
+          v-if="node.expanded && rightWindow && rightWindow.trailSize > 0"
+          class="okr-spacer"
+          :class="spacerClass"
+          :style="spacerStyle(rightWindow.trailSize)"
+          aria-hidden="true"
+        ></div>
       </div>
     </transition>
   </div>
@@ -187,8 +217,9 @@ import {
   type CSSProperties,
   type PropType,
 } from 'vue'
-import { OKR_TREE_INJECTION_KEY } from './context'
+import { OKR_TREE_INJECTION_KEY, OKR_TREE_VIRTUAL_KEY } from './context'
 import { setPositions } from './aria-set'
+import { hNodeHeight, useVirtualWindow, vNodeWidth, type OkrTreeVirtualContext } from './virtual'
 import { NodeContent, NodeBtnContent } from './node-content'
 import { getNodeKey as _getNodeKey } from './model/util'
 import { usePrefersReducedMotion } from './use-reduced-motion'
@@ -329,10 +360,24 @@ const leftChildrenStyle = computed<CSSProperties>(() => ({
   ...animVar.value,
   ...(node.value.leftExpanded ? {} : hiddenStyle(keepLeftHeight.value)),
 }))
-const childrenStyle = computed<CSSProperties>(() => ({
-  ...animVar.value,
-  ...(node.value.expanded ? {} : hiddenStyle(keepRightHeight.value)),
-}))
+/**
+ * 展开且窗口化时给子容器显式宽度（模型行宽）：float 行的 shrink-to-fit 取
+ * min(max(min-content, 可用宽), max-content)，单个巨宽占位块会把容器钉在 min-content
+ * 上、把渲染节点挤到第二行折断连线；显式宽度让容器（进而父节点）与全量渲染同宽。
+ * 折叠时不设宽也不渲染占位块——隐藏容器的 min-content 必须与全量渲染一致（折叠的
+ * 父节点宽度 ≈ 叶子宽），否则折叠态会被占位块撑宽。
+ */
+const childrenStyle = computed<CSSProperties>(() => {
+  const base: CSSProperties = {
+    ...animVar.value,
+    ...(node.value.expanded ? {} : hiddenStyle(keepRightHeight.value)),
+  }
+  const win = rightWindow.value
+  if (win && node.value.expanded && virtualCtx?.axis === 'x') {
+    base.width = `${win.totalSize}px`
+  }
+  return base
+})
 /** 展开/收起过渡的状态类（原版 animate 在切换时无过渡，见 requirements 第 6 节） */
 const animClass = computed(() =>
   animateOn.value ? ['is-animated', `okr-anim-${store.animateName}`] : []
@@ -501,6 +546,47 @@ const ariaChecked = computed(() => {
  */
 const leftPositions = computed(() => setPositions(leftChildNodes.value))
 const rightPositions = computed(() => setPositions(node.value.childNodes))
+
+// ---- 虚拟滚动（virtual）：行窗口化（virtual 关闭时上下文不存在，全部维持全量渲染） ----
+const virtualCtx = inject(OKR_TREE_VIRTUAL_KEY, undefined)
+const childrenRef = ref<HTMLElement | null>(null)
+const leftChildrenRef = ref<HTMLElement | null>(null)
+
+/** 窗口化与 spacer 尺寸都以「可见兄弟」为口径（被 filter 隐藏的不占位） */
+const visibleRightChildren = computed(() => node.value.childNodes.filter((c) => c.visible))
+const visibleLeftChildren = computed(() => leftChildNodes.value.filter((c) => c.visible))
+
+const sizeOf = (n: TreeNode, ctx: OkrTreeVirtualContext) =>
+  ctx.axis === 'x' ? vNodeWidth(n, ctx) : hNodeHeight(n, ctx)
+
+const rightWindow = useVirtualWindow({
+  ctx: virtualCtx,
+  items: visibleRightChildren,
+  containerRef: childrenRef,
+  sizeOf,
+}).state
+const leftWindow = useVirtualWindow({
+  ctx: virtualCtx,
+  items: visibleLeftChildren,
+  containerRef: leftChildrenRef,
+  sizeOf,
+}).state
+
+/** 窗口化生效时只渲染 [start, end)，aria 语义仍按全量可见列表（setPositions 口径不变） */
+const rightEntries = computed(() => {
+  const win = rightWindow.value
+  if (!win) return rightPositions.value
+  return setPositions(visibleRightChildren.value).slice(win.start, win.end)
+})
+const leftEntries = computed(() => {
+  const win = leftWindow.value
+  if (!win) return leftPositions.value
+  return setPositions(visibleLeftChildren.value).slice(win.start, win.end)
+})
+
+const spacerClass = computed(() => (virtualCtx?.axis === 'y' ? 'okr-h-spacer' : 'okr-v-spacer'))
+const spacerStyle = (size: number) =>
+  virtualCtx?.axis === 'y' ? { height: `${size}px` } : { width: `${size}px` }
 
 const tabIndex = computed(() => {
   const focused = tree!.focusedNode.value

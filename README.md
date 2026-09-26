@@ -109,7 +109,7 @@ const data = ref([
 
 完整表格（每个参数的说明、类型与默认值）见 **[文档站 API 页](https://vue3-okr-tree.baiwumm.com/api/)**，Playground 的 API 页与下面这份概览读的都是同一份 [`shared/api.ts`](https://github.com/baiwumm/vue3-okr-tree/blob/main/shared/api.ts)——条数由脚本统计，表与实现的偏差不超过一条用例（`tests/api-surface.spec.ts`）。
 
-- **Attributes**（40 条）：`data` / `direction` / `onlyBothTree` / `leftData` / `label-width` / `label-height` / `label-class-name` / `current-lable-class-name` / `show-collapsable` / `accordion` / `expand-on-click-node` / `show-checkbox` / `check-strictly` / `default-checked-keys` / `draggable` / `allow-drag` / `allow-drop` / `connector` / `connector-shape` / `unstyled` / `show-node-num` / `default-expand-all` / `render-content` / `node-btn-content` / `node-component` / `props` / `node-key` / `default-expanded-keys` / `current-node-key` / `filter-node-method` / `animate` / `animate-name` / `animate-duration` / `align-root` / `theme` / `expanded-keys` / `current-key` / `lazy` / `load` / `deep-watch`
+- **Attributes**（41 条）：`data` / `direction` / `onlyBothTree` / `leftData` / `label-width` / `label-height` / `label-class-name` / `current-lable-class-name` / `show-collapsable` / `accordion` / `expand-on-click-node` / `show-checkbox` / `check-strictly` / `default-checked-keys` / `draggable` / `allow-drag` / `allow-drop` / `connector` / `connector-shape` / `unstyled` / `show-node-num` / `default-expand-all` / `render-content` / `node-btn-content` / `node-component` / `props` / `node-key` / `default-expanded-keys` / `current-node-key` / `filter-node-method` / `animate` / `animate-name` / `animate-duration` / `align-root` / `theme` / `expanded-keys` / `current-key` / `lazy` / `load` / `deep-watch` / `virtual`
 - **Props（props 属性的字段映射配置）**（4 条）：`label` / `children` / `disabled` / `isLeaf`
 - **Events**（14 条）：`node-click` / `node-expand` / `node-collapse` / `node-contextmenu` / `update:expandedKeys` / `update:currentKey` / `check` / `check-change` / `node-drag-start` / `node-drag-enter` / `node-drag-leave` / `node-drag-over` / `node-drag-end` / `node-drop`
 - **Methods（通过 ref 调用）**（28 条）：`filter` / `updateKeyChildren` / `getNode` / `setCurrentNode` / `setCurrentKey` / `getCurrentKey` / `getCurrentNode` / `remove` / `append` / `insertBefore` / `insertAfter` / `expandAll` / `collapseAll` / `expandNode` / `collapseNode` / `scrollToNode` / `getNodeEl` / `getCheckedKeys` / `getCheckedNodes` / `setCheckedKeys` / `getHalfCheckedKeys` / `getHalfCheckedNodes` / `isChecked` / `moveNode` / `getVisibleNodes` / `getNodePath` / `getNodeKey` / `store / root`
@@ -122,7 +122,8 @@ const data = ref([
 
 - `append` / `insertBefore` / `insertAfter` / `remove` / `updateKeyChildren` / `moveNode` 与懒加载 `resolve` 会**同步修改你传入的源数据**；冻结 / 只读数据下写入被跳过并给出开发期警告，视图仍完成增删。
 - 不配 `node-key` 也能渲染与交互，但按 key / data 定位节点的能力全部失效（`getNode` 返回 `null`、`v-model:expanded-keys` 不生效），传 Node 实例的仍然可用。
-- `node-key` / `direction` / `onlyBothTree` / `deep-watch` 是创建期快照，运行时改不会生效；其余 prop 运行时正常同步。
+- `node-key` / `direction` / `onlyBothTree` / `deep-watch` / `virtual` 是创建期快照，运行时改不会生效；其余 prop 运行时正常同步。
+- `virtual`（1.16.0 新增）要求数字型 `label-width`（horizontal 布局还要求 `label-height`）；窗口化后 `scrollToNode` 与键盘漫游对窗口外目标先揭示再定位，详见 [虚拟滚动](https://vue3-okr-tree.baiwumm.com/guide/virtual)。
 
 完整清单见 [需要注意的行为](https://vue3-okr-tree.baiwumm.com/guide/behavior)。
 

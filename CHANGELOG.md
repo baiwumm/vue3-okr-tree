@@ -2,6 +2,10 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## Unreleased
+
+- **新增 `virtual` 虚拟滚动**：同层可见兄弟数 ≥ 50 的行只渲染视口内窗口，DOM 数量与滚动流畅度不再随总数增长（1 父 + 10000 平铺子节点实测渲染节点 10001 → 13）。实现要点：未渲染兄弟的位置由**等尺寸占位块**顶住（float 行总宽与每个渲染节点的坐标和全量渲染逐像素一致），占位块自带连线段续接横线，行首 / 行末的边界帽（`:first-child` / `:last-child` 的去线与圆角）语义由占位块自然继承；展开行的子容器按**宽度模型**显式定宽（float 的 shrink-to-fit 取 `min(max(min-content, 可用宽), max-content)`，单个巨宽占位块会把容器钉在 min-content 上、把渲染节点挤到第二行折断连线）；折叠行不渲染占位块，折叠宽度与全量渲染一致。aria（`aria-setsize` / `aria-posinset`）、`show-node-num` 计数、`getVisibleNodes()` 全部按全量可见列表输出；`scrollToNode` 与键盘漫游对窗口外目标**先揭示再定位**（逐条推进不跳焦）。要求数字型 `label-width`（horizontal 布局还要求 `label-height`），auto 尺寸下达标行退回全量渲染并警告；创建期快照，运行时变更输出警告。已知边界：万级数据首帧成本主要在 **store 构建**（1 万节点约 2.9s，与 virtual 无关、全量渲染同样存在），virtual 消除的是 DOM 数量与滚动 / 展开时的渲染卡顿；压缩后产物 +2.1 kB gzip（ESM / UMD 预算上调至 21 kB）。姊妹包 react-okr-tree 同批同形。
+
 ## 1.15.0（2026-09-26）
 
 一个功能 minor：**Vue Devtools 面板**（dev only，roadmap #16 最后一项，做完 #16 整项清空）与 **`DEFAULT_PROPS` 导出补齐**（两仓导出面最后一个不对称清零）。两项都是纯增量，无任何行为变化。姊妹包 react-okr-tree 同号跟随（`DEFAULT_PROPS` 侧早已导出、Devtools 面板无对等物，详见其 CHANGELOG）。
