@@ -17,12 +17,10 @@ export default defineConfig({
       ? {
           'vue3-okr-tree/dist/style.css': r('./dist/style.css'),
           'vue3-okr-tree': r('./dist/vue3-okr-tree.es.js'),
-          '@': r('./src'),
         }
       : {
           'vue3-okr-tree/dist/style.css': r('./src/lib/okr-tree/style.css'),
           'vue3-okr-tree': r('./src/lib/index.ts'),
-          '@': r('./src'),
         },
   },
   server: {

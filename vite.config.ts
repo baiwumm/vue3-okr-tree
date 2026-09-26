@@ -22,11 +22,6 @@ export default defineConfig({
       copyDtsFiles: false,
     }),
   ],
-  resolve: {
-    alias: {
-      '@': r('./src'),
-    },
-  },
   build: {
     lib: {
       entry: r('./src/lib/index.ts'),

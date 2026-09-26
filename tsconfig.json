@@ -18,10 +18,8 @@
     "noEmit": true,
     "useDefineForClassFields": true,
     "types": ["vite/client", "node"],
-    "baseUrl": ".",
     "paths": {
-      "vue3-okr-tree": ["src/lib/index.ts"],
-      "@/*": ["src/*"]
+      "vue3-okr-tree": ["./src/lib/index.ts"]
     }
   },
   "include": [
