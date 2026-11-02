@@ -22,7 +22,7 @@ pnpm docs:preview:full   # 构建完整产物并本地预览（/playground/ 仅�
 | 项           | 值                                                                                                  |
 | ------------ | --------------------------------------------------------------------------------------------------- |
 | 项目类型     | Vue 3 组件库文档站（Docus / Nuxt 静态站，含 `/playground/` 子路径）                                 |
-| 框架预设     | Nuxt                                                                                                |
+| 框架预设     | `Other`（静态；**不要选 Nuxt**，框架预设会按 SSR 处理并改写输出目录）                               |
 | 根目录       | `/`                                                                                                 |
 | 生产分支     | `main`                                                                                              |
 | 域名         | `vue3-okr-tree.baiwumm.com`（继续使用，DNS 解析迁至腾讯云 EdgeOne）                                 |
@@ -35,7 +35,7 @@ pnpm docs:preview:full   # 构建完整产物并本地预览（/playground/ 仅�
 接入步骤（控制台字段名按实际界面填写）：
 
 1. 在腾讯云 EdgeOne（Makers）控制台新建项目，接入本仓库（Git 集成，生产分支 `main`）或按控制台支持的方式上传静态产物。
-2. 安装/构建命令与产物目录按上表填写；若构建镜像不读取 `.node-version`，按控制台实际支持的方式声明 Node 22（例如环境变量 `NODE_VERSION=22`）。
+2. 安装/构建命令与产物目录按上表填写；**框架预设必须选 `Other`（静态），不要选 Nuxt**——Nuxt 预设会按 SSR 处理并默认改写输出目录。若构建镜像不读取 `.node-version`，按控制台实际支持的方式声明 Node 22（例如环境变量 `NODE_VERSION=22`）。
 3. 绑定自定义域名 `vue3-okr-tree.baiwumm.com`（域名保持不变），在腾讯云 DNSPod 或当前 DNS 服务商处把解析指向 EdgeOne 控制台给出的加速域名；DNS、HTTPS 证书与缓存/回源策略按控制台实际配置。
 4. 产物根目录含 `404.html`：若控制台支持自定义 404 / 错误页，指向该文件。站点是预生成的纯静态页面，不需要 SPA history 回退。
 5. 启用 AI Assistant 时，在控制台的环境变量配置里按实际方式写入 `AI_GATEWAY_API_KEY`。
