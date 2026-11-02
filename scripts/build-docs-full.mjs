@@ -4,8 +4,8 @@
  * 2. 以 dist 产物模式构建 Playground
  * 3. 构建 Docus 文档站（nuxt generate）
  * 4. 将 Playground 产物合并进文档站输出的 /playground/ 子路径
- * 5. 将 `.output/public` 复制到非隐藏目录 `docs-site/dist`，供 EdgeOne 采集构建产物
- * 用法：pnpm docs:build:full；EdgeOne 输出目录填 docs-site/dist
+ * 5. 将 `.output/public` 复制到仓库根目录 `out/`，供 EdgeOne 采集构建产物
+ * 用法：pnpm docs:build:full；EdgeOne 输出目录填 out
  * 自包含：干净环境（如 CI 构建机）无需预先手动执行 pnpm build。
  */
 import { execSync } from 'node:child_process'
@@ -16,7 +16,7 @@ import { fileURLToPath } from 'node:url'
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const playgroundDist = resolve(root, 'playground/dist')
 const docsDist = resolve(root, 'docs-site/.output/public')
-const edgeDist = resolve(root, 'docs-site/dist')
+const edgeOut = resolve(root, 'out')
 const target = resolve(docsDist, 'playground')
 
 const run = (cmd, env) =>
@@ -39,11 +39,11 @@ if (!existsSync(playgroundDist)) {
 rmSync(target, { force: true, recursive: true })
 cpSync(playgroundDist, target, { recursive: true })
 
-console.log('[docs:build:full] 5/5 复制到非隐藏目录（EdgeOne 采集用）')
+console.log('[docs:build:full] 5/5 复制到仓库根目录 out/（EdgeOne 采集用）')
 if (!existsSync(docsDist)) {
   console.error('[docs:build:full] docs-site/.output/public 不存在，构建失败')
   process.exit(1)
 }
-rmSync(edgeDist, { force: true, recursive: true })
-cpSync(docsDist, edgeDist, { recursive: true })
-console.log(`[docs:build:full] 完成 → ${edgeDist}（源：${docsDist}）`)
+rmSync(edgeOut, { force: true, recursive: true })
+cpSync(docsDist, edgeOut, { recursive: true })
+console.log(`[docs:build:full] 完成 → ${edgeOut}（源：${docsDist}）`)
