@@ -11,7 +11,7 @@ pnpm install
 pnpm docs:dev            # 文档站开发服务（库本体走 src 源码别名，无需先构建）
 pnpm docs:build          # 仅构建文档站（nuxt generate → .output/public）
 pnpm docs:preview        # 预览文档站构建产物
-pnpm docs:build:full     # 完整构建：库 dist + Playground + 文档站 + 合并 /playground/ 子路径
+pnpm docs:build:full     # 完整构建：库 dist + Playground + 文档站 + 合并 /playground/ 子路径（并复制到 docs-site/dist）
 pnpm docs:preview:full   # 构建完整产物并本地预览（/playground/ 仅存在于完整产物中）
 ```
 
@@ -28,7 +28,7 @@ pnpm docs:preview:full   # 构建完整产物并本地预览（/playground/ 仅�
 | 域名         | `vue3-okr-tree.baiwumm.com`（继续使用，DNS 解析迁至腾讯云 EdgeOne）                                 |
 | 安装命令     | `pnpm install --frozen-lockfile`                                                                    |
 | 构建命令     | `pnpm docs:build:full`                                                                              |
-| 构建产物目录 | `docs-site/.output/public`                                                                          |
+| 构建产物目录 | `docs-site/dist`（构建脚本从 `docs-site/.output/public` 复制而来）                                  |
 | Node 版本    | 22（仓库根 `.node-version`）                                                                        |
 | 环境变量     | 启用 AI Assistant 时需要 `AI_GATEWAY_API_KEY`；`PLAYGROUND_USE_DIST=1` 由脚本内部设置，无需重复配置 |
 
@@ -36,6 +36,7 @@ pnpm docs:preview:full   # 构建完整产物并本地预览（/playground/ 仅�
 
 1. 在腾讯云 EdgeOne（Makers）控制台新建项目，接入本仓库（Git 集成，生产分支 `main`）或按控制台支持的方式上传静态产物。
 2. 安装/构建命令与产物目录按上表填写；**框架预设必须选 `Other`（静态），不要选 Nuxt**——Nuxt 预设会按 SSR 处理并默认改写输出目录。若构建镜像不读取 `.node-version`，按控制台实际支持的方式声明 Node 22（例如环境变量 `NODE_VERSION=22`）。
+   - EdgeOne 实测从 `docs-site/.output/public` 采集不到产物（构建成功但产物列表为空），所以 `docs:build:full` 会在最后把该目录复制到非隐藏的 `docs-site/dist`；控制台输出目录请填 `docs-site/dist`。
 3. 绑定自定义域名 `vue3-okr-tree.baiwumm.com`（域名保持不变），在腾讯云 DNSPod 或当前 DNS 服务商处把解析指向 EdgeOne 控制台给出的加速域名；DNS、HTTPS 证书与缓存/回源策略按控制台实际配置。
 4. 产物根目录含 `404.html`：若控制台支持自定义 404 / 错误页，指向该文件。站点是预生成的纯静态页面，不需要 SPA history 回退。
 5. 启用 AI Assistant 时，在控制台的环境变量配置里按实际方式写入 `AI_GATEWAY_API_KEY`。

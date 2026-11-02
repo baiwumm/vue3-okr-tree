@@ -4,7 +4,8 @@
  * 2. 以 dist 产物模式构建 Playground
  * 3. 构建 Docus 文档站（nuxt generate）
  * 4. 将 Playground 产物合并进文档站输出的 /playground/ 子路径
- * 用法：pnpm docs:build:full；输出目录 docs-site/.output/public（即 EdgeOne 的部署目录）
+ * 5. 将 `.output/public` 复制到非隐藏目录 `docs-site/dist`，供 EdgeOne 采集构建产物
+ * 用法：pnpm docs:build:full；EdgeOne 输出目录填 docs-site/dist
  * 自包含：干净环境（如 CI 构建机）无需预先手动执行 pnpm build。
  */
 import { execSync } from 'node:child_process'
@@ -15,25 +16,34 @@ import { fileURLToPath } from 'node:url'
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const playgroundDist = resolve(root, 'playground/dist')
 const docsDist = resolve(root, 'docs-site/.output/public')
+const edgeDist = resolve(root, 'docs-site/dist')
 const target = resolve(docsDist, 'playground')
 
 const run = (cmd, env) =>
   execSync(cmd, { cwd: root, stdio: 'inherit', env: { ...process.env, ...env } })
 
-console.log('[docs:build:full] 1/4 构建库本体（dist）')
+console.log('[docs:build:full] 1/5 构建库本体（dist）')
 run('pnpm build', {})
 
-console.log('[docs:build:full] 2/4 构建 Playground（引用 dist 产物）')
+console.log('[docs:build:full] 2/5 构建 Playground（引用 dist 产物）')
 run('pnpm build:playground', { PLAYGROUND_USE_DIST: '1' })
 
-console.log('[docs:build:full] 3/4 构建 Docus 文档站（nuxt generate）')
+console.log('[docs:build:full] 3/5 构建 Docus 文档站（nuxt generate）')
 run('pnpm docs:build', {})
 
-console.log('[docs:build:full] 4/4 合并 Playground 到 /playground/')
+console.log('[docs:build:full] 4/5 合并 Playground 到 /playground/')
 if (!existsSync(playgroundDist)) {
   console.error('[docs:build:full] playground/dist 不存在，构建失败')
   process.exit(1)
 }
 rmSync(target, { force: true, recursive: true })
 cpSync(playgroundDist, target, { recursive: true })
-console.log(`[docs:build:full] 完成 → ${docsDist}`)
+
+console.log('[docs:build:full] 5/5 复制到非隐藏目录（EdgeOne 采集用）')
+if (!existsSync(docsDist)) {
+  console.error('[docs:build:full] docs-site/.output/public 不存在，构建失败')
+  process.exit(1)
+}
+rmSync(edgeDist, { force: true, recursive: true })
+cpSync(docsDist, edgeDist, { recursive: true })
+console.log(`[docs:build:full] 完成 → ${edgeDist}（源：${docsDist}）`)

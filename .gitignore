@@ -38,3 +38,4 @@ _scratch/
 docs-site/.nuxt/
 docs-site/.output/
 docs-site/.data/
+docs-site/dist/

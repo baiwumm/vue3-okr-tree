@@ -95,6 +95,9 @@ jobs:
         run: |
           test -f docs-site/.output/public/index.html
           test -f docs-site/.output/public/playground/index.html
+          test -f docs-site/dist/index.html
+          test -f docs-site/dist/playground/index.html
+          test -f docs-site/dist/404.html
 
   peer-matrix:
     name: Unit tests on vue ${{ matrix.vue }}
