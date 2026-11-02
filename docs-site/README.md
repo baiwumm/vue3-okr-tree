@@ -15,24 +15,40 @@ pnpm docs:build:full     # 完整构建：库 dist + Playground + 文档站 + �
 pnpm docs:preview:full   # 构建完整产物并本地预览（/playground/ 仅存在于完整产物中）
 ```
 
-## 部署到 Cloudflare Pages / Workers
+## 部署到腾讯云 EdgeOne
 
-推荐 **Cloudflare Pages 的 Git 集成**（仓库推送自动构建部署）：
+文档站是 `nuxt generate` 产出的纯静态站点，由腾讯云 EdgeOne（Makers）托管。下表是仓库侧需要提供的值；EdgeOne 控制台的入口、字段名与默认预览域名以实际界面为准，不在此写死。
 
-| 配置项       | 值                                                                                                                                                               |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 构建命令     | `corepack enable && pnpm install --frozen-lockfile && pnpm docs:build:full`                                                                                      |
-| 构建输出目录 | `docs-site/.output/public`                                                                                                                                       |
-| 环境变量     | `NODE_VERSION=22`、`PLAYGROUND_USE_DIST=1`（脚本内部已设置，配置在此仅为显式声明）、`enablePrePostScripts=true`（如 CI 未启用 corepack 则先 `npm i -g pnpm@11`） |
+| 项           | 值                                                                                                  |
+| ------------ | --------------------------------------------------------------------------------------------------- |
+| 项目类型     | Vue 3 组件库文档站（Docus / Nuxt 静态站，含 `/playground/` 子路径）                                 |
+| 框架预设     | Nuxt                                                                                                |
+| 根目录       | `/`                                                                                                 |
+| 生产分支     | `main`                                                                                              |
+| 域名         | `vue3-okr-tree.baiwumm.com`（继续使用，DNS 解析迁至腾讯云 EdgeOne）                                 |
+| 安装命令     | `pnpm install --frozen-lockfile`                                                                    |
+| 构建命令     | `pnpm docs:build:full`                                                                              |
+| 构建产物目录 | `docs-site/.output/public`                                                                          |
+| Node 版本    | 22（仓库根 `.node-version`）                                                                        |
+| 环境变量     | 启用 AI Assistant 时需要 `AI_GATEWAY_API_KEY`；`PLAYGROUND_USE_DIST=1` 由脚本内部设置，无需重复配置 |
 
-> **Workers Builds（仓库连接）方式**：仓库根目录的 `wrangler.jsonc` 已配置静态资产（`docs-site/.output/public`，含 404 处理）。界面填写：构建命令 `npm i -g pnpm@11 && pnpm install --frozen-lockfile && pnpm docs:build:full`，部署命令 `npx wrangler deploy`；Node 版本由根目录 `.node-version`（22）钉住，如构建镜像未生效则在「变量和机密」里加 `NODE_VERSION=22`。
+接入步骤（控制台字段名按实际界面填写）：
+
+1. 在腾讯云 EdgeOne（Makers）控制台新建项目，接入本仓库（Git 集成，生产分支 `main`）或按控制台支持的方式上传静态产物。
+2. 安装/构建命令与产物目录按上表填写；若构建镜像不读取 `.node-version`，按控制台实际支持的方式声明 Node 22（例如环境变量 `NODE_VERSION=22`）。
+3. 绑定自定义域名 `vue3-okr-tree.baiwumm.com`（域名保持不变），在腾讯云 DNSPod 或当前 DNS 服务商处把解析指向 EdgeOne 控制台给出的加速域名；DNS、HTTPS 证书与缓存/回源策略按控制台实际配置。
+4. 产物根目录含 `404.html`：若控制台支持自定义 404 / 错误页，指向该文件。站点是预生成的纯静态页面，不需要 SPA history 回退。
+5. 启用 AI Assistant 时，在控制台的环境变量配置里按实际方式写入 `AI_GATEWAY_API_KEY`。
+
+> **加速区域**：选择「全球可用区（含中国大陆）」要求域名已完成 ICP 备案；未备案时请选择不含中国大陆的可用区。
 
 注意：
 
-- **AI Assistant**：由 docus 内置模块驱动，需要 **Vercel AI Gateway** 的 key——本地开发在 `.env.local` 写 `AI_GATEWAY_API_KEY=<key>`，Cloudflare 在「变量和机密」里同名配置（默认模型 `google/gemini-3-flash`，可在 `nuxt.config.ts` 的 `docus.assistant.model` 调整）。**没有 key 时模块自动整体禁用**，不渲染任何入口、不影响构建。
+- **AI Assistant**：由 docus 内置模块驱动，需要 **Vercel AI Gateway** 的 key——本地开发在 `.env.local` 写 `AI_GATEWAY_API_KEY=<key>`，部署平台在控制台的环境变量配置里同名配置（默认模型 `google/gemini-3-flash`，可在 `nuxt.config.ts` 的 `docus.assistant.model` 调整）。**没有 key 时模块自动整体禁用**，不渲染任何入口、不影响构建。
 - 构建依赖 **better-sqlite3**（`@nuxt/content` 的构建期原生模块），已在 `pnpm-workspace.yaml` 的 `allowBuilds` 放行；Windows 本地开发首次安装会编译/下载预编译产物。
 - 站内链接全部使用根绝对路径（Docus 原生 clean URL），当前根路径部署；子路径部署（base 注入）VitePress 时代支持一键切换，Docus 下需要另行评估，未配置。
 - Playground 构建产物会被合并到输出的 `playground/` 子目录，导航中的「Playground」指向它（以 dist 产物构建，同时验证发布包路径）。
+- 仓库内不维护平台专属的路由 / 响应头配置；静态托管所需的目录索引与 404 行为在 EdgeOne 控制台侧按实际能力配置。
 
 ## 结构
 

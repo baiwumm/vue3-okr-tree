@@ -37,7 +37,7 @@ Trusted Publisher 连接的三个注意点（只有重建连接时才用得上�
 5. 按下一节做发布后验证；
 6. react-okr-tree 仓库以同号版本重复 1–3。
 
-文档站不需要手动操作：push 到 main 后 Cloudflare Workers Builds 自动构建部署。
+文档站部署由腾讯云 EdgeOne（Makers）负责，不在本仓库的 GitHub Actions 中：已接入 Git 集成，push 到 `main` 后会按 `pnpm docs:build:full` 自动构建并发布 `docs-site/.output/public`；域名 `vue3-okr-tree.baiwumm.com` 保持不变，仅 DNS 解析迁至腾讯云。
 
 > 别用 `gh release create vx.y.z` 手动补建 Release：本地没有这个 tag 时它会自己创建并推送 tag、再触发一次 workflow，等于两边各来一遍（1.13.0 补建 GitHub Release 时踩过这条路径）。
 

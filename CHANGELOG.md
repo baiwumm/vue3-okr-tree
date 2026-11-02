@@ -2,11 +2,14 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+> 托管历史说明：文档站曾托管在 Cloudflare Pages/Workers，2026-11-02 起迁至腾讯云 EdgeOne；下文历史版本条目中的相关描述保留为当时的记录。
+
 ## Unreleased
 
 - **万级数据的挂载成本记账**：`pnpm bench` 新增两条万级场景（1 父 + 10000 平铺子节点，只差 `virtual`），`docs/perf.md` 补「万级平铺」一节——实测 `virtual` 把渲染节点 10001 → 13、首帧 10.95 s → 5.49 s，**只降一半**，剩下那 5.5 s 在挂载期的模型侧：`deep-watch` 摘掉、`data` 不套 `reactive`、渲染只剩 13 个节点，三项各自实测都在噪声内（4.9–5.6 s），都不省。**姊妹包 react-okr-tree 同形状是 978 ms / 111 ms，全量差 11 倍、窗口化后差 50 倍**——两仓模型层同源，所以这不是万级数据本来就要付的代价，而是本仓挂载路径特有的开销，记为待查项另起一批。这一条**不设门禁，只记账**（`tests/visual/perf.spec.ts` 仍守「2000 节点 < 300 ms」）；roadmap #15 验收段里「已单列为独立性能待办」那句据此改为指向 `perf.md`。
-- **文档站进入 CI**：`ci.yml` 新增 `Docs site build` job，跑与 Cloudflare 部署完全同一条 `pnpm docs:build:full`（库 dist + Playground + `nuxt generate` + 合并 `/playground/`），并断言静态产物里 `index.html` 与 `playground/index.html` 存在。此前 Docus 侧构建坏了 CI 完全抓不到（文档站与库同仓、依赖打在根 lockfile 上，本仓已为此踩过两次 install 失败）。库源码零改动。
-- 文档措辞收口：`docs/roadmap.md` 三处过期表述按就地更正体例改写（spike 探针的入库状态、store 待办的去向、Cloudflare 面板输出目录已改并线上验证），`src/lib/okr-tree/virtual.ts` 的探针引用同步。
+- **文档站进入 CI**：`ci.yml` 新增 `Docs site build` job，跑与线上部署完全同一条 `pnpm docs:build:full`（库 dist + Playground + `nuxt generate` + 合并 `/playground/`），并断言静态产物里 `index.html` 与 `playground/index.html` 存在。此前 Docus 侧构建坏了 CI 完全抓不到（文档站与库同仓、依赖打在根 lockfile 上，本仓已为此踩过两次 install 失败）。库源码零改动。
+- 文档措辞收口：`docs/roadmap.md` 三处过期表述按就地更正体例改写（spike 探针的入库状态、store 待办的去向、线上部署面板输出目录已改并线上验证），`src/lib/okr-tree/virtual.ts` 的探针引用同步。
+- **文档站托管迁移到腾讯云 EdgeOne**：删除只服务于 Cloudflare Workers/Pages 的根目录 `wrangler.jsonc`（静态资产目录、404 与 trailing-slash 处理），仓库不再保留平台专属部署配置或部署脚本；构建链路不变（`docs:build:full` → `docs-site/.output/public`，含 `/playground/`），CI 的文档产物断言保留。README、`docs-site/README.md` 与 `docs/release-guide.md` 的托管说明改为 EdgeOne，控制台字段按实际界面填写。
 
 ## 1.16.0（2026-09-26）
 

@@ -143,11 +143,13 @@ pnpm build            # 库构建 → dist/
 pnpm verify:package   # publint + attw 包发布体检
 pnpm size             # size-limit 体积预算
 pnpm test:visual      # Playwright 视觉回归 + 性能基线
-pnpm docs:dev         # 在线文档站（VitePress，源码在 docs-site/）
+pnpm docs:dev         # 在线文档站（Docus，源码在 docs-site/）
 pnpm gen:readme       # 从 shared/api.ts 重新生成上面的 API 概览
 ```
 
 更多命令（`verify:dist` / `bench` / `test:coverage` / `docs:build:full`）见 `package.json`。后续优化计划见 [docs/roadmap.md](./docs/roadmap.md)，需求与决策见 [docs/requirements.md](./docs/requirements.md)。
+
+文档站部署在腾讯云 EdgeOne：构建命令 `pnpm install --frozen-lockfile && pnpm docs:build:full`，产物目录 `docs-site/.output/public`（含 `/playground/` 子路径），Node 22（`.node-version`）。在 EdgeOne 控制台接入仓库（生产分支 `main`），按实际界面填写上述命令与目录；域名继续使用 `vue3-okr-tree.baiwumm.com`，仅将 DNS 解析迁至腾讯云，HTTPS 与 404 错误页（产物根目录的 `404.html`）按控制台实际配置。仓库内不保留平台专属的部署配置，细节见 [docs-site/README.md](./docs-site/README.md)。
 
 发布：更新 `version` 与 `CHANGELOG.md` → 提交 → `git tag v1.x.x && git push origin v1.x.x`，`release.yml` 跑完门禁后 `npm publish --provenance` 并创建 GitHub Release。完整步骤见 [docs/release-guide.md](./docs/release-guide.md)。
 

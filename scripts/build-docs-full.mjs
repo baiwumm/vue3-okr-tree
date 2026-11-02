@@ -1,10 +1,10 @@
 /**
- * 文档站完整构建（Cloudflare 部署用）：
+ * 文档站完整构建（腾讯云 EdgeOne 部署用）：
  * 1. 构建库本体 dist（Playground 的 PLAYGROUND_USE_DIST=1 模式依赖 dist 产物）
  * 2. 以 dist 产物模式构建 Playground
  * 3. 构建 Docus 文档站（nuxt generate）
  * 4. 将 Playground 产物合并进文档站输出的 /playground/ 子路径
- * 用法：pnpm docs:build:full；输出目录 docs-site/.output/public（即 Cloudflare 的部署目录）
+ * 用法：pnpm docs:build:full；输出目录 docs-site/.output/public（即 EdgeOne 的部署目录）
  * 自包含：干净环境（如 CI 构建机）无需预先手动执行 pnpm build。
  */
 import { execSync } from 'node:child_process'

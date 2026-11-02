@@ -4,7 +4,7 @@ const r = (p: string) => fileURLToPath(new URL(p, import.meta.url))
 
 // 文档站（VitePress → Docus v5 迁移）：Docus 是 Nuxt layer（extends），页面在 content/，
 // Demo 用例直接复用 playground/components/demos 组件（单一来源），库本体以 src 源码别名引入
-// （文档站开发/构建均无需先跑 dist 构建）。部署：Cloudflare 静态资产（nuxt generate → .output/public），
+// （文档站开发/构建均无需先跑 dist 构建）。部署：腾讯云 EdgeOne 静态托管（nuxt generate → .output/public），
 // 站内链接均用根绝对路径，与 base 无关（Nuxt 站点不支持像 VitePress 那样的一键 base 注入，
 // 子路径部署时需要再评估）。
 export default defineNuxtConfig({
