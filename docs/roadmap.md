@@ -243,6 +243,8 @@
 | 2026-09-26 | 站务   | 文档站 VitePress 1.6 → **Docus v5**（Nuxt layer，官方 @nuxt/content v3 + @nuxt/ui v4），目录沿用 `docs-site/`（迁移中途曾命名 `docs-site-docus/`，2026-09-26 入库前改回，未进过 git 历史），Demo 单一来源复用不变（MDC 包装组件），部署产物 `.vitepress/dist` → `.output/public`（~~wrangler.jsonc 同步、CF Pages 面板输出目录改为 `docs-site/.output/public`~~ → 2026-09-26 面板已改并线上验证；2026-11-02 托管迁至腾讯云 EdgeOne，Cloudflare 专属配置已删除；Nuxt 自身产物仍为 `.output/public`，EdgeOne 采集目录改为仓库根 `out`）；详见 `docs-site/README.md` | `b181fca`                     |
 | 2026-11-02 | 站务   | **文档站托管迁至腾讯云 EdgeOne**：删除根目录 `wrangler.jsonc`（Cloudflare Workers 静态资产配置），README / `docs-site/README.md` / `release-guide.md` 的托管与部署说明改为 EdgeOne；构建链路不变，EdgeOne 实际采集目录改为仓库根 `out`（构建脚本从 `docs-site/.output/public` 复制；`.output/public` 与 `docs-site/dist` 实测均采集为空），CI 断言覆盖该发布目录                                                                                                                                                                                                  | 本次提交                      |
 
+| 2026-11-02 | 站务 | **EdgeOne 构建产物为空的真因与结构修正**：~~采集不到是输出目录为隐藏目录 / 目录名不对~~ → 真因是构建机按**根 `package.json` 的 `(dev)Dependencies` 重新识别框架**（控制台框架预设不参与这一步），命中 `nuxt` / `next` 时跳过「把输出目录搬进上传暂存区」、改等框架原生暂存，自定义构建命令不触发它，于是输出目录填什么都没生效而构建仍显示成功。修法：`docs-site` 升为 pnpm workspace 成员 `vue3-okr-tree-docs`，`nuxt` / `docus` 从根 devDependencies 下沉到它自己的 package.json；采集目录回到 `docs-site/.output/public`，仓库根 `out/` 与 `docs:build:full` 的第 5 步复制、CI 的 `out/` 断言一并删除（净减代码）。发包链路不受影响：CI 走 `npm publish`，根 package.json 无 `workspaces` 字段，npm 不读 `pnpm-workspace.yaml` | 本次提交 |
+
 ## 已决定不做
 
 - **Tailwind CSS 进入组件库本体**：连接线是伪元素像素几何，工具类无法表达；Preflight 会重新引入全局样式污染；主题诉求已由 CSS 变量满足。文档站可用 Tailwind。

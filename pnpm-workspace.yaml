@@ -1,3 +1,9 @@
+# 文档站是独立的 workspace 包：nuxt / docus 只声明在它自己的 package.json 里。
+# EdgeOne 构建机会读根 package.json 的依赖字段来识别框架，命中 nuxt 就会跳过
+# 「把输出目录搬进上传暂存区」这步，控制台的输出目录于是完全不生效。
+packages:
+  - 'docs-site'
+
 allowBuilds:
   esbuild: true
   better-sqlite3: true

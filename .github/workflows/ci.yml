@@ -88,6 +88,11 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      # 只在生产环境暴露的平台侧行为，本地复现不了：根 package.json 一旦重新出现 nuxt / next，
+      # EdgeOne 就会构建"成功"但产物为空。断言逻辑与来龙去脉见 scripts/verify-edgeone-output.mjs。
+      - name: Assert EdgeOne will be able to collect the output
+        run: pnpm verify:edgeone
+
       - name: Build docs site + playground (same command as the EdgeOne build)
         run: pnpm docs:build:full
 
@@ -95,9 +100,7 @@ jobs:
         run: |
           test -f docs-site/.output/public/index.html
           test -f docs-site/.output/public/playground/index.html
-          test -f out/index.html
-          test -f out/playground/index.html
-          test -f out/404.html
+          test -f docs-site/.output/public/404.html
 
   peer-matrix:
     name: Unit tests on vue ${{ matrix.vue }}
