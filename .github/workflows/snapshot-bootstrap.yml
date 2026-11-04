@@ -6,7 +6,8 @@ name: Snapshot Bootstrap
 # （playwright/lib/matchers/expect.js 的 handleMissing），所以新平台首轮必红，"CI 自动补齐"并不成立。
 #
 # 用法：
-#   1. Actions → Snapshot Bootstrap → Run workflow（master/main 分支）；
+#   1. Actions → Snapshot Bootstrap → Run workflow，选目标分支
+#      （已装 gh CLI：gh workflow run snapshot-bootstrap.yml --ref <branch>）；
 #   2. 下载 artifact `linux-snapshots`，在仓库根目录解包：tar -xzf linux-snapshots.tgz
 #      （路径已含 tests/visual/…-snapshots/，解出来即就位）；
 #      已装 gh CLI 可直接：gh run download <RUN_ID> -n linux-snapshots && tar -xzf linux-snapshots.tgz
@@ -16,10 +17,10 @@ name: Snapshot Bootstrap
 # 否则生成的基线与门禁跑的产物不是同一份。
 #
 # 2026-11-04（Z8）：新增的「连接线形状（SVG）」两张基线（connector-svg-orthogonal /
-# connector-svg-straight）只提交了 win32 版；合并后必须再跑一次本 workflow 补齐对应
-# *-chromium-linux.png。解包后先用 `git status --short` 核对：应当只多这 2 个文件，
-# 既有 *-linux.png 不应出现 diff（有 diff 说明系统字体或渲染变了，必须逐张看图再提交）。
-# 在补齐之前，Visual Regression 会因这 2 条缺 Linux 基线而判红——这是缺基线，不是回归。
+# connector-svg-straight）先只提交了 win32 版，随后在 chore/close-the-books 分支跑本 workflow
+# 补齐 *-chromium-linux.png，解包后 `git status --short` 只多这 2 个文件、既有 *-linux.png
+# 零 diff，已随提交入库。若将来再有新增用例，沿用同一条路径：解包后先核对只多新增文件，
+# 既有 *-linux.png 一旦出现 diff 就说明系统字体或渲染变了，必须逐张看图确认后再提交。
 
 on:
   workflow_dispatch:
