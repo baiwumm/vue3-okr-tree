@@ -122,12 +122,40 @@ export class TreeNode {
     } else {
       children = getPropertyFromData(this, 'children') || []
     }
-    for (let i = 0, j = children.length; i < j; i++) {
-      this.insertChild({ data: children[i] }, null, null, isLeftChild)
+    // batch：这批 children 就是入参本身（已在源数组里），不必逐项回写；同时跳过逐节点向上
+    // 重算勾选态——宽层（1 父 + 万级平铺子）下每次插入都要扫一遍已插入的兄弟数组，
+    // 构造成本会退化成 O(N²)（1.16.0 万级首帧 6.5 s 里有 4.6 s 花在这里）。
+    // 整批构建结束后由最外层 setData 一次性由子向父重算，结果与逐节点推导一致。
+    this.store.building++
+    try {
+      for (let i = 0, j = children.length; i < j; i++) {
+        this.insertChild({ data: children[i] }, null, true, isLeftChild)
+      }
+    } finally {
+      this.store.building--
     }
+    if (this.store.building === 0) this.recomputeCheckedDownward()
     // 懒加载：初始构建时已带 children 的节点视为已加载；没有 children（或为空数组）的
     // 节点视为未加载，首次展开时触发 load。非 lazy 模式全部视为已加载。
     this.loaded = !this.store.lazy || children.length > 0
+  }
+
+  /**
+   * 由子向父整树重算勾选态：构建期一次性收尾，替代逐节点 refreshCheckedUpward。
+   * 规则与 refreshCheckedUpward 相同（checkStrictly 下不联动），只是改成整树走一遍 O(N)。
+   */
+  private recomputeCheckedDownward() {
+    if (this.store.checkStrictly) return
+    const walk = (node: TreeNode) => {
+      node.childNodes.forEach(walk)
+      if (node.childNodes.length > 0) {
+        const all = node.childNodes.every((c) => c.checked)
+        const some = node.childNodes.some((c) => c.checked || c.indeterminate)
+        node.checked = all
+        node.indeterminate = !all && some
+      }
+    }
+    this.childNodes.forEach(walk)
   }
 
   /**
@@ -272,8 +300,9 @@ export class TreeNode {
       this.childNodes.splice(index, 0, node)
     }
     this.updateLeafState()
-    // 新子节点默认未勾选，可能改变自身的全选 / 半选（进而影响祖先）
-    this.refreshCheckedUpward()
+    // 新子节点默认未勾选，可能改变自身的全选 / 半选（进而影响祖先）。
+    // batch 构建（setData）下由最外层统一重算，逐节点扫描在宽层会退化成 O(N²)。
+    if (!batch) this.refreshCheckedUpward()
   }
 
   getChildren(forceInit = false): any[] | null {
