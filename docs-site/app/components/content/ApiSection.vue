@@ -6,6 +6,7 @@ import {
   eventsSection,
   methodsSection,
   slotsSection,
+  viewportSection,
   groupSection,
 } from '../../../../shared/api'
 
@@ -22,6 +23,7 @@ const sections = {
   events: eventsSection,
   methods: methodsSection,
   slots: slotsSection,
+  viewport: viewportSection,
   group: groupSection,
 }
 
