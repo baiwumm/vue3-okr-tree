@@ -8,7 +8,9 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { resolve, dirname } from 'node:path'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const distEs = resolve(root, 'dist/vue3-okr-tree.es.js')
+// 默认测发布产物；OKR_DIST 可指向未压缩构建（`npx vite build --minify false --outDir .tmp-profile`），
+// 那样 `node --cpu-prof scripts/benchmark.mjs` 的 profile 里才有函数名而不是全挤在同一行。
+const distEs = resolve(root, process.env.OKR_DIST || 'dist/vue3-okr-tree.es.js')
 
 const dom = new JSDOM('<!doctype html><html><body></body></html>')
 globalThis.window = dom.window

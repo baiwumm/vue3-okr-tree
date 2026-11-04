@@ -102,11 +102,17 @@ export class TreeStore {
   draggable = false
   allowDrag: ((node: TreeNode) => boolean) | null = null
   allowDrop: ((draggingNode: TreeNode, dropNode: TreeNode, type: DropType) => boolean) | null = null
-  /**
-   * 懒加载展开完成后由组件设置的通知钩子（同步 v-model:expanded-keys）；
+  /** 懒加载展开完成后由组件设置的通知钩子（同步 v-model:expanded-keys）；
    * reject 时不会触发（展开集合未变化）。
    */
   onExpandSettled?: () => void = undefined
+
+  /**
+   * 构建期嵌套深度（setData 进出各 +1 / -1）。
+   * 非 0 时逐节点插入不重算勾选态，由最外层构建结束一次性整树重算：
+   * 宽层数据（1 父 + 万级平铺子）下逐节点扫兄弟数组是 O(N²)。
+   */
+  building = 0
 
   /** 当前选中节点（右树 / 非 OKR 模式） */
   currentNode: TreeNode | null = null

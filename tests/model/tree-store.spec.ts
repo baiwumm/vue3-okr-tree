@@ -384,3 +384,42 @@ describe('collectCheckState（2.5：check 事件合并为一次遍历）', () =>
     spy.mockRestore()
   })
 })
+
+describe('构建期勾选态（1.17：批量插入不再逐节点向上扫）', () => {
+  const wideData = () => [
+    {
+      id: 1,
+      label: 'R',
+      children: Array.from({ length: 50 }, (_, i) => ({ id: i + 2, label: `N${i + 2}` })),
+    },
+  ]
+
+  it('宽层构建后父节点未选中、非半选，构建深度归零', () => {
+    const store = new TreeStore({ key: 'id', data: wideData(), showCheckbox: true })
+    const rootNode = store.getNode(1)!
+    expect(rootNode.childNodes).toHaveLength(50)
+    expect(rootNode.checked).toBe(false)
+    expect(rootNode.indeterminate).toBe(false)
+    // building 泄漏会让后续 insertChild / append 的勾选联动整段失效
+    expect(store.building).toBe(0)
+  })
+
+  it('构建后勾选单个子节点仍能向上推出半选', () => {
+    const store = new TreeStore({ key: 'id', data: wideData(), showCheckbox: true })
+    const rootNode = store.getNode(1)!
+    store.getNode(2)!.setChecked(true, false)
+    expect(rootNode.indeterminate).toBe(true)
+    expect(rootNode.checked).toBe(false)
+    store.getNode(2)!.setChecked(false, false)
+    expect(rootNode.indeterminate).toBe(false)
+  })
+
+  it('setData 换引用重建子节点后，父节点回到未选中', () => {
+    const store = new TreeStore({ key: 'id', data: wideData(), showCheckbox: true })
+    store.setCheckedKeys([1, 2])
+    expect(store.getNode(1)!.checked).toBe(true)
+    store.setData(wideData())
+    expect(store.getNode(1)!.checked).toBe(false)
+    expect(store.getNode(1)!.indeterminate).toBe(false)
+  })
+})
