@@ -90,7 +90,7 @@
   },
   "peerDependencies": {
     "html-to-image": "^1.11.0",
-    "vue": ">=3.3.0"
+    "vue": ">=3.5.2"
   },
   "peerDependenciesMeta": {
     "html-to-image": {

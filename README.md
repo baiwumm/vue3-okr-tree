@@ -36,9 +36,9 @@ pnpm add vue3-okr-tree
 npm i vue3-okr-tree
 ```
 
-Peer 依赖 `vue >= 3.3.0`（CI 在 vue 3.3 / 3.4 / 3.5 三档矩阵下跑全量单测）。样式需显式引入 `vue3-okr-tree/dist/style.css`，组件不自动注入 CSS。
+Peer 依赖 `vue >= 3.5.2`（CI 在「3.5.2 下限」与「当前开发版本」两档矩阵下跑全量单测，下限腿同时编译产物 d.ts）。样式需显式引入 `vue3-okr-tree/dist/style.css`，组件不自动注入 CSS。
 
-> 类型面比运行面窄一档：产物 `dist/index.d.ts` 由 `vue-tsc` 按 Vue 3.5 的类型形状生成，Vue 3.3 / 3.4 下用 TS 编译会报缺失的 Vue 导出（运行时不受影响）。消费者 d.ts 检查 `pnpm verify:peer-types` 因此只跑在默认 Vue 3.5 作业里，原因与实测见 [docs/acceptance.md](./docs/acceptance.md) 第 5 节。
+> **支持面变更（1.16.0 之后）**：下限由 `>= 3.3.0` 收紧到 `>= 3.5.2`。产物的 `dist/index.d.ts` 由 `vue-tsc` 按 Vue 3.5 的类型形状生成，实测 Vue 3.3 / 3.4 / 3.5.0 / 3.5.1 都无法编译，3.5.2 是能通过 `pnpm verify:peer-types` 的最低补丁；运行时与类型支持面因此统一为同一条口径。Vue 3.3 / 3.4（以及 3.5.0 / 3.5.1）的用户请继续使用 1.16.0。
 
 ## 快速开始
 
