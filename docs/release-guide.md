@@ -28,6 +28,15 @@ Trusted Publisher 连接的三个注意点（只有重建连接时才用得上�
 - **Environment 必须留空**。`publish` job 没有声明 `environment:`，OIDC token 里就不带这个 claim；一旦在 npm 侧填了名字，两边对不上会被判身份不匹配。
 - 已建成的连接**必填字段不可改**（Provider / repo / workflow 文件名 / Environment）。以后若重命名 `release.yml`、把发布步挪进别的文件或复用工作流、或给 job 加上 `environment:`，都得删掉旧连接重建。
 
+## 新增视觉用例时补 Linux 基线
+
+win32 基线在本机生成（`pnpm test:visual:update`，提交前确认 `git diff` 只多/改预期的 `*-chromium-win32.png`）；Linux 基线本地生成不了，必须走 CI：
+
+1. 在目标分支上触发快照工作流：`gh workflow run snapshot-bootstrap.yml --ref <branch>`（`workflow_dispatch` 专用，构建步骤与 `visual.yml` 同镜像、同 Playwright 版本、同 `PLAYGROUND_USE_DIST` 构建）；
+2. `gh run watch` 等它 success，然后 `gh run download <RUN_ID> -n linux-snapshots`，在**仓库根目录**执行 `tar -xzf linux-snapshots.tgz`（压缩包内路径已含 `tests/visual/…-snapshots/`）；
+3. `git status --short` 必须**只多出新增的 `*-chromium-linux.png`**。既有 `*-linux.png` 一旦出现 diff，说明 runner 的系统字体或渲染环境变了——先逐张看图确认，不要直接提交；
+4. 提交这批 `-linux.png`，`Visual Regression` 才会转绿。缺 Linux 基线时它红是因为「缺基线」，不是回归。
+
 ## 日常发布流程
 
 1. 改代码 → 更新 `package.json` 的 `version` 与 `CHANGELOG.md` → 提交；

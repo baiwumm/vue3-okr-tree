@@ -38,6 +38,8 @@ npm i vue3-okr-tree
 
 Peer 依赖 `vue >= 3.3.0`（CI 在 vue 3.3 / 3.4 / 3.5 三档矩阵下跑全量单测）。样式需显式引入 `vue3-okr-tree/dist/style.css`，组件不自动注入 CSS。
 
+> 类型面比运行面窄一档：产物 `dist/index.d.ts` 由 `vue-tsc` 按 Vue 3.5 的类型形状生成，Vue 3.3 / 3.4 下用 TS 编译会报缺失的 Vue 导出（运行时不受影响）。消费者 d.ts 检查 `pnpm verify:peer-types` 因此只跑在默认 Vue 3.5 作业里，原因与实测见 [docs/acceptance.md](./docs/acceptance.md) 第 5 节。
+
 ## 快速开始
 
 ```vue
@@ -142,6 +144,7 @@ pnpm typecheck        # vue-tsc
 pnpm lint             # ESLint
 pnpm build            # 库构建 → dist/
 pnpm verify:package   # publint + attw 包发布体检
+pnpm verify:peer-types # 用 tests-consumer 编译产物 d.ts（需先 build）
 pnpm size             # size-limit 体积预算
 pnpm test:visual      # Playwright 视觉回归 + 性能基线
 pnpm docs:dev         # 在线文档站（Docus，源码在 docs-site/）
