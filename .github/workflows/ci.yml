@@ -50,13 +50,6 @@ jobs:
       - name: Build library
         run: pnpm build
 
-      # 编译发布产物的 d.ts（tests-consumer/consumer.ts + paths → dist/index.d.ts）。
-      # 库自身的 typecheck 编译源码，抓不到「产物公开面是否只用当前 Vue 的类型」；
-      # 复用上面的 build 产物，不额外安装。只在本作业（Vue 3.5 开发依赖）跑，
-      # 3.3 腿不跑的原因见 docs/acceptance.md 第 5 节「消费者 d.ts 检查的口径」。
-      - name: Consumer d.ts typecheck
-        run: pnpm verify:peer-types
-
       - name: Verify dist
         run: pnpm verify:dist
 
@@ -106,21 +99,22 @@ jobs:
           test -f docs-site/.output/public/404.html
 
   peer-matrix:
-    name: Unit tests on vue ${{ matrix.vue }}
+    name: Unit tests on vue ${{ matrix.label }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        # roadmap #16：peer 范围实测（defineSlots 需要编译器 ≥3.3，已声明 vue >=3.3.0）。
-        # 矩阵腿用 pnpm overrides 钉 vue 与 @vue/test-utils 的兼容组合：
-        # test-utils ≥2.4 依赖 vue ≥3.5 的 app.onUnmount，vue <3.5 的腿必须配 test-utils ~2.3。
+        # 1.16.0 之后 peer 下限收紧到 3.5.2（产物 d.ts 依赖 3.5 的公开类型，
+        # 3.3 / 3.4 / 3.5.0 / 3.5.1 实测都无法通过 verify:peer-types）。
+        # 只留两条腿：声明的下限（3.5.2，跑单测 + build + 消费者 d.ts）与 devDependencies 当前版本。
+        # 下限腿用 pnpm overrides 钉 vue 与 @vue/test-utils；test-utils ≥2.5 依赖 vue 3.5 的 app.onUnmount。
         include:
-          - vue: '~3.3.0'
-            test-utils: '~2.3.2'
-          - vue: '~3.4.0'
-            test-utils: '~2.3.2'
-          - vue: '~3.5.0'
+          - label: '3.5.2 (peer 下限)'
+            vue: '3.5.2'
             test-utils: '~2.5.1'
+            pin: true
+          - label: 'dev (当前开发版本)'
+            pin: false
     steps:
       - uses: actions/checkout@v5
 
@@ -131,7 +125,8 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      - name: Pin vue@${{ matrix.vue }} + @vue/test-utils@${{ matrix.test-utils }}
+      - name: Pin peer leg versions (vue ${{ matrix.vue || 'dev' }})
+        if: matrix.pin
         run: |
           node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.pnpm={...p.pnpm,overrides:{...((p.pnpm||{}).overrides||{}),vue:'${{ matrix.vue }}','@vue/test-utils':'${{ matrix.test-utils }}'}};fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n')"
 
@@ -143,3 +138,12 @@ jobs:
 
       - name: Unit & component tests
         run: pnpm test
+
+      # 下限腿把「声明的下限」直接编译一遍产物的 d.ts：下限若与类型能力脱节，这里就会红。
+      - name: Build library
+        if: matrix.pin
+        run: pnpm build
+
+      - name: Consumer d.ts typecheck (peer lower bound)
+        if: matrix.pin
+        run: pnpm verify:peer-types
