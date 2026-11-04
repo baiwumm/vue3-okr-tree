@@ -50,6 +50,13 @@ jobs:
       - name: Build library
         run: pnpm build
 
+      # 编译发布产物的 d.ts（tests-consumer/consumer.ts + paths → dist/index.d.ts）。
+      # 库自身的 typecheck 编译源码，抓不到「产物公开面是否只用当前 Vue 的类型」；
+      # 复用上面的 build 产物，不额外安装。只在本作业（Vue 3.5 开发依赖）跑，
+      # 3.3 腿不跑的原因见 docs/acceptance.md 第 5 节「消费者 d.ts 检查的口径」。
+      - name: Consumer d.ts typecheck
+        run: pnpm verify:peer-types
+
       - name: Verify dist
         run: pnpm verify:dist
 
