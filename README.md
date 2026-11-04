@@ -113,7 +113,8 @@ const data = ref([
 - **Props（props 属性的字段映射配置）**（4 条）：`label` / `children` / `disabled` / `isLeaf`
 - **Events**（14 条）：`node-click` / `node-expand` / `node-collapse` / `node-contextmenu` / `update:expandedKeys` / `update:currentKey` / `check` / `check-change` / `node-drag-start` / `node-drag-enter` / `node-drag-leave` / `node-drag-over` / `node-drag-end` / `node-drop`
 - **Methods（通过 ref 调用）**（28 条）：`filter` / `updateKeyChildren` / `getNode` / `setCurrentNode` / `setCurrentKey` / `getCurrentKey` / `getCurrentNode` / `remove` / `append` / `insertBefore` / `insertAfter` / `expandAll` / `collapseAll` / `expandNode` / `collapseNode` / `scrollToNode` / `getNodeEl` / `getCheckedKeys` / `getCheckedNodes` / `setCheckedKeys` / `getHalfCheckedKeys` / `getHalfCheckedNodes` / `isChecked` / `moveNode` / `getVisibleNodes` / `getNodePath` / `getNodeKey` / `store / root`
-- **Slots**（3 条）：`default` / `expand-btn` / `empty`
+- **Slots**（4 条）：`default` / `expand-btn` / `empty` / `toolbar`
+- **OkrTreeViewport（画布缩放）**（17 条）：`minZoom` / `maxZoom` / `zoomStep` / `zoom` / `offset` / `wheelBehavior` / `toolbar` / `update:zoom` / `update:offset` / `zoomIn()` / `zoomOut()` / `reset()` / `fitToScreen(padding = 20)` / `centerNode(data)` / `exportImage(options = {})` / `getZoom()` / `getOffset()`
 - **OkrTreeGroup 与键盘导航**（4 条）：`align` / `default` / `refresh()` / `键盘导航`
 
 <!-- API-DOC-END -->
@@ -147,9 +148,9 @@ pnpm docs:dev         # 在线文档站（Docus，源码在 docs-site/）
 pnpm gen:readme       # 从 shared/api.ts 重新生成上面的 API 概览
 ```
 
-更多命令（`verify:dist` / `bench` / `test:coverage` / `docs:build:full`）见 `package.json`。后续优化计划见 [docs/roadmap.md](./docs/roadmap.md)，需求与决策见 [docs/requirements.md](./docs/requirements.md)。
+更多命令（`verify:dist` / `bench` / `test:coverage` / `docs:build:full`）见 `package.json`。开发环境 Node **22.22.2**（`.node-version`；CI 另跑 24 线）、pnpm **11.24.0**（`packageManager`，`pnpm/action-setup` 按它取版本）；发布包自身声明 `engines.node >= 20.19.0`（Node 18 已 EOL，Vite 8 的下限即 20.19）。后续优化计划见 [docs/roadmap.md](./docs/roadmap.md)，需求与决策见 [docs/requirements.md](./docs/requirements.md)。
 
-文档站部署在腾讯云 EdgeOne：构建命令 `pnpm install --frozen-lockfile && pnpm docs:build:full`，产物目录 `out`（仓库根目录，构建脚本从 `docs-site/.output/public` 复制，含 `/playground/` 子路径），Node 22（`.node-version`）。在 EdgeOne 控制台接入仓库（生产分支 `main`），**框架预设选 `Other`（静态，不要选 Nuxt）**，按实际界面填写上述命令与目录；域名继续使用 `vue3-okr-tree.baiwumm.com`，仅将 DNS 解析迁至腾讯云，HTTPS 与 404 错误页（产物根目录的 `404.html`）按控制台实际配置。仓库内不保留平台专属的部署配置，细节见 [docs-site/README.md](./docs-site/README.md)。
+文档站部署在腾讯云 EdgeOne：构建命令 `pnpm install --frozen-lockfile && pnpm docs:build:full`，产物目录 `docs-site/.output/public`（`nuxt generate` 原生产物，Playground 已合并进它的 `playground/` 子目录），Node 22.22.2（`.node-version`）。在 EdgeOne 控制台接入仓库（生产分支 `main`），**框架预设选 `Other`（静态，不要选 Nuxt）**，按实际界面填写上述命令与目录；域名继续使用 `vue3-okr-tree.baiwumm.com`，仅将 DNS 解析迁至腾讯云，HTTPS 与 404 错误页（产物根目录的 `404.html`）按控制台实际配置。仓库内不保留平台专属的部署配置，细节见 [docs-site/README.md](./docs-site/README.md)。
 
 发布：更新 `version` 与 `CHANGELOG.md` → 提交 → `git tag v1.x.x && git push origin v1.x.x`，`release.yml` 跑完门禁后 `npm publish --provenance` 并创建 GitHub Release。完整步骤见 [docs/release-guide.md](./docs/release-guide.md)。
 

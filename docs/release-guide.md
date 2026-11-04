@@ -1,7 +1,7 @@
 # 发布操作手册（release-guide）
 
 > vue3-okr-tree 后续版本的发布操作步骤。写给维护者本人照着执行。
-> 当前状态（2026-09-25）：两个包（vue3-okr-tree / react-okr-tree）最新版均为 1.14.2，发布链路已全自动——推 `v*` tag 即可，无需登录 npm，也没有任何 token / GitHub Secrets。
+> 当前状态（2026-11-04）：两个包（vue3-okr-tree / react-okr-tree）最新版均为 1.16.0，发布链路已全自动——推 `v*` tag 即可，无需登录 npm，也没有任何 token / GitHub Secrets。
 > 版本规则：新功能 +1 minor，修复 +1 patch。发包前请以
 > `node -p "require('./package.json').version"` 复核版本号，不要照抄本文任何版本号。
 
@@ -31,13 +31,18 @@ Trusted Publisher 连接的三个注意点（只有重建连接时才用得上�
 ## 日常发布流程
 
 1. 改代码 → 更新 `package.json` 的 `version` 与 `CHANGELOG.md` → 提交；
-2. `git push origin main`，确认两条 workflow 绿灯：**CI**（lint/typecheck/test/build/verify-dist/包体检/size-limit）与 **Visual Regression**（视觉快照 + 浏览器性能）；
-3. `git tag vx.y.z && git push origin vx.y.z`；
-4. release.yml 全自动执行（见「发布机制」），任何一步失败都不会发包，去 Actions 看日志定位；
-5. 按下一节做发布后验证；
-6. react-okr-tree 仓库以同号版本重复 1–3。
+2. **几何改动回流 React 仓（可执行检查项）**：
+   - **判定**：diff 只要碰到节点 DOM 结构、连接线绘制、尺寸测量、布局 / 滚动几何（含 `virtual` 占位块）中的任一项，就按几何改动处理；
+   - 在 `react-okr-tree` 仓根目录执行 `pnpm --filter react-okr-tree gen:cross-impl`（脚本只定义在库包内，根目录没有同名代理）刷新跨仓夹具，检查 `git diff` 只包含预期夹具变化后提交；
+   - **没做这一步，就不要用 React Visual Regression 的绿灯下结论**——夹具没刷新时它比的是旧几何，对本次 Vue 改动不会失败，属于假绿；
+   - 纯文档 / 类型 / 与 DOM 无关的修复跳过本步，并在提交说明写明「无几何改动」。
+3. `git push origin main`，确认两条 workflow 绿灯：**CI**（lint/typecheck/test/build/verify-dist/包体检/size-limit）与 **Visual Regression**（视觉快照 + 浏览器性能）；
+4. `git tag vx.y.z && git push origin vx.y.z`；
+5. release.yml 全自动执行（见「发布机制」），任何一步失败都不会发包，去 Actions 看日志定位；
+6. 按下一节做发布后验证；
+7. react-okr-tree 仓库以同号版本重复 1、3–5，并复核第 2 步的夹具已随本次改动提交。
 
-文档站部署由腾讯云 EdgeOne（Makers）负责，不在本仓库的 GitHub Actions 中：已接入 Git 集成，push 到 `main` 后会按 `pnpm docs:build:full` 自动构建，并把仓库根目录的 `out` 作为发布产物；域名 `vue3-okr-tree.baiwumm.com` 保持不变，仅 DNS 解析迁至腾讯云。
+文档站部署由腾讯云 EdgeOne（Makers）负责，不在本仓库的 GitHub Actions 中：已接入 Git 集成，push 到 `main` 后会按 `pnpm docs:build:full` 自动构建，并把 `docs-site/.output/public` 作为发布产物；域名 `vue3-okr-tree.baiwumm.com` 保持不变，仅 DNS 解析迁至腾讯云。
 
 > 别用 `gh release create vx.y.z` 手动补建 Release：本地没有这个 tag 时它会自己创建并推送 tag、再触发一次 workflow，等于两边各来一遍（1.13.0 补建 GitHub Release 时踩过这条路径）。
 

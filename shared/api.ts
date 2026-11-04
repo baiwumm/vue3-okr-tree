@@ -527,6 +527,74 @@ export const slotsSection: ApiSection = {
       '<code>{ node, data, expanded, side, loading }</code>，side 为 <code>right</code>（常规/右子树）或 <code>left</code>（OKR 左子树），loading 为懒加载进行中',
     ],
     ['empty', '<code>data</code> 为空数组时在容器内渲染', '—'],
+    [
+      'toolbar',
+      '自定义工具栏，对应 <code>&lt;OkrTreeViewport&gt;</code> 的 <code>#toolbar</code> 插槽；开启 <code>toolbar</code> prop 可使用内置工具栏',
+      '<code>{ zoom, zoomIn, zoomOut, reset, fit }</code>，fit 即 fitToScreen',
+    ],
+  ],
+}
+
+export const viewportSection: ApiSection = {
+  id: 'api-viewport',
+  title: 'OkrTreeViewport（画布缩放）',
+  intro:
+    'Vue 3 版新增（1.16.0）。<code>&lt;OkrTreeViewport&gt;</code> 包裹一棵树，提供缩放、平移、适应窗口与导出图片；默认插槽放树，<code>#toolbar</code> 放自定义工具栏。缩放与偏移可受控（<code>v-model:zoom</code> / <code>v-model:offset</code>），未传时组件内部维护。',
+  columns: ['名称', '类型 / 签名', '说明'],
+  rows: [
+    ['minZoom', 'prop，number，默认 0.2', '最小缩放'],
+    ['maxZoom', 'prop，number，默认 4', '最大缩放'],
+    [
+      'zoomStep',
+      'prop，number，默认 1.2',
+      '每次 <code>zoomIn()</code> / <code>zoomOut()</code> / 滚轮一格的缩放系数（乘除）',
+    ],
+    [
+      'zoom',
+      'prop，number，默认 undefined',
+      '受控缩放（<code>v-model:zoom</code>）；未传时内部维护',
+    ],
+    [
+      'offset',
+      'prop，ViewportOffset，默认 undefined',
+      '受控平移偏移（<code>v-model:offset</code>，<code>{ x, y }</code>）；未传时内部维护',
+    ],
+    [
+      'wheelBehavior',
+      "prop，'ctrl-zoom' | 'zoom' | 'scroll'，默认 'ctrl-zoom'",
+      '滚轮行为：按住 Ctrl/⌘ 才缩放 / 始终缩放 / 交给页面滚动',
+    ],
+    [
+      'toolbar',
+      'prop，boolean，默认 false',
+      '显示内置工具栏；传入 <code>#toolbar</code> 插槽时无需开启',
+    ],
+    ['update:zoom', 'event，(zoom: number)', '缩放变化时触发，配合 <code>v-model:zoom</code>'],
+    [
+      'update:offset',
+      'event，(offset: ViewportOffset)',
+      '偏移变化时触发，配合 <code>v-model:offset</code>',
+    ],
+    ['zoomIn()', 'method', '按 <code>zoomStep</code> 放大一次'],
+    ['zoomOut()', 'method', '按 <code>zoomStep</code> 缩小一次'],
+    ['reset()', 'method', '恢复初始缩放与偏移'],
+    [
+      'fitToScreen(padding = 20)',
+      'method，padding?: number',
+      '缩放到内容完整可见并居中，四周留 <code>padding</code>',
+    ],
+    [
+      'centerNode(data)',
+      'method，data: TreeNodeData',
+      '滚动并平移使目标节点居中；目标不在已渲染窗口时先揭示',
+    ],
+    [
+      'exportImage(options = {})',
+      'method，=> Promise&lt;string&gt;',
+      '导出为 PNG/SVG DataURL；<code>type</code> / <code>scale</code> / <code>background</code> / <code>toPng</code> / <code>toSvg</code> 见 <code>ExportImageOptions</code>',
+    ],
+    ['getZoom()', 'method，=> number', '当前缩放（受控值或内部值）'],
+    ['getOffset()', 'method，=> ViewportOffset', '当前偏移的副本'],
   ],
 }
 
@@ -559,5 +627,6 @@ export const apiSections: ApiSection[] = [
   eventsSection,
   methodsSection,
   slotsSection,
+  viewportSection,
   groupSection,
 ]

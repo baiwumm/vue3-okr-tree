@@ -29,7 +29,7 @@ pnpm docs:preview:full   # 构建完整产物并本地预览（/playground/ 仅�
 | 安装命令     | `pnpm install --frozen-lockfile`                                                                     |
 | 构建命令     | `pnpm docs:build:full`                                                                               |
 | 构建产物目录 | `docs-site/.output/public`（`nuxt generate` 原生产物，Playground 已合并进它的 `playground/` 子目录） |
-| Node 版本    | 22（仓库根 `.node-version`）                                                                         |
+| Node 版本    | 22.22.2（仓库根 `.node-version`）                                                                    |
 | 环境变量     | 启用 AI Assistant 时需要 `AI_GATEWAY_API_KEY`；`PLAYGROUND_USE_DIST=1` 由脚本内部设置，无需重复配置  |
 
 接入步骤（控制台字段名按实际界面填写）：
@@ -48,7 +48,7 @@ pnpm docs:preview:full   # 构建完整产物并本地预览（/playground/ 仅�
 - **根 `package.json` 里不要出现 `nuxt` / `next` 依赖**：EdgeOne 构建机按根 `package.json` 的 `(dev)Dependencies` 识别框架，命中 `nuxt` / `next` 就跳过输出目录搬运，结果是产物列表为空、构建却显示成功（2026-11-02 踩过，排查代价很高）。文档站工具链的依赖一律加在 `docs-site/package.json`（workspace 成员 `vue3-okr-tree-docs`）里，`prismjs` / `better-sqlite3` / `vue` 这些与库、Playground 共用的仍留在根上，由 Node 向上解析命中。
 - **AI Assistant**：由 docus 内置模块驱动，需要 **Vercel AI Gateway** 的 key——本地开发在 `.env.local` 写 `AI_GATEWAY_API_KEY=<key>`，部署平台在控制台的环境变量配置里同名配置（默认模型 `google/gemini-3-flash`，可在 `nuxt.config.ts` 的 `docus.assistant.model` 调整）。**没有 key 时模块自动整体禁用**，不渲染任何入口、不影响构建。
 - 构建依赖 **better-sqlite3**（`@nuxt/content` 的构建期原生模块），已在 `pnpm-workspace.yaml` 的 `allowBuilds` 放行；Windows 本地开发首次安装会编译/下载预编译产物。
-- 站内链接全部使用根绝对路径（Docus 原生 clean URL），当前根路径部署；子路径部署（base 注入）VitePress 时代支持一键切换，Docus 下需要另行评估，未配置。
+- 站内链接全部使用根绝对路径（Docus 原生 clean URL）；**只支持根路径部署，不支持子路径部署**。~~子路径部署（base 注入）VitePress 时代支持一键切换，Docus 下需要另行评估，未配置。~~ → 2026-11-04 定论：Docus/Nuxt 的页面链接、静态资源与合并进 `playground/` 的产物路径都按根绝对路径生成，改 base 会同时牵动导航、站内搜索索引与 Playground 路径，当前无此需求，明确不做支持。
 - Playground 构建产物会被合并到输出的 `playground/` 子目录，导航中的「Playground」指向它（以 dist 产物构建，同时验证发布包路径）。
 - 仓库内不维护平台专属的路由 / 响应头配置；静态托管所需的目录索引与 404 行为在 EdgeOne 控制台侧按实际能力配置。
 
