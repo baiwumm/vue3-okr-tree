@@ -385,7 +385,7 @@ describe('collectCheckState（2.5：check 事件合并为一次遍历）', () =>
   })
 })
 
-describe('构建期勾选态（1.17：批量插入不再逐节点向上扫）', () => {
+describe('构建期勾选态（批量插入不再逐节点向上扫）', () => {
   const wideData = () => [
     {
       id: 1,

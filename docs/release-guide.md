@@ -2,7 +2,7 @@
 
 > vue3-okr-tree 后续版本的发布操作步骤。写给维护者本人照着执行。
 > 当前状态（2026-11-04）：两个包（vue3-okr-tree / react-okr-tree）最新版均为 1.16.0，发布链路已全自动——推 `v*` tag 即可，无需登录 npm，也没有任何 token / GitHub Secrets。
-> 版本规则：新功能 +1 minor，修复 +1 patch。发包前请以
+> 版本规则：新功能 +1 minor，修复 +1 patch；破坏性变更（例如 peer 下限抬升）按 SemVer 应走 major，但两仓同号锁步——是否从 1.x 抬到 2.0.0 由维护者在发版前明确决定，日常提交与文档不预设版本号。发包前请以
 > `node -p "require('./package.json').version"` 复核版本号，不要照抄本文任何版本号。
 
 ---
@@ -45,7 +45,7 @@ win32 基线在本机生成（`pnpm test:visual:update`，提交前确认 `git d
    - 在 `react-okr-tree` 仓根目录执行 `pnpm --filter react-okr-tree gen:cross-impl`（脚本只定义在库包内，根目录没有同名代理）刷新跨仓夹具，检查 `git diff` 只包含预期夹具变化后提交；
    - **没做这一步，就不要用 React Visual Regression 的绿灯下结论**——夹具没刷新时它比的是旧几何，对本次 Vue 改动不会失败，属于假绿；
    - 纯文档 / 类型 / 与 DOM 无关的修复跳过本步，并在提交说明写明「无几何改动」。
-3. `git push origin main`，确认两条 workflow 绿灯：**CI**（lint/typecheck/test/build/verify-dist/包体检/size-limit）与 **Visual Regression**（视觉快照 + 浏览器性能）；
+3. `git push origin main`，确认两条 workflow 绿灯：**CI**（lint/typecheck/test/build/verify-dist/包体检/size-limit，外加文档站构建与 `peer-matrix`）与 **Visual Regression**（视觉快照 + 浏览器性能）；
 4. `git tag vx.y.z && git push origin vx.y.z`；
 5. release.yml 全自动执行（见「发布机制」），任何一步失败都不会发包，去 Actions 看日志定位；
 6. 按下一节做发布后验证；
