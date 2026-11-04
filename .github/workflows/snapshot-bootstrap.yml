@@ -14,6 +14,12 @@ name: Snapshot Bootstrap
 #
 # 构建步骤必须与 visual.yml 完全一致（同镜像、同 Playwright 版本、同 PLAYGROUND_USE_DIST 构建），
 # 否则生成的基线与门禁跑的产物不是同一份。
+#
+# 2026-11-04（Z8）：新增的「连接线形状（SVG）」两张基线（connector-svg-orthogonal /
+# connector-svg-straight）只提交了 win32 版；合并后必须再跑一次本 workflow 补齐对应
+# *-chromium-linux.png。解包后先用 `git status --short` 核对：应当只多这 2 个文件，
+# 既有 *-linux.png 不应出现 diff（有 diff 说明系统字体或渲染变了，必须逐张看图再提交）。
+# 在补齐之前，Visual Regression 会因这 2 条缺 Linux 基线而判红——这是缺基线，不是回归。
 
 on:
   workflow_dispatch:
@@ -26,8 +32,6 @@ jobs:
       - uses: actions/checkout@v5
 
       - uses: pnpm/action-setup@v5
-        with:
-          version: 11
 
       - uses: actions/setup-node@v5
         with:

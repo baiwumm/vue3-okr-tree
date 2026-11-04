@@ -3,9 +3,10 @@ name: Visual Regression
 # 视觉回归（roadmap 1.5.0 #5）：独立 job，真实浏览器截图比对 Playground 关键用例。
 # 失败时上传 diff 图与报告，便于定位像素级回归（改 CSS 变量 / 连接线时捕捉）。
 #
-# runner 镜像固定：Linux 基线（*-chromium-linux.png）由系统字体渲染决定，
-# ubuntu-latest 将于 2026-10-19 迁移到 Ubuntu 26，届时全部基线会集体失配。
-# 若要换镜像，必须先用 snapshot-bootstrap.yml 重新生成并提交 Linux 基线。
+# runner 镜像永久固定：Linux 基线（*-chromium-linux.png）由系统字体渲染决定。
+# 2026-11-04 决定永久 pin ubuntu-24.04，不再跟随 ubuntu-latest 的发行版迁移——
+# 镜像换代会让全部 Linux 基线因系统字体变化集体失配，也没有「到期重建基线」这一动作。
+# 确需换镜像时，必须先用 snapshot-bootstrap.yml 重新生成并提交 Linux 基线。
 
 on:
   push:
@@ -27,8 +28,6 @@ jobs:
       - uses: actions/checkout@v5
 
       - uses: pnpm/action-setup@v5
-        with:
-          version: 11
 
       - uses: actions/setup-node@v5
         with:
