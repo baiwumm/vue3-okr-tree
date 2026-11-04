@@ -142,6 +142,38 @@ test.describe('六套主题（作用于基础用法用例）', () => {
   }
 })
 
+test.describe('连接线形状（SVG）', () => {
+  /**
+   * 与姊妹包 react-okr-tree 同批同形（其 G13 剩下的两张）：connector="svg" 下三种形状
+   * 只差 path 的 d，盒子尺寸必须一致，所以截图目标仍是整张 demo 卡片。
+   *
+   * 切换后先确认 path 的 d 真的变了再截图：按钮没生效时基线会静默等于 curve 那张，
+   * 而像素门禁对这种「形状没换」毫无感知。注意本仓没有 reducedMotion，形状切换是
+   * 瞬时重绘（动画只在展开/收起上），等 200ms 足够落定。
+   */
+  for (const [shape, file] of [
+    ['orthogonal', 'connector-svg-orthogonal.png'],
+    ['straight', 'connector-svg-straight.png'],
+  ] as const) {
+    test(`connector-shape=${shape}`, async ({ page }) => {
+      await page.goto('/')
+      const card = demoCard(page, 'demo-connector')
+      await card.scrollIntoViewIfNeeded()
+      const toolbar = card.locator('.demo-connector-toolbar')
+      await toolbar.locator('.demo-btn', { hasText: 'connector: svg' }).click()
+      const paths = card.locator('.okr-connector-svg path')
+      await expect(paths.first()).toBeVisible()
+      await settle(page, 'demo-connector')
+
+      const before = await paths.first().getAttribute('d')
+      await toolbar.getByRole('button', { name: shape, exact: true }).click()
+      await expect.poll(() => paths.first().getAttribute('d')).not.toBe(before)
+      await page.waitForTimeout(200)
+      await snap(card, file)
+    })
+  }
+})
+
 test.describe('1.4.0 新能力', () => {
   test('懒加载：展开后子节点落定态', async ({ page }) => {
     await page.goto('/')
