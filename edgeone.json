@@ -1,0 +1,12 @@
+{
+  "buildCommand": "pnpm docs:build:full",
+  "outputDirectory": "docs-site/.output/public",
+  "redirects": [
+    { "source": "/index.html", "destination": "/", "statusCode": 301 },
+    { "source": "/api/", "destination": "/api", "statusCode": 301 },
+    { "source": "/guide/", "destination": "/guide", "statusCode": 301 },
+    { "source": "/theme/", "destination": "/theme", "statusCode": 301 },
+    { "source": "/migration/", "destination": "/migration", "statusCode": 301 },
+    { "source": "/changelog/", "destination": "/changelog", "statusCode": 301 }
+  ]
+}

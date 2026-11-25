@@ -38,20 +38,20 @@ pnpm docs:preview:full   # 构建完整产物并本地预览（/playground/ 仅�
 2. 安装/构建命令与产物目录按上表填写；框架预设选 `Other`（静态）。若构建镜像不读取 `.node-version`，按控制台实际支持的方式声明 Node 22（例如环境变量 `NODE_VERSION=22`）。
    - ~~`docs-site/.output/public` 与 `docs-site/dist` 实测均采集不到产物，是因为它们是隐藏目录 / 路径不对，所以要把产物复制到仓库根的非隐藏目录 `out/`~~ → 2026-11-02 更正：真因是构建机会**按根 `package.json` 的依赖重新识别框架**（控制台预设不参与这一步），识别成 `nuxt` / `next` 时它跳过「把输出目录搬进上传暂存区」那步、改等框架自己的原生暂存来填，而自定义构建命令不会触发那个暂存——于是输出目录填什么都没生效，构建还显示成功、产物列表为空。改法见注意事项第一条，改完 `out/` 这层中转就删掉了。
 3. 绑定自定义域名 `vue3-okr-tree.baiwumm.com`（域名保持不变），在腾讯云 DNSPod 或当前 DNS 服务商处把解析指向 EdgeOne 控制台给出的加速域名；DNS、HTTPS 证书与缓存/回源策略按控制台实际配置。
-4. 产物根目录含 `404.html`：**必须在控制台把错误页指向它**。站点是预生成的纯静态页面，不需要 SPA history 回退；不配的话未知路径会回落到 `index.html` 并返回 200，等于给爬虫开了无限软 404（2026-11-25 审计实测：`/nope-xyz` 返回 200 + 首页原文）。
-   - 同批建议加两条重写规则：`/x/ → /x`（301）、`/x.html → /x`（301）。产物里同时存在 `api.html` 与 `api/index.html` 两种形态，前者 canonical 是 `/api`、后者自指 `/api/`，控制台不做归一就一直是「一页两个规范网址」。
+4. 产物根目录含 `404.html`，但**它不会自动生效**：EdgeOne 文档说 SSG 只要输出里有 `404.html` 就会用它应答未匹配请求，而这站实测被当成 SPA（`/nope-xyz` 返回 200 且 ETag 与 `/` 完全相同）——平台把未知路径回落到 `/index.html`。`edgeone.json` 没有 404 / 状态码字段（只有 install / build / output / nodeVersion / buildMachine / redirects / rewrites / headers / cloudFunctions），控制台也没有错误页入口，所以改由 **`edge-functions/[[default]].js`** 兜底：EdgeOne 的函数路由是「静态资源优先」，这个全量 catch-all 只在什么都没匹配上时运行，返回真正的 404 + `404.html` 正文。详见该文件头部注释。
+   - 尾斜杠归一同批收进 `edgeone.json`：`/api/`、`/guide/`、`/theme/`、`/migration/`、`/changelog/` 各自 301 到无斜杠形态，外加 `/index.html` → `/`。**故意不用 `/*/ → /:splat` 通配**：Playground 产物走相对路径（`base: './'`），`/playground` 少一个斜杠就会把 `./assets/*` 解析到站点根、整页空白。新增顶层页面时 `pnpm verify:seo` 会报「缺少尾斜杠归一」，按提示补一行即可。产物里同时存在 `api.html` 与 `api/index.html` 两种形态，前者 canonical 是 `/api`、后者自指 `/api/`，不归一直就是「一页两个规范网址」。**没做 `.html` 反向跳转**：平台把 clean URL 内部映射到 `x.html`，在此基础上加 `/*.html → /:splat` 有把自己跳成重定向环的风险，不值得——`x.html` 本身带正确 canonical，重复度可控。
 5. 启用 AI Assistant 时，在控制台的环境变量配置里按实际方式写入 `AI_GATEWAY_API_KEY`。
 
 > **加速区域**：选择「全球可用区（含中国大陆）」要求域名已完成 ICP 备案；未备案时请选择不含中国大陆的可用区。
 
 注意：
 
-- **根 `package.json` 里不要出现 `nuxt` / `next` 依赖**：EdgeOne 构建机按根 `package.json` 的 `(dev)Dependencies` 识别框架，命中 `nuxt` / `next` 就跳过输出目录搬运，结果是产物列表为空、构建却显示成功（2026-11-02 踩过，排查代价很高）。文档站工具链的依赖一律加在 `docs-site/package.json`（workspace 成员 `vue3-okr-tree-docs`）里，`prismjs` / `better-sqlite3` / `vue` 这些与库、Playground 共用的仍留在根上，由 Node 向上解析命中。
+- **根 `package.json` 里不要出现 `nuxt` / `next` 依赖**：EdgeOne 构建机按根 `package.json` 的 `(dev)Dependencies` 识别框架，命中 `nuxt` / `next` 就跳过输出目录搬运，结果是产物列表为空、构建却显示成功（2026-11-02 踩过，排查代价很高）。文档站工具链的依赖一律加在 `docs-site/package.json`（workspace 成员 `vue3-okr-tree-docs`）里，`prismjs` / `better-sqlite3` / `vue` 这些与库、Playground 共用的仍留在根上，由 Node 向上解析命中。**副产物**：根上还留着 `vite`（库构建必需），平台因此把这站当 SPA，未匹配路径回落 `/index.html` 而不是 `404.html`——这是 `edge-functions/[[default]].js` 存在的原因，删它之前先确认 `/nope-xyz` 真的返回 404。
 - **AI Assistant**：由 docus 内置模块驱动，需要 **Vercel AI Gateway** 的 key——本地开发在 `.env.local` 写 `AI_GATEWAY_API_KEY=<key>`，部署平台在控制台的环境变量配置里同名配置（默认模型 `google/gemini-3-flash`，可在 `nuxt.config.ts` 的 `docus.assistant.model` 调整）。**没有 key 时模块自动整体禁用**，不渲染任何入口、不影响构建。
 - 构建依赖 **better-sqlite3**（`@nuxt/content` 的构建期原生模块），已在 `pnpm-workspace.yaml` 的 `allowBuilds` 放行；Windows 本地开发首次安装会编译/下载预编译产物。
 - 站内链接全部使用根绝对路径（Docus 原生 clean URL）；**只支持根路径部署，不支持子路径部署**。~~子路径部署（base 注入）VitePress 时代支持一键切换，Docus 下需要另行评估，未配置。~~ → 2026-11-04 定论：Docus/Nuxt 的页面链接、静态资源与合并进 `playground/` 的产物路径都按根绝对路径生成，改 base 会同时牵动导航、站内搜索索引与 Playground 路径，当前无此需求，明确不做支持。
 - Playground 构建产物会被合并到输出的 `playground/` 子目录，导航中的「Playground」指向它（以 dist 产物构建，同时验证发布包路径）。
-- 仓库内不维护平台专属的路由 / 响应头配置；静态托管所需的目录索引与 404 行为在 EdgeOne 控制台侧按实际能力配置。
+- ~~仓库内不维护平台专属的路由 / 响应头配置；静态托管所需的目录索引与 404 行为在 EdgeOne 控制台侧按实际能力配置。~~ → 2026-11-25 更正：控制台没有 404 / 重写规则入口，**仓库内改由 `edgeone.json`（构建命令、产物目录、尾斜杠 301）与 `edge-functions/[[default]].js`（未知路径兜底 404）表达**。两份文件都要跟产物结构一起改：`verify:seo` 会断言 `outputDirectory` 与 CI 断言目录一致、兜底函数存在。
 
 ## SEO / 收录
 
@@ -74,3 +74,5 @@ pnpm docs:preview:full   # 构建完整产物并本地预览（/playground/ 仅�
 - `app/app.css`：Docus 的样式钩子（`nuxt.config.ts` 里不再写 `css: []`）——playground 排版样式与 prism 主题以 `layer(base)` 引入、Maple Mono CN 的 `@theme` 覆写、Demo 容器样式
 - `content/`：页面（Markdown + MDC），`1.guide/ 2.theme/ 3.api/` 前缀数字控制导航分组与排序
 - `public/`：图标、Logo、OG 图、自托管字体
+- `../edgeone.json`（仓库根）：EdgeOne Makers 的项目配置（构建命令、产物目录、尾斜杠 301）；文件存在时**优先于控制台里的同名设置**
+- `../edge-functions/[[default]].js`（仓库根）：全量 catch-all 的 Edge Function，只负责把未匹配路径应答成真正的 404（平台路由是静态优先，不会遮住真实页面）

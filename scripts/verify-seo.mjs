@@ -127,6 +127,41 @@ if (existsSync(playgroundIndex)) {
 // 6. favicon.ico：docus 默认会引用它，文件缺了就变成一次软 404。
 if (!existsSync(join(outDir, 'favicon.ico'))) fail('favicon.ico 未进产物（public/ 里缺文件）')
 
+// 7. 平台侧配置与兜底函数：edgeone.json 的 outputDirectory 一旦与 CI 的构建产物目录不一致，
+//    线上采到的就是上一次的产物（或空目录）；兜底 404 函数不存在时，未知路径会退回
+//    「200 + 首页」的软 404（详见 edge-functions/[[default]].js 头部注释）。
+const edgeoneConfigPath = join(root, 'edgeone.json')
+if (!existsSync(edgeoneConfigPath)) {
+  fail('edgeone.json 不存在（outputDirectory / 尾斜杠 301 都靠它）')
+} else {
+  let config
+  try {
+    config = JSON.parse(readFileSync(edgeoneConfigPath, 'utf8'))
+  } catch (error) {
+    fail(`edgeone.json 不是合法 JSON：${error.message}`)
+  }
+  if (config && config.outputDirectory !== 'docs-site/.output/public') {
+    fail(`edgeone.json 的 outputDirectory 为 ${config.outputDirectory}，与 CI 断言目录不一致`)
+  }
+
+  // 尾斜杠归一逐条列举而不用 `/*/`：playground 的产物用相对路径（base './'），
+  // `/playground` 少一个斜杠就会把 `./assets/*` 解析到站点根、整页空白。
+  // 所以这里反过来守——产物里新出现一个带 index.html 的顶层目录，而 edgeone.json
+  // 没有对应的 `/<dir>/` 301，就当场报红，而不是让 /newpage/ 静默变成第二个规范网址。
+  const sources = new Set((config?.redirects ?? []).map((rule) => rule.source))
+  for (const echo of readdirSync(outDir, { withFileTypes: true })) {
+    if (!echo.isDirectory() || echo.name.startsWith('_') || echo.name === 'playground') continue
+    if (!existsSync(join(outDir, echo.name, 'index.html'))) continue
+    const source = `/${echo.name}/`
+    if (!sources.has(source)) {
+      fail(`edgeone.json 缺少尾斜杠归一：${source} → /${echo.name}（顶层目录出现新页面时请同步）`)
+    }
+  }
+}
+if (!existsSync(join(root, 'edge-functions/[[default]].js'))) {
+  fail('edge-functions/[[default]].js 不存在（未知路径会退回 200 + 首页的软 404）')
+}
+
 if (failures.length) {
   console.error(`[verify:seo] ${failures.length} 项未通过：`)
   for (const f of failures) console.error(`  ✕ ${f}`)
