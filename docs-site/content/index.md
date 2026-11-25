@@ -61,6 +61,32 @@ vue3-okr-tree 是一个基于 Vue 3 的组织架构树 / OKR 树组件：根节�
 ::u-page-section
 ---
 
+headline: 上手
+title: 两行代码接入，5 分钟看到你自己的数据
+description: 不想先装也行——Playground 里 24 个用例，把 data 换成你的组织结构即可看到效果。
+
+---
+
+#body
+
+```vue
+<script setup lang="ts">
+import { VueOkrTree } from 'vue3-okr-tree'
+import 'vue3-okr-tree/dist/style.css'
+</script>
+
+<template>
+  <VueOkrTree :data="data" direction="horizontal" show-collapsable default-expand-all />
+</template>
+```
+
+不想先装也行：**[Playground](/playground/)** 里 24 个用例可以直接改数据试交互；安装、CDN / UMD 与 SSR 注意事项见 **[快速开始](/guide/quick-start)**。
+
+::
+
+::u-page-section
+---
+
 headline: 特性
 title: 一棵树覆盖组织架构与 OKR 两类场景
 description: 渲染、交互、导出全部内建；外观走 CSS 变量，不需要构建期配置。
