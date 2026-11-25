@@ -11,6 +11,6 @@
   },
   "devDependencies": {
     "docus": "^5.15.0",
-    "nuxt": "^4.5.2"
+    "nuxt": "^4.7.0"
   }
 }

@@ -4,6 +4,27 @@
 packages:
   - 'docs-site'
 
+# pnpm 11 起 settings 从 package.json 的 "pnpm" 字段迁到本文件。
+#
+# overrides 全部指向「已修复漏洞的最低可用版本」，作用对象是文档站那条 Nuxt 依赖链
+# 与根侧构建工具的传递依赖（上游声明的范围仍停在有漏洞的版本上，只有 override 能修）：
+#   node-forge              listhen(nitropack) 依赖的证书/TLS 库，多条 GHSA 命中
+#   launch-editor / shell-quote   @nuxt/devtools 的编辑器唤起链，含命令注入
+#   serialize-javascript    @rollup/plugin-terser，序列化函数体时的 XSS
+#   glob / minimatch        js-beautify(@vue/test-utils)、api-extractor、vite-plugin-dts
+#   simple-git              @nuxt/devtools（仅开发服务器，不进产物）
+#   zod                     @nuxt/content（构建期解析仓库内内容）
+# 判据与取舍见 docs/security-deps.md。
+overrides:
+  node-forge: 1.4.4
+  launch-editor: 2.14.2
+  shell-quote: 1.12.0
+  serialize-javascript: 7.1.4
+  glob: 14.0.6
+  minimatch: 11.0.9
+  simple-git: 4.1.0
+  zod: 4.6.7
+
 allowBuilds:
   esbuild: true
   better-sqlite3: true
@@ -15,3 +36,5 @@ minimumReleaseAgeExclude:
 # vite 7 仍在库构建链路中使用，豁免 pnpm 供应链策略的降级检查
 trustPolicyExclude:
   - vite
+patchedDependencies:
+  simple-git@4.1.0: patches/simple-git@4.1.0.patch
