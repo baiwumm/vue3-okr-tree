@@ -9,9 +9,11 @@ import { useAppConfig, useColorMode } from '#imports'
  * 边缘带高斯模糊地圆形扩散揭开。不支持 View Transitions 或
  * prefers-reduced-motion: reduce 时库自动降级为直切，状态仍然正确。
  *
- * CIRCLE_BLUR 不配 reverse：库里只有 CIRCLE / FAN / RIPPLE / CLOCK_SWEEP / CURTAIN
- * 接入了反向形态（core/orchestrate.ts 的 reverseCapable 白名单），其余类型传了静默忽略。
- * 要「切暗扩散、切亮收拢」的方向感就换回 ThemeAnimationType.CIRCLE。
+ * 不配 reverse（默认单向扩散）：库自 0.5.0 起也把 CIRCLE_BLUR 接进了反向形态
+ * （core/orchestrate.ts 的 reverseCapable 白名单共 11 类：CIRCLE / FAN / RIPPLE /
+ * CLOCK_SWEEP / CURTAIN / SQUARE / RECTANGLE / CIRCLE_BLUR / DIAMOND / TRIANGLE / HEXAGON，
+ * 其余类型传了静默忽略）。要「切暗扩散、切亮收拢」的方向感，给 reverse: 'auto' 即可
+ * ——CIRCLE_BLUR 的反向走 getBlurCircleReverseRevealSpec 的径向洞宽羽化。
  * blurAmount 只有 CIRCLE_BLUR 消费，这里取库默认的 2。
  *
  * 走受控模式（isDark + onChange）：主题状态依旧归 @nuxtjs/color-mode 管
