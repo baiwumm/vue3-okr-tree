@@ -130,15 +130,23 @@ jobs:
           node-version: 22
           cache: pnpm
 
+      # 下限腿要把 vue / @vue/test-utils 钉到指定版本。pnpm 11 起 settings 从 package.json 的
+      # "pnpm" 字段迁到了 pnpm-workspace.yaml——写在 package.json 里会被静默忽略（安装时只打一条
+      # WARN），那条腿就等于在下限之外的版本上白跑一遍。所以这里改写 pnpm-workspace.yaml 的
+      # overrides 段，并在装完之后真正断言实际解析到的版本，别让「钉住」变成「以为钉住了」。
       - name: Pin peer leg versions (vue ${{ matrix.vue || 'dev' }})
         if: matrix.pin
-        run: |
-          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.pnpm={...p.pnpm,overrides:{...((p.pnpm||{}).overrides||{}),vue:'${{ matrix.vue }}','@vue/test-utils':'${{ matrix.test-utils }}'}};fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n')"
+        run: node scripts/ci-peer-versions.mjs pin '${{ matrix.vue }}' '${{ matrix.test-utils }}'
 
       - name: Install
         run: pnpm install --no-frozen-lockfile
 
       - name: Assert resolved versions
+        if: matrix.pin
+        run: node scripts/ci-peer-versions.mjs check '${{ matrix.vue }}'
+
+      - name: Report resolved versions
+        if: ${{ !matrix.pin }}
         run: node -e "console.log('vue', require('vue/package.json').version, '| @vue/test-utils', require('@vue/test-utils/package.json').version)"
 
       - name: Unit & component tests
