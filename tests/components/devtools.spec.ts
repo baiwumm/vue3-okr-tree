@@ -74,15 +74,19 @@ describe('Vue Devtools 面板（devtools.ts）', () => {
   it('hook 已在时逐字 emit HOOK_SETUP；多次挂载只握手一次', () => {
     const emit = vi.fn()
     ;(globalThis as any).__VUE_DEVTOOLS_GLOBAL_HOOK__ = { emit }
+    // hook 是全局广播口，不止本库在用：Vue 自身也会往里发 app:init / component:added /
+    // component:updated，3.5.45 起还新增了 perf:start / perf:end（成对出现）。
+    // 所以这里只数本库自己的握手事件，不能断言整个 hook 的调用总数。
+    const setups = () => emit.mock.calls.filter((call) => call[0] === 'devtools-plugin:setup')
     const first = mount(VueOkrTree, { props: { data: makeData(), nodeKey: 'id' } })
-    expect(emit).toHaveBeenCalledTimes(1)
-    const [event, descriptor, setupFn] = emit.mock.calls[0]
+    expect(setups()).toHaveLength(1)
+    const [event, descriptor, setupFn] = setups()[0]
     expect(event).toBe('devtools-plugin:setup')
     expect(descriptor).toMatchObject({ id: 'vue3-okr-tree', packageName: 'vue3-okr-tree' })
     expect(typeof setupFn).toBe('function')
 
     mount(VueOkrTree, { props: { data: makeData(), nodeKey: 'id' } })
-    expect(emit).toHaveBeenCalledTimes(1)
+    expect(setups()).toHaveLength(1)
     first.unmount()
   })
 
