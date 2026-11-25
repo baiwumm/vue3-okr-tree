@@ -93,6 +93,18 @@ export default defineAppConfig({
       slots: {
         title: 'font-semibold sm:text-6xl max-w-[19ch] mx-auto',
         description: 'max-w-[46ch] mx-auto',
+        // 上下留白：Nuxt UI 默认 py-24 sm:py-32 lg:py-40（桌面端上下各 160px），
+        // 首页首屏被顶到几乎只剩标题与按钮，Hero 底部再叠 Section 的 py-32，
+        // 模块之间空出一整屏。这里把 Hero 的上下留白收到 64/80/96px。
+        container: 'py-16 sm:py-20 lg:py-24',
+      },
+    },
+    // 首页各 Section：默认 py-16 sm:py-24 lg:py-32（桌面端上下各 128px），
+    // 与 Hero 的底部留白相加后相邻模块之间空了 ~290px。
+    // 收到 40/48/64px，模块间距回到正文阅读的节奏。
+    pageSection: {
+      slots: {
+        container: 'py-10 sm:py-12 lg:py-16',
       },
     },
     // 首页特性卡片：图标从裸图标改成主色底、圆角色块
