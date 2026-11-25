@@ -98,6 +98,11 @@ jobs:
           test -f docs-site/.output/public/playground/index.html
           test -f docs-site/.output/public/404.html
 
+      # 收录相关的回归都是「构建成功、站点能打开，但搜索引擎拿不到」这一类，
+      # 只能靠断言骨架拦住（具体判据见 scripts/verify-seo.mjs 头部注释）。
+      - name: Assert the SEO surface of the built site
+        run: pnpm verify:seo
+
   peer-matrix:
     name: Unit tests on vue ${{ matrix.label }}
     runs-on: ubuntu-latest

@@ -9,6 +9,28 @@ export default defineAppConfig({
     title: 'vue3-okr-tree',
     description:
       'Vue 3 组织架构树 / OKR 树组件：根节点左右双向展开、CSS 变量主题化、懒加载、画布缩放与导出',
+    // 实体层（docus 5.15 起走 nuxt-schema-org，这两项进首页的 @graph，
+    // WebSite 用 publisher / about 指过去）：站点是什么产品 + 谁发布的。
+    // 不配的话首页只有一个裸 WebSite 节点，「这是个库 / 面向 Vue 3 / MIT 免费」
+    // 这些事实只能靠正文让引擎自己猜。
+    schema: {
+      type: 'SoftwareApplication',
+      applicationCategory: 'DeveloperApplication',
+      operatingSystem: 'Web',
+      // 开源免费：没有报价就从 offers 里消失，AI 代理比价时会当成“需询价”。
+      price: 0,
+      priceCurrency: 'CNY',
+      sameAs: [
+        'https://github.com/baiwumm/vue3-okr-tree',
+        'https://www.npmjs.com/package/vue3-okr-tree',
+      ],
+      organization: {
+        name: 'baiwumm',
+        url: 'https://www.baiwumm.com',
+        logo: '/logo-512.png',
+        sameAs: ['https://github.com/baiwumm'],
+      },
+    },
   },
   header: {
     title: 'vue3-okr-tree',
@@ -17,6 +39,10 @@ export default defineAppConfig({
       light: '/logo.svg',
       dark: '/logo-dark.svg',
       alt: 'vue3-okr-tree',
+      // docus 会把 header.logo.favicon 写进 <link rel="icon">：默认值是 /favicon.ico，
+      // 而 public/ 里原先没有这个文件（每次访问都吃一个软 404）。指到 SVG，
+      // 同时 public/favicon.ico 也补了真图标，直猜 /favicon.ico 的旧客户端不再拿到首页 HTML。
+      favicon: '/favicon.svg',
     },
   },
   github: {

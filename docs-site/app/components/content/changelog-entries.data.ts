@@ -7,6 +7,11 @@ export interface ChangelogEntry {
 
 export const changelogEntries: ChangelogEntry[] = [
   {
+    "version": "1.17.0",
+    "date": "2026-11-04",
+    "summary": "- ⚠️ 支持面收紧：peerDependencies.vue 由 >=3.3.0 改为 >=3.5.2（2026-11-04，1.16.0 之后的下限变更）：发布产物的 dist/index.d.ts 由 vue-tsc 按 Vue 3.5 的类型形状生成，依赖 CreateComponentPublicInstanceWithMixins / PublicProps / GlobalDirectives 等 3.5 才有的公开类型。实测 3.3.13 / 3.4.38 报缺少这些导出，3.5.0 / 3.5.1 仍因 DefineComponent 泛型参数个数不足而无法通过 verify:peer-types，3.5.2 是能编译的最低补丁，因此把运行时与类型支持面统一到同一条口径。Vue 3.3 / 3.4（以及 3.5.0 / 3.5.1）的用户请继续使用 1.16.0，本版不提供兼容层。CI 的 peer-matrix 由 3.3 / 3.4 / 3.5 三腿改为「3.5.2 下限（单测 + build + 消费者 d.ts）」与「dev 当前（单测）」两腿，verify:peer-types 从默认 verify 作业移入下限腿——声明的下限就是类型能编译的下限。"
+  },
+  {
     "version": "1.16.0",
     "date": "2026-09-26",
     "summary": "- 新增 virtual 虚拟滚动：同层可见兄弟数 ≥ 50 的行只渲染视口内窗口，DOM 数量与滚动流畅度不再随总数增长（1 父 + 10000 平铺子节点实测渲染节点 10001 → 13）。实现要点：未渲染兄弟的位置由等尺寸占位块顶住（float 行总宽与每个渲染节点的坐标和全量渲染逐像素一致），占位块自带连线段续接横线，行首 / 行末的边界帽（:first-child / :last-child 的去线与圆角）语义由占位块自然继承；展开行的子容器按宽度模型显式定宽（float 的 shrink-to-fit 取 min(max(min-content, 可用宽), max-content)，单个巨宽占位块会把容器钉在 min-content 上、把渲染节点挤到第二行折断连线）；折叠行不渲染占位块，折叠宽度与全量渲染一致。aria（aria-setsize / aria-posinset）、show-node-num 计数、getVisibleNodes() 全部按全量可见列表输出；scrollToNode 与键盘漫游对窗口外目标先揭示再定位（逐条推进不跳焦）。要求数字型 label-width（horizontal 布局还要求 label-height），auto 尺寸下达标行退回全量渲染并警告；创建期快照，运行时变更输出警告。已知边界：万级数据首帧成本主要在 store 构建（1 万节点约 2.9s，与 virtual 无关、全量渲染同样存在），virtual 消除的是 DOM 数量与滚动 / 展开时的渲染卡顿；压缩后产物 +2.1 kB gzip（ESM / UMD 预算上调至 21 kB）。姊妹包 react-okr-tree 同批同形。"
@@ -25,10 +30,5 @@ export const changelogEntries: ChangelogEntry[] = [
     "version": "1.14.1",
     "date": "2026-09-24",
     "summary": "对外 API 零变化的一批：修掉 7 个真实缺陷（组对齐宽度被首量钉死、contains 未递归左子树导致可成环、换绑 data 把整棵后代摘出注册表、zoomIn / zoomOut 锚点取错、平移后吞点击堆积监听、产物丢失三家打包器的 ignore 注释、connector=\"svg\" 稳态自持重排），另有 3 项性能收敛、10 条门禁补强与两站文档对齐。姊妹包 react-okr-tree 同号跟随。"
-  },
-  {
-    "version": "1.14.0",
-    "date": "2026-09-22",
-    "summary": "对外只多一个导出（BUILT_IN_THEMES），其余全是发布前收口的测试与门禁断言。本版本同时是第一个由 CI 通过 OIDC Trusted Publishing 真实发包的版本。"
   }
 ]

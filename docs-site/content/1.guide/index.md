@@ -3,6 +3,9 @@ title: 指南总览
 navigation:
   icon: i-lucide-map
 description: 一页速查：想做什么 → 用哪个 prop / 方法 → 去哪页看细节
+modifiedAt: 2026-09-26
+seo:
+  title: '指南总览：想做什么 → 用哪个 prop'
 ---
 
 ## 布局与展开

@@ -1,5 +1,7 @@
 ---
-title: vue3-okr-tree — Vue 3 组织架构树 / OKR 树组件
+# 标题不带品牌前缀：docus 的 titleTemplate 是 `%s - vue3-okr-tree`，原先这里也写了
+# "vue3-okr-tree — ..."，渲染出来品牌重复两次，58 字符的标题浪费近一半版面。
+title: Vue 3 组织架构树 / OKR 树组件
 description: Vue 3 组织架构树 / OKR 树组件：根节点左右双向展开、CSS 变量主题化、懒加载、画布缩放与导出
 navigation: false
 ---
@@ -26,6 +28,23 @@ links:
 #headline
 
 :version-badge
+
+::
+
+::u-page-section
+---
+
+headline: 概览
+
+---
+
+#body
+
+vue3-okr-tree 是一个基于 Vue 3 的组织架构树 / OKR 树组件：根节点居中，左右两侧同时展开子节点，连接线由纯 CSS 绘制，不需要 canvas、额外的布局引擎或手动测量 DOM。它的对外 API 与 Vue 2 时代的 [vue-okr-tree](https://github.com/qq449245884/vue-okr-tree) 对齐，已有项目迁移时基本不用重写模板。
+
+它面向三类页面：企业**组织架构图**、飞书式的 **OKR 目标树**，以及需要层级拖拽的编辑器。复选框父子联动与半选、拖拽换父级、手风琴、点击节点展开、`filter` 过滤都是内建能力；数据量上去以后，`lazy` 只加载展开路径，`virtual` 做窗口化渲染。外观全部通过 `--okr-*` CSS 变量暴露，内置 default / feishu / dark / auto / minimal / colorful 六套主题，也可以用 `unstyled` 交给 Tailwind 接管；需要整幅画布时，`OkrTreeViewport` 提供滚轮缩放、拖拽平移与 PNG / SVG 导出。键盘导航按 WAI-ARIA tree 语义实现（漫游 tabindex + 方向键），并自动响应系统的减弱动效设置。
+
+完整的 props / events / methods / 插槽见 [API](/api)，与 Vue 2 版的差异清单见 [迁移说明](/migration)。React 技术栈用同结构实现的 [react-okr-tree](https://github.com/baiwumm/react-okr-tree)，两个包自 1.13.0 起锁步发版。
 
 ::
 

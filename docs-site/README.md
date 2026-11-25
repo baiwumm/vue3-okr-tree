@@ -19,18 +19,18 @@ pnpm docs:preview:full   # 构建完整产物并本地预览（/playground/ 仅�
 
 文档站是 `nuxt generate` 产出的纯静态站点，由腾讯云 EdgeOne（Makers）托管。下表是仓库侧需要提供的值；EdgeOne 控制台的入口、字段名与默认预览域名以实际界面为准，不在此写死。
 
-| 项           | 值                                                                                                   |
-| ------------ | ---------------------------------------------------------------------------------------------------- |
-| 项目类型     | Vue 3 组件库文档站（Docus / Nuxt 静态站，含 `/playground/` 子路径）                                  |
-| 框架预设     | `Other`（静态）。注意控制台预设不是最终裁决，见下方「根 package.json 不要出现 nuxt / next」          |
-| 根目录       | `/`                                                                                                  |
-| 生产分支     | `main`                                                                                               |
-| 域名         | `vue3-okr-tree.baiwumm.com`（继续使用，DNS 解析迁至腾讯云 EdgeOne）                                  |
-| 安装命令     | `pnpm install --frozen-lockfile`                                                                     |
-| 构建命令     | `pnpm docs:build:full`                                                                               |
-| 构建产物目录 | `docs-site/.output/public`（`nuxt generate` 原生产物，Playground 已合并进它的 `playground/` 子目录） |
-| Node 版本    | 22.22.2（仓库根 `.node-version`）                                                                    |
-| 环境变量     | 启用 AI Assistant 时需要 `AI_GATEWAY_API_KEY`；`PLAYGROUND_USE_DIST=1` 由脚本内部设置，无需重复配置  |
+| 项           | 值                                                                                                                                                                                                                                                                           |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 项目类型     | Vue 3 组件库文档站（Docus / Nuxt 静态站，含 `/playground/` 子路径）                                                                                                                                                                                                          |
+| 框架预设     | `Other`（静态）。注意控制台预设不是最终裁决，见下方「根 package.json 不要出现 nuxt / next」                                                                                                                                                                                  |
+| 根目录       | `/`                                                                                                                                                                                                                                                                          |
+| 生产分支     | `main`                                                                                                                                                                                                                                                                       |
+| 域名         | `vue3-okr-tree.baiwumm.com`（继续使用，DNS 解析迁至腾讯云 EdgeOne）                                                                                                                                                                                                          |
+| 安装命令     | `pnpm install --frozen-lockfile`                                                                                                                                                                                                                                             |
+| 构建命令     | `pnpm docs:build:full`                                                                                                                                                                                                                                                       |
+| 构建产物目录 | `docs-site/.output/public`（`nuxt generate` 原生产物，Playground 已合并进它的 `playground/` 子目录）                                                                                                                                                                         |
+| Node 版本    | 22.22.2（仓库根 `.node-version`）                                                                                                                                                                                                                                            |
+| 环境变量     | 启用 AI Assistant 时需要 `AI_GATEWAY_API_KEY`；`PLAYGROUND_USE_DIST=1` 由脚本内部设置，无需重复配置。`NUXT_SITE_URL` 自 docus 5.15 起**不再必需**（sitemap 改走 `@nuxtjs/sitemap`，读 `nuxt.config.ts` 的 `site.url`）；控制台里已经配了也不冲突，值与 `site.url` 一致即可。 |
 
 接入步骤（控制台字段名按实际界面填写）：
 
@@ -38,7 +38,8 @@ pnpm docs:preview:full   # 构建完整产物并本地预览（/playground/ 仅�
 2. 安装/构建命令与产物目录按上表填写；框架预设选 `Other`（静态）。若构建镜像不读取 `.node-version`，按控制台实际支持的方式声明 Node 22（例如环境变量 `NODE_VERSION=22`）。
    - ~~`docs-site/.output/public` 与 `docs-site/dist` 实测均采集不到产物，是因为它们是隐藏目录 / 路径不对，所以要把产物复制到仓库根的非隐藏目录 `out/`~~ → 2026-11-02 更正：真因是构建机会**按根 `package.json` 的依赖重新识别框架**（控制台预设不参与这一步），识别成 `nuxt` / `next` 时它跳过「把输出目录搬进上传暂存区」那步、改等框架自己的原生暂存来填，而自定义构建命令不会触发那个暂存——于是输出目录填什么都没生效，构建还显示成功、产物列表为空。改法见注意事项第一条，改完 `out/` 这层中转就删掉了。
 3. 绑定自定义域名 `vue3-okr-tree.baiwumm.com`（域名保持不变），在腾讯云 DNSPod 或当前 DNS 服务商处把解析指向 EdgeOne 控制台给出的加速域名；DNS、HTTPS 证书与缓存/回源策略按控制台实际配置。
-4. 产物根目录含 `404.html`：若控制台支持自定义 404 / 错误页，指向该文件。站点是预生成的纯静态页面，不需要 SPA history 回退。
+4. 产物根目录含 `404.html`：**必须在控制台把错误页指向它**。站点是预生成的纯静态页面，不需要 SPA history 回退；不配的话未知路径会回落到 `index.html` 并返回 200，等于给爬虫开了无限软 404（2026-11-25 审计实测：`/nope-xyz` 返回 200 + 首页原文）。
+   - 同批建议加两条重写规则：`/x/ → /x`（301）、`/x.html → /x`（301）。产物里同时存在 `api.html` 与 `api/index.html` 两种形态，前者 canonical 是 `/api`、后者自指 `/api/`，控制台不做归一就一直是「一页两个规范网址」。
 5. 启用 AI Assistant 时，在控制台的环境变量配置里按实际方式写入 `AI_GATEWAY_API_KEY`。
 
 > **加速区域**：选择「全球可用区（含中国大陆）」要求域名已完成 ICP 备案；未备案时请选择不含中国大陆的可用区。
@@ -51,6 +52,17 @@ pnpm docs:preview:full   # 构建完整产物并本地预览（/playground/ 仅�
 - 站内链接全部使用根绝对路径（Docus 原生 clean URL）；**只支持根路径部署，不支持子路径部署**。~~子路径部署（base 注入）VitePress 时代支持一键切换，Docus 下需要另行评估，未配置。~~ → 2026-11-04 定论：Docus/Nuxt 的页面链接、静态资源与合并进 `playground/` 的产物路径都按根绝对路径生成，改 base 会同时牵动导航、站内搜索索引与 Playground 路径，当前无此需求，明确不做支持。
 - Playground 构建产物会被合并到输出的 `playground/` 子目录，导航中的「Playground」指向它（以 dist 产物构建，同时验证发布包路径）。
 - 仓库内不维护平台专属的路由 / 响应头配置；静态托管所需的目录索引与 404 行为在 EdgeOne 控制台侧按实际能力配置。
+
+## SEO / 收录
+
+站点骨架的改动点集中在这里，改完务必跑 `pnpm docs:build:full && pnpm verify:seo`：
+
+- **`lang` / sitemap 靠 docus 版本**：docus 5.13 有两个静默缺陷——`<html lang="en">`（拿 `zh-CN` 去查 `@nuxt/ui` 里键为 `zh_cn` 的表）与 sitemap `<loc>` 相对路径（自带路由只读环境变量、不读 `site.url`）。**5.15.0 已修复两者**（`getLocaleKey()` + `@nuxtjs/sitemap`），所以 `docs-site/package.json` 的 `docus` 不要往 5.15 以下回退。
+- **站长平台验证**：`nuxt.config.ts` 的 `app.head.meta` 里挂 GSC（`google-site-verification`）与 Bing（`msvalidate.01`）两条 meta。GSC 管 Google，BWT 管 Bing——ChatGPT / Copilot 走 Bing 索引，只接一个等于漏掉一半 AI 可见性。
+- **结构化数据**：`app/app.config.ts` 的 `seo.schema` 声明站点实体（`SoftwareApplication` + `Organization`，`price: 0`），docus 5.15 走 `nuxt-schema-org` 把它们编进首页 `@graph`，`WebSite` 用 `publisher` / `about` 指过去。★ 待补：文档页 `Article` 的 `author` / `datePublished` 仍缺（docus 只把 `modifiedAt` 透传给 schema，且未写 `author`）；`modifiedAt` 已进 frontmatter，所以 sitemap 的 `<lastmod>` 与页面新鲜度信号是齐的。
+- **Playground 不进索引**：`playground/index.html` 带 `noindex, follow`（Vite 客户端壳的静态 HTML 只有一个空 `#app`）。
+- **`/llms.txt`**：`nuxt.config.ts` 里显式覆盖了 `llms.description` —— 不覆盖时 docus 会拿 **docs-site/package.json** 的 description（「部署产物 docs-site/.output/public」）当产品简介写给 AI 引擎。
+- **门禁**：`scripts/verify-seo.mjs`（`pnpm verify:seo`）断言 sitemap 绝对 URL、每页 `lang="zh-CN"` / 单个 h1 / canonical、验证 meta、playground noindex、favicon 存在；CI 的 docs 作业里跑。
 
 ## 结构
 

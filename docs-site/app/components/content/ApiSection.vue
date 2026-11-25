@@ -32,9 +32,11 @@ const section = computed(() => sections[props.name])
 
 <template>
   <section v-if="section" class="api-doc-section">
-    <h3 :id="section.id">
+    <!-- h2 而非 h3：/api 是全站最长的页（万级字符），原先 h1 → h3 跳级、
+         页面里一个 h2 都没有，侧栏「本页内容」也少了这一层分组。 -->
+    <h2 :id="section.id">
       {{ section.title }}
-    </h3>
+    </h2>
     <!-- eslint-disable-next-line vue/no-v-html -->
     <p v-if="section.intro" v-html="section.intro" />
     <div class="vue-okr-tree-demo">
@@ -57,7 +59,7 @@ const section = computed(() => sections[props.name])
 </template>
 
 <style>
-.api-doc-section h3 {
+.api-doc-section h2 {
   margin-bottom: 4px;
 }
 </style>
