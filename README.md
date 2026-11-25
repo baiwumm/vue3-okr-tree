@@ -157,6 +157,12 @@ pnpm gen:readme       # 从 shared/api.ts 重新生成上面的 API 概览
 
 发布：更新 `version` 与 `CHANGELOG.md` → 提交 → `git tag v1.x.x && git push origin v1.x.x`，`release.yml` 跑完门禁后 `npm publish --provenance` 并创建 GitHub Release。完整步骤见 [docs/release-guide.md](./docs/release-guide.md)。
 
+## 社区与参与
+
+- 提问与想法：[Discussions](https://github.com/baiwumm/vue3-okr-tree/discussions)（Q&A / Ideas 各有表单模板）
+- 可复现的 bug：[新建 issue](https://github.com/baiwumm/vue3-okr-tree/issues/new/choose)（表单已收集版本、复现步骤与取证材料）
+- 参与贡献：[CONTRIBUTING.md](./CONTRIBUTING.md) · 行为准则：[CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) · 安全漏洞：[SECURITY.md](./SECURITY.md)（走私密报告，不要开公开 issue）
+
 ## License
 
 MIT

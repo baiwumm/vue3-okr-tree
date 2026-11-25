@@ -1,0 +1,57 @@
+title: '[Q&A] '
+body:
+  - type: markdown
+    attributes:
+      value: |
+        有问题先看这里：安装、接入、全部 props / events / methods / 插槽与逐项行为差异，都写在[文档站](https://vue3-okr-tree.baiwumm.com)上；[Playground](https://vue3-okr-tree.baiwumm.com/playground/) 里 24 个用例可以直接改 data 试交互。
+
+        提问前请先检索已有讨论与文档站。日志与截图里不要带真实站点的 token、内部地址或用户数据。
+  - type: input
+    id: version
+    attributes:
+      label: 库版本
+      description: 安装的 vue3-okr-tree 版本（`npm ls vue3-okr-tree` 可查）与 Vue 版本。
+      placeholder: vue3-okr-tree 1.17.0 · vue 3.5.22
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: 问题发生在哪
+      options:
+        - 安装与接入（npm / CDN / UMD / SSR）
+        - 基础渲染与布局（direction / onlyBothTree / align-root）
+        - 交互（勾选、拖拽、手风琴、点击展开、filter）
+        - 懒加载（lazy / load）与虚拟滚动（virtual）
+        - 画布缩放与导出（OkrTreeViewport）
+        - 主题与 CSS 变量（--okr-* / unstyled）
+        - 键盘导航与无障碍
+        - 类型与 TypeScript
+        - 文档站
+        - 其它
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: 想做什么 / 遇到了什么
+      description: 预期行为、实际行为、报错原文。
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤（如有）
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 发帖前确认
+      options:
+        - label: 我检索过已有讨论与文档站，没有找到答案。
+          required: true
+        - label: 帖子里没有真实站点的 token、内部地址或用户数据。
+          required: true
