@@ -291,3 +291,60 @@ test.describe('1.4.0 新能力', () => {
       .toBe('none')
   })
 })
+
+/**
+ * 撑高与收起必须同一次渲染生效（2026-11-20）。
+ *
+ * Vue 侧天然成立：调度器把 watch 回调和组件渲染合并在同一个微任务批次里，下一帧之前
+ * 不会上屏。React 移植版原先把同样的逻辑放进 `useEffect`（提交并绘制之后才跑），
+ * 屏幕上会先出现一帧 height:0 —— 实测高度序列 735 → 395 → 735 → 395。
+ *
+ * 这里盯的是「撑高别被推迟出这次批处理」：把 `keepHeight.value = true` 包进
+ * requestAnimationFrame 后，卡片高度序列变成 574 → 254 → 574 → 254，本条即红
+ * （失败信息里直接打印序列）。单独把 watch 改成 `flush: 'post'` 仍然是绿的——同一批
+ * 次内的 DOM 更新会被合并，这也是为什么不能把判据写成「必须是 flush: pre」。
+ * demo-9（节点动画）是 playground 里唯一常开 `animate` 的用例。
+ */
+test.describe('animate 收起不闪（撑高与收起同帧）', () => {
+  test('收起时卡片高度只掉一次，不出现「塌一下再弹回」', async ({ page }) => {
+    await page.goto('/')
+    const card = demoCard(page, 'demo-9')
+    await page.locator('#demo-9').scrollIntoViewIfNeeded()
+    await page.evaluate(() => document.fonts.ready)
+    await page.waitForTimeout(250)
+
+    const heights = await card.evaluate(async (el) => {
+      const btn = el.querySelector<HTMLElement>(
+        '.org-chart-node > .org-chart-node-label > .org-chart-node-btn'
+      )!
+      const out: number[] = []
+      const read = () => out.push(Math.round(el.getBoundingClientRect().height))
+
+      read()
+      btn.click()
+      const start = performance.now()
+      await new Promise<void>((resolve) => {
+        const tick = () => {
+          read()
+          if (performance.now() - start < 420) requestAnimationFrame(tick)
+          else resolve()
+        }
+        requestAnimationFrame(tick)
+      })
+      return out
+    })
+
+    const first = heights[0]
+    const last = heights[heights.length - 1]
+    // 前提：确实收起去了（按钮没生效时下面两条会变成空断）
+    expect(last).toBeLessThan(first - 20)
+
+    // 亚像素取整会抖 ±1px，只把「大于 1px 的下降」算一次掉落
+    let drops = 0
+    for (let i = 1; i < heights.length; i++) if (heights[i] < heights[i - 1] - 1) drops += 1
+
+    expect(drops, `高度序列：${heights.join(' ')}`).toBe(1)
+    // 中途不能超过起始高度（撑高被 effect 迟到时就是这一条被打破）
+    expect(Math.max(...heights), `高度序列：${heights.join(' ')}`).toBeLessThanOrEqual(first + 1)
+  })
+})

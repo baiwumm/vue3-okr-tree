@@ -326,6 +326,14 @@ const animVar = computed<CSSProperties>(() =>
 /**
  * animate 开启时，收起动作先保留容器高度让内容完成淡出/缩放过渡，
  * 过渡结束后再置 height: 0（height auto→0 不可插值，直接切换会让下方节点先跳位）。
+ *
+ * **撑高必须留在同一次批处理更新里**（2026-11-20 补注）：Vue 的调度器把 watch 回调与
+ * 组件渲染合并在同一个微任务批次里执行，下一帧之前不会上屏，所以 `flush: 'pre'`（默认）
+ * 与 `'post'` 都不会闪。真正会闪的是把 `keepHeight` 推迟出去——实测把赋值包进
+ * `requestAnimationFrame` 后，卡片高度序列变成 574 → 254 → 574 → 254（收起帧先上屏，
+ * 下一帧才被撑回来），窗口连同它下方的内容抖两下。React 移植版原先把同样的逻辑放进
+ * `useEffect`（提交并绘制之后才跑）就踩了这一条。
+ * `tests/visual/visual.spec.ts` 的「animate 收起不闪」按帧采样高度，盯的就是这个时序。
  */
 const useDelayedCollapse = (isExpanded: () => boolean) => {
   const keepHeight = ref(false)
