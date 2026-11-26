@@ -1,0 +1,42 @@
+name: CodeQL
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # 每周一 03:17 UTC。规则库与依赖都会随时间更新，只靠 push 触发的话，
+    # 长期不开 PR 的仓库等于没有持续扫描。
+    - cron: '17 3 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  analyze:
+    name: CodeQL (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [javascript-typescript]
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          # 本仓是纯 TS/JS 库，没有需要追踪的编译产物；JS/TS 的 CodeQL 本来就是按 AST
+          # 静态分析源码，不需要 build 步骤，少一层构建就少一处构建期噪声。
+          build-mode: none
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@v3

@@ -15,13 +15,17 @@
 安全告警几乎全部落在第二条链上：Nuxt 生态的传递依赖（`node-forge`、`undici`、`seroval`、
 `@nuxt/nitro-server` 等）与根侧构建工具（`vite`、`vitest`、`api-extractor`、`js-beautify`）。
 
-本仓没有开 Dependabot 告警（用 Renovate 走 PR 流程），所以漏洞不会自己冒头；`pnpm audit`
-是唯一能主动看到的口径。
+~~本仓没有开 Dependabot 告警（用 Renovate 走 PR 流程），所以漏洞不会自己冒头；`pnpm audit`
+是唯一能主动看到的口径。~~
+→ 2026-11-26：已开启 GitHub 的 Dependabot 漏洞告警（`vulnerability-alerts`）。Renovate 继续管
+版本升级的 PR，Dependabot 只报「已知漏洞」这一类，两条线职责不同、并存不冲突；`pnpm audit`
+仍是本地最直接的口径。
 
 ## 判据
 
-1. **先在范围内升**：`pnpm update -r --depth Infinity` 把整棵树刷到各自声明范围的最新。
+1. **先在范围内升**：`pnpm update -r --depth ~~Infinity~~ 99` 把整棵树刷到各自声明范围的最新。
    这一步能修掉大部分（undici、nuxt、vite、@intlify/vue-i18n 等），不需要任何 override。
+   （`--depth Infinity` 不是合法参数，pnpm 会直接报参数错误；用足够大的数字代替。）
 2. **范围外的用 override**：上游声明的范围本身还停在有漏洞的版本上时，只有 override 能修。
    取「已修复的最低可用版本」，不取最新——最小改动面。
 3. **必须能在本仓门禁里验过**：门禁跑不过的 override 不留。
@@ -64,6 +68,36 @@ pnpm audit --registry=https://registry.npmjs.org
 pnpm format:check && pnpm lint && pnpm typecheck && pnpm test
 pnpm build && pnpm verify:dist && pnpm verify:peer-types && pnpm verify:package && pnpm size
 pnpm docs:build:full && pnpm verify:seo && pnpm verify:edgeone
+```
+
+## GitHub 侧的安全开关
+
+2026-11-26 逐个打开仓库设置里的开关（Security and quality → Overview）：
+
+| 开关                            | 状态                                   | 作用                                        |
+| ------------------------------- | -------------------------------------- | ------------------------------------------- |
+| Security policy                 | 已开（`SECURITY.md`）                  | 公开漏洞报告的入口与响应约定                |
+| Security advisories             | 已开                                   | 仓库自身的 advisory 可见                    |
+| Private vulnerability reporting | 已开                                   | 外部用户可私下提交漏洞，不必公开开 issue    |
+| Dependabot alerts               | 已开                                   | 依赖出现已知漏洞时告警（只报，不自动开 PR） |
+| Code scanning alerts            | 已开（`.github/workflows/codeql.yml`） | CodeQL 对 JS/TS 源码做静态分析              |
+| Secret scanning alerts          | 已开                                   | 推送时扫描密钥；push protection 也已开      |
+
+两个刻意的取舍：
+
+- **Dependabot 只开告警、不开 security updates（自动修复 PR）**：仓库的版本升级由 Renovate 走 PR
+  流程，两套自动开 PR 会互相打架。告警只读不写，不冲突。
+- **CodeQL 用 `build-mode: none`**：本仓是纯 TS/JS 库，没有需要追踪的编译产物，JS/TS 的 CodeQL
+  按 AST 分析源码即可，少一层构建就少一处构建期噪声。
+
+```bash
+# 看当前状态
+gh api repos/baiwumm/vue3-okr-tree --jq '.security_and_analysis'
+gh api repos/baiwumm/vue3-okr-tree/private-vulnerability-reporting
+
+# 看告警结果
+gh api repos/baiwumm/vue3-okr-tree/dependabot/alerts --jq '.[] | {number,severity:.security_advisory.severity,package:.dependency.package.name,state}'
+gh api repos/baiwumm/vue3-okr-tree/code-scanning/alerts --jq '.[] | {number,rule:.rule.id,severity:.rule.security_severity_level,state}'
 ```
 
 ## 复查节奏
