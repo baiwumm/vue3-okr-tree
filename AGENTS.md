@@ -12,7 +12,7 @@ README、文档站页面、API 表等**生成物或衍生产物一律不手改**
 
 ## docs/ 目录与文档约定
 
-`docs/` 的文件清单与定位见 [docs/README.md](./docs/README.md)（活文档：requirements / roadmap / release-guide / acceptance / perf；历史快照：development-plan / release-readiness）。约定：
+`docs/` 的文件清单与定位见 [docs/README.md](./docs/README.md)（活文档：requirements / roadmap / release-guide / acceptance / perf / security-deps；历史快照：development-plan / release-readiness）。约定：
 
 - **文件名**一律 kebab-case 英文，按用途命名（不放版本号、不放日期）；新文档先在 `docs/README.md` 索引登记再落笔。
 - **历史快照**在文首加「⚠️ 历史快照」横幅封存，正文不再随版本更新；最新门禁数字的**唯一权威是 `docs/acceptance.md`**，其余文档引用而非复制。
