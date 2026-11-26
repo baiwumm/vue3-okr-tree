@@ -15,17 +15,14 @@
 安全告警几乎全部落在第二条链上：Nuxt 生态的传递依赖（`node-forge`、`undici`、`seroval`、
 `@nuxt/nitro-server` 等）与根侧构建工具（`vite`、`vitest`、`api-extractor`、`js-beautify`）。
 
-~~本仓没有开 Dependabot 告警（用 Renovate 走 PR 流程），所以漏洞不会自己冒头；`pnpm audit`
-是唯一能主动看到的口径。~~
-→ 2026-11-26：已开启 GitHub 的 Dependabot 漏洞告警（`vulnerability-alerts`）。Renovate 继续管
-版本升级的 PR，Dependabot 只报「已知漏洞」这一类，两条线职责不同、并存不冲突；`pnpm audit`
-仍是本地最直接的口径。
+漏洞告警有两条线：GitHub 的 Dependabot 漏洞告警（`vulnerability-alerts`）报「已知漏洞」，
+Renovate 走 PR 流程管版本升级，两者职责不同、并存不冲突；`pnpm audit` 仍是本地最直接的口径。
 
 ## 判据
 
-1. **先在范围内升**：`pnpm update -r --depth ~~Infinity~~ 99` 把整棵树刷到各自声明范围的最新。
+1. **先在范围内升**：`pnpm update -r --depth 99` 把整棵树刷到各自声明范围的最新。
    这一步能修掉大部分（undici、nuxt、vite、@intlify/vue-i18n 等），不需要任何 override。
-   （`--depth Infinity` 不是合法参数，pnpm 会直接报参数错误；用足够大的数字代替。）
+   （`--depth` 取足够大的数字即可，`Infinity` 不是合法参数，pnpm 会直接报参数错误。）
 2. **范围外的用 override**：上游声明的范围本身还停在有漏洞的版本上时，只有 override 能修。
    取「已修复的最低可用版本」，不取最新——最小改动面。
 3. **必须能在本仓门禁里验过**：门禁跑不过的 override 不留。

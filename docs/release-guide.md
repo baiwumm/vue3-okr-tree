@@ -1,7 +1,7 @@
 # 发布操作手册（release-guide）
 
 > vue3-okr-tree 后续版本的发布操作步骤。写给维护者本人照着执行。
-> 当前状态（2026-11-04）：两个包（vue3-okr-tree / react-okr-tree）最新版均为 1.16.0，发布链路已全自动——推 `v*` tag 即可，无需登录 npm，也没有任何 token / GitHub Secrets。
+> 当前状态：发布链路已全自动——推 `v*` tag 即可，无需登录 npm，也没有任何 token / GitHub Secrets。
 > 版本规则：新功能 +1 minor，修复 +1 patch；破坏性变更（例如 peer 下限抬升）按 SemVer 应走 major，但两仓同号锁步——是否从 1.x 抬到 2.0.0 由维护者在发版前明确决定，日常提交与文档不预设版本号。发包前请以
 > `node -p "require('./package.json').version"` 复核版本号，不要照抄本文任何版本号。
 
@@ -53,7 +53,7 @@ win32 基线在本机生成（`pnpm test:visual:update`，提交前确认 `git d
 
 文档站部署由腾讯云 EdgeOne（Makers）负责，不在本仓库的 GitHub Actions 中：已接入 Git 集成，push 到 `main` 后会按 `pnpm docs:build:full` 自动构建，并把 `docs-site/.output/public` 作为发布产物；域名 `vue3-okr-tree.baiwumm.com` 保持不变，仅 DNS 解析迁至腾讯云。
 
-> 别用 `gh release create vx.y.z` 手动补建 Release：本地没有这个 tag 时它会自己创建并推送 tag、再触发一次 workflow，等于两边各来一遍（1.13.0 补建 GitHub Release 时踩过这条路径）。
+> 别用 `gh release create vx.y.z` 手动补建 Release：本地没有这个 tag 时它会自己创建并推送 tag、再触发一次 workflow，等于两边各来一遍。
 
 ## 发布后验证
 
@@ -67,6 +67,12 @@ node --input-type=module -e "import('vue3-okr-tree').then(m=>console.log(typeof 
 ```
 
 页面确认 npm 徽章、README 渲染、版本号与 `package.json` 一致。
+
+npm 页侧的元信息也要看一眼——Repository、Homepage、Bugs、Author、License、Keywords 都由 `package.json` 根字段驱动，页面上缺哪一项就是 manifest 里少写了哪个字段：
+
+```bash
+npm view vue3-okr-tree repository homepage bugs author license keywords --registry=https://registry.npmjs.org
+```
 
 ### 怎么确认这次发布真的走了 OIDC
 
@@ -86,16 +92,16 @@ curl -s "https://registry.npmjs.org/-/npm/v1/attestations/vue3-okr-tree@<ver>" |
 
 > ⚠️ **不要用完整 packument 里的 `attestations` 字段判断**：provenance 不在 packument 的 version 条目里，`curl https://registry.npmjs.org/<pkg>/latest` 永远查不到它，对已带签名证明的版本也一样返回空——这条判据是假的，用它会把成功当失败。
 >
-> ⚠️ registry 有传播延迟（~~实测约 1 分钟内 `dist-tags.latest` 才更新，attestations 端点也会短暂 404~~ → **2026-09-25 发布 1.15.0 时实测约 15 分钟**版本端点 / packument / attestations 才全部可读，publish 步日志里 npm 明说「Your package is being processed and may take a few minutes」；历史观察值不再代表上界）。run 刚结束就查不到不等于发布失败，先看日志里的 `+ <pkg>@<ver>`，确认后只等不重发——重复推 tag 会被守卫跳过，修不了传播。
+> ⚠️ registry 有传播延迟（实测约 15 分钟版本端点 / packument / attestations 才全部可读，publish 步日志里 npm 明说「Your package is being processed and may take a few minutes」）。run 刚结束就查不到不等于发布失败，先看日志里的 `+ <pkg>@<ver>`，确认后只等不重发——重复推 tag 会被守卫跳过，修不了传播。
 
 > `npm publish --dry-run` 不换 OIDC token（dry-run 直接跳过发布请求），**验不出发布链路**，别拿它当预检。
 
 ## 常见问题
 
-| 现象                                                | 原因 / 处理                                                                                                                                                                                                                                                                                                                                                               |
-| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| publish 步骤被跳过                                  | 守卫用 `npm view <name>@<version>` 查到 registry 上已有该版本号（通常是重复推同一个 tag）。属预期，`gh release create` 仍会继续把 GitHub Release 建出来                                                                                                                                                                                                                   |
-| publish 步骤报 `EPUBLISHCONFLICT`                   | 守卫没兜住——通常是 `npm view` 那次请求被 registry 抖动判成「未发布」，于是仍尝试发布。把版本号提新再 tag                                                                                                                                                                                                                                                                  |
-| publish 步骤 401/403                                | Trusted Publisher 未登记，或仓库 / workflow 文件名与实际触发的不一致；npm < 11.5.1 也会在 OIDC 处失败                                                                                                                                                                                                                                                                     |
-| tag 校验失败                                        | git tag 与 package.json version 不一致，改对后再 tag                                                                                                                                                                                                                                                                                                                      |
-| run 已 success、`npm i <pkg>@<ver>` 却报 `notarget` | 两层不同的延迟别混成一件：① registry 传播（实测约 1 分钟内 `dist-tags.latest` 才翻，attestations 端点也短暂 404）；② **本地 npm 缓存里那份 packument**——传播都过去了本地仍可能拿旧清单，于是回一句「该版本不存在」。区分办法是绕开缓存直读：`curl -s https://registry.npmjs.org/<pkg>` 看 `versions.<ver>` 与 `dist-tags`；直连有、本地无 ⇒ 加 `--prefer-online` 重装即可 |
+| 现象                                                | 原因 / 处理                                                                                                                                                                                                                                                                                                                                                       |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| publish 步骤被跳过                                  | 守卫用 `npm view <name>@<version>` 查到 registry 上已有该版本号（通常是重复推同一个 tag）。属预期，`gh release create` 仍会继续把 GitHub Release 建出来                                                                                                                                                                                                           |
+| publish 步骤报 `EPUBLISHCONFLICT`                   | 守卫没兜住——通常是 `npm view` 那次请求被 registry 抖动判成「未发布」，于是仍尝试发布。把版本号提新再 tag                                                                                                                                                                                                                                                          |
+| publish 步骤 401/403                                | Trusted Publisher 未登记，或仓库 / workflow 文件名与实际触发的不一致；npm < 11.5.1 也会在 OIDC 处失败                                                                                                                                                                                                                                                             |
+| tag 校验失败                                        | git tag 与 package.json version 不一致，改对后再 tag                                                                                                                                                                                                                                                                                                              |
+| run 已 success、`npm i <pkg>@<ver>` 却报 `notarget` | 两层不同的延迟别混成一件：① registry 传播（实测约 15 分钟版本端点 / packument / attestations 才全部可读）；② **本地 npm 缓存里那份 packument**——传播都过去了本地仍可能拿旧清单，于是回一句「该版本不存在」。区分办法是绕开缓存直读：`curl -s https://registry.npmjs.org/<pkg>` 看 `versions.<ver>` 与 `dist-tags`；直连有、本地无 ⇒ 加 `--prefer-online` 重装即可 |
