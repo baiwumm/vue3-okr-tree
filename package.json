@@ -13,13 +13,26 @@
   "keywords": [
     "vue",
     "vue3",
+    "vue-component",
     "vue-tree",
-    "org-tree",
+    "vue-okr-tree",
     "okr",
     "okr-tree",
+    "org-tree",
     "org-chart",
+    "organization",
+    "organization-tree",
     "tree",
-    "vue-okr-tree"
+    "tree-view",
+    "tree-component",
+    "component-library",
+    "css-variables",
+    "lazy-load",
+    "virtual-scroll",
+    "canvas",
+    "export",
+    "typescript",
+    "vite"
   ],
   "repository": {
     "type": "git",

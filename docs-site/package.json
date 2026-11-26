@@ -4,6 +4,21 @@
   "private": true,
   "type": "module",
   "description": "vue3-okr-tree 文档站（Docus / Nuxt 静态站），部署产物 docs-site/.output/public",
+  "license": "MIT",
+  "author": {
+    "name": "baiwumm",
+    "email": "me@baiwumm.com",
+    "url": "https://www.baiwumm.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/baiwumm/vue3-okr-tree.git",
+    "directory": "docs-site"
+  },
+  "bugs": {
+    "url": "https://github.com/baiwumm/vue3-okr-tree/issues"
+  },
+  "homepage": "https://vue3-okr-tree.baiwumm.com",
   "scripts": {
     "dev": "nuxt dev",
     "build": "nuxt generate",
