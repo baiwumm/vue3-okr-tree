@@ -19,16 +19,21 @@ const API_DOC_URL = 'https://vue3-okr-tree.baiwumm.com/api/'
 
 /** HTML 片段转 markdown 行内格式 */
 function toMarkdown(cell) {
-  return String(cell)
-    .replace(/<code>/g, '`')
-    .replace(/<\/code>/g, '`')
-    .replace(/<strong>/g, '**')
-    .replace(/<\/strong>/g, '**')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&amp;/g, '&')
-    .replace(/\|/g, '\\|')
-    .replace(/\n/g, ' ')
+  return (
+    String(cell)
+      .replace(/<code>/g, '`')
+      .replace(/<\/code>/g, '`')
+      .replace(/<strong>/g, '**')
+      .replace(/<\/strong>/g, '**')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&amp;/g, '&')
+      // 反斜杠必须先转义：markdown 表格里的 \| 是转义写法，原文若本身带反斜杠，
+      // 不先转义就会被这一步的 \| 吃掉，渲染出多余的竖线（CodeQL js/incomplete-sanitization）。
+      .replace(/\\/g, '\\\\')
+      .replace(/\|/g, '\\|')
+      .replace(/\n/g, ' ')
+  )
 }
 
 /** 成员名单元格 → 概览里统一的内联代码写法（剥掉数据里已有的反引号避免重复包裹） */

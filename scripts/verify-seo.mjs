@@ -24,6 +24,19 @@ const root = fileURLToPath(new URL('..', import.meta.url))
 const outDir = join(root, 'docs-site/.output/public')
 const SITE = 'https://vue3-okr-tree.baiwumm.com'
 
+/**
+ * canonical 必须是本站的绝对地址。这里解析 URL 比对 origin，而不是 startsWith 前缀：
+ * 前缀比对会把 `https://vue3-okr-tree.baiwumm.com.evil.com/` 这类仿冒域放过去
+ * （CodeQL js/incomplete-url-substring-sanitization）。
+ */
+function isSiteUrl(value) {
+  try {
+    return new URL(value).origin === SITE
+  } catch {
+    return false
+  }
+}
+
 /** 不参与「每页 lang / h1」检查的产物：错误页与 SPA 回退壳本来就没有页面骨架。 */
 const SKIP_FILES = new Set(['404.html', '200.html'])
 /** 产物里的技术目录，不是页面。 */
@@ -101,7 +114,7 @@ for (const file of pages) {
   if (h1 !== 1) fail(`${rel}: h1 数量为 ${h1}，应为 1`)
   const canonical = html.match(/<link rel="canonical" href="([^"]*)"/)?.[1]
   if (!canonical) fail(`${rel}: 缺少 canonical`)
-  else if (!canonical.startsWith(SITE)) fail(`${rel}: canonical 不是绝对地址（${canonical}）`)
+  else if (!isSiteUrl(canonical)) fail(`${rel}: canonical 不是本站绝对地址（${canonical}）`)
   checked += 1
 }
 if (!checked) fail('没有扫到任何页面 HTML，产物目录结构可能变了')

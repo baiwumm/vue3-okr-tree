@@ -100,6 +100,19 @@ gh api repos/baiwumm/vue3-okr-tree/dependabot/alerts --jq '.[] | {number,severit
 gh api repos/baiwumm/vue3-okr-tree/code-scanning/alerts --jq '.[] | {number,rule:.rule.id,severity:.rule.security_severity_level,state}'
 ```
 
+### 首次扫描结果（2026-11-26）
+
+- **Dependabot 告警：0 条。** 与 `pnpm audit` 归零互相印证——漏洞告警不是被压掉了，是真的没有。
+- **CodeQL：2 条告警，都在构建脚本里，已修。**
+
+| 告警                                       | 位置                         | 结论                                                                                                                                 |
+| ------------------------------------------ | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `js/incomplete-sanitization`               | `scripts/gen-readme-api.mjs` | 真问题：转义 markdown 表格的 `\|` 时没先转义反斜杠，原文带 `\` 的单元格会被吃掉反斜杠、渲染出多余竖线。改为先转义 `\` 再转义 `\|`。  |
+| `js/incomplete-url-substring-sanitization` | `scripts/verify-seo.mjs`     | 真问题：canonical 用 `startsWith(SITE)` 前缀比对，能放过 `https://vue3-okr-tree.baiwumm.com.evil.com/`。改为解析 URL 比对 `origin`。 |
+
+两条都是「脚本本身写得不够严」，不是运行时漏洞——但既然断言脚本的职责就是拦静默回归，
+判据松就是缺陷，所以照 CodeQL 的意见改，而不是加抑制注释。
+
 ## 复查节奏
 
 `pnpm audit` 的口径随上游发布变化。升级依赖时顺手跑一次；只要审计结果非零而 overrides 没覆盖
