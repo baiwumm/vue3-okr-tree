@@ -4,6 +4,31 @@
 
 > 托管历史说明：文档站曾托管在 Cloudflare Pages/Workers，2026-11-02 起迁至腾讯云 EdgeOne；下文历史版本条目中的相关描述保留为当时的记录。
 
+## Unreleased
+
+> 本段为未定档的开发期记录，发版时改写为 `## <版本>（日期）` 定版。
+
+本批**对外 API 形状与 peer 支持面零变化**（`peerDependencies.vue` 仍为 `>=3.5.2`，运行时依赖仍为空），全部改动落在依赖基线、CI 与文档上。
+
+### 依赖与安全
+
+- **依赖树漏洞告警清零**：`pnpm audit` 原先扫出 95 条（3 critical / 28 high / 46 moderate / 18 low），全部落在文档站那条 Nuxt 依赖链与根侧构建工具的传递依赖上，库本体（`dependencies` 为空、peer 只有 `vue` 与可选的 `html-to-image`）不在其中。处理方式：① 在声明范围内升（`pnpm update -r --depth 99`）修掉 54 条；② 剩下 33 条的修复版本落在父包声明范围之外，用 override 钉住——`node-forge 1.4.4` / `launch-editor 2.14.2` / `shell-quote 1.12.0` / `serialize-javascript 7.1.4` / `glob 14.0.6` / `minimatch 11.0.9` / `simple-git 4.1.0` / `zod 4.6.7`。复核后 audit 为 0 条。判据与「有意留着的风险」记在 `docs/security-deps.md`。
+- **`simple-git` 的 patch**：4.x 去掉了默认导出，而 `@nuxt/devtools` 仍写 `import Git from 'simple-git'` 并以 `Git(rootDir)` 调用——直接 override 会让 `nuxt generate` 挂在模块装载阶段。补 `patches/simple-git@4.1.0.patch` 把具名导出的 factory 补回默认导出（v3 的默认导出本来就是同一个 factory，语义一致）。
+- **文档站的 `theme-switch-animation` 升到 0.7.0**（devDependency，不进任何产物）：0.6.0 的唯一破坏性变更是移除 11 个类型导出，本仓未用到；`UColorModeButton` 的接入方式与 0.5.0 起新增的 `CIRCLE_BLUR` 反转白名单一并对齐。
+- **GitHub 侧安全开关**：开启私有漏洞报告（外部用户可私下提交漏洞）、Dependabot 漏洞告警与 CodeQL（新增 `.github/workflows/codeql.yml`，`javascript-typescript` + `build-mode: none`）。Dependabot 只开告警、不开自动修复 PR——版本升级由 Renovate 走 PR 流程，两套自动开 PR 会互相打架。
+- **CodeQL 首轮扫描的 2 条告警已修**：`scripts/gen-readme-api.mjs` 转义 markdown 表格的 `|` 时没先转义反斜杠（原文带 `\` 的单元格会被吃掉反斜杠、渲染出多余竖线）；`scripts/verify-seo.mjs` 的 canonical 用 `startsWith` 前缀比对，能放过 `https://vue3-okr-tree.baiwumm.com.evil.com/` 这类仿冒域。两处都按 CodeQL 的意见改实，没有用抑制注释压掉。
+
+### 工程化
+
+- **CI 的 peer 下限腿原本一直空跑**：它用 `package.json` 的 `pnpm.overrides` 钉 vue 与 `@vue/test-utils`，但 pnpm 11 起 settings 迁到了 `pnpm-workspace.yaml`，写在 `package.json` 里会被**静默忽略**（安装时只打一条 WARN）——装完 vue 解析到的是当前版本而不是 3.5.2；当时的「Assert resolved versions」又只打印不断言，CI 不会红。改成 `scripts/ci-peer-versions.mjs`：`pin` 写 `pnpm-workspace.yaml` 的 overrides 段（段不存在直接失败），`check` 在装完后真正断言解析到的版本。该腿现在跑在真实下限上。
+- **devtools 握手断言收窄为只数 `devtools-plugin:setup`**：Vue 3.5.46 起自己会往 `__VUE_DEVTOOLS_GLOBAL_HOOK__` 里发 `app:init` / `component:added` / `perf:start` 等事件，原先「整个 hook 调用总数 = 1」的断言被顶到 137 次。用例要验的是本库逐字按 v6 线协议握手、且多次挂载只握手一次，与这个共享广播口里还有谁在说话无关。
+
+### 文档与元信息
+
+- **活文档改为只写现状**：`AGENTS.md` 原先要求活文档用「~~旧表述~~ → 新表述 + 日期」的就地更正体例，五份活文档里攒了 65 处这种对照，外加各处批次叙述，读的人得先做一遍版本考古才能知道现状。改成过期表述就地改写、变更过程留在本文件与 git 历史里；`development-plan` / `release-readiness` 作为历史快照保持封存。
+- **包元信息补齐**：根包 `keywords` 从 9 个扩到 22 个（覆盖 GitHub 那 18 个 topics 里的 17 个，`docus` 属文档站框架不进 keywords）；`docs-site/package.json` 补上 `license` / `author` / `repository` / `bugs` / `homepage`——它是全仓唯一真缺元信息的一份 manifest。
+- **发布手册补一条 npm 页元信息核对命令**：Repository / Homepage / Bugs / Author / License / Keywords 都由 manifest 根字段驱动，页面上缺哪项就是 manifest 里少写了哪个字段。
+
 ## 1.17.0（2026-11-04）
 
 - **⚠️ 支持面收紧：`peerDependencies.vue` 由 `>=3.3.0` 改为 `>=3.5.2`**（2026-11-04，1.16.0 之后的下限变更）：发布产物的 `dist/index.d.ts` 由 `vue-tsc` 按 Vue 3.5 的类型形状生成，依赖 `CreateComponentPublicInstanceWithMixins` / `PublicProps` / `GlobalDirectives` 等 3.5 才有的公开类型。实测 3.3.13 / 3.4.38 报缺少这些导出，3.5.0 / 3.5.1 仍因 `DefineComponent` 泛型参数个数不足而无法通过 `verify:peer-types`，**3.5.2 是能编译的最低补丁**，因此把运行时与类型支持面统一到同一条口径。**Vue 3.3 / 3.4（以及 3.5.0 / 3.5.1）的用户请继续使用 1.16.0，本版不提供兼容层**。CI 的 `peer-matrix` 由 3.3 / 3.4 / 3.5 三腿改为「3.5.2 下限（单测 + build + 消费者 d.ts）」与「dev 当前（单测）」两腿，`verify:peer-types` 从默认 `verify` 作业移入下限腿——声明的下限就是类型能编译的下限。
