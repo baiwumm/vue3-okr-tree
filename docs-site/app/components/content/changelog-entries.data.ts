@@ -7,6 +7,11 @@ export interface ChangelogEntry {
 
 export const changelogEntries: ChangelogEntry[] = [
   {
+    "version": "1.17.1",
+    "date": "2026-11-26",
+    "summary": "本批对外 API 形状与 peer 支持面零变化（peerDependencies.vue 仍为 >=3.5.2，运行时依赖仍为空），全部改动落在依赖基线、CI 与文档上。"
+  },
+  {
     "version": "1.17.0",
     "date": "2026-11-04",
     "summary": "- ⚠️ 支持面收紧：peerDependencies.vue 由 >=3.3.0 改为 >=3.5.2（2026-11-04，1.16.0 之后的下限变更）：发布产物的 dist/index.d.ts 由 vue-tsc 按 Vue 3.5 的类型形状生成，依赖 CreateComponentPublicInstanceWithMixins / PublicProps / GlobalDirectives 等 3.5 才有的公开类型。实测 3.3.13 / 3.4.38 报缺少这些导出，3.5.0 / 3.5.1 仍因 DefineComponent 泛型参数个数不足而无法通过 verify:peer-types，3.5.2 是能编译的最低补丁，因此把运行时与类型支持面统一到同一条口径。Vue 3.3 / 3.4（以及 3.5.0 / 3.5.1）的用户请继续使用 1.16.0，本版不提供兼容层。CI 的 peer-matrix 由 3.3 / 3.4 / 3.5 三腿改为「3.5.2 下限（单测 + build + 消费者 d.ts）」与「dev 当前（单测）」两腿，verify:peer-types 从默认 verify 作业移入下限腿——声明的下限就是类型能编译的下限。"
@@ -25,10 +30,5 @@ export const changelogEntries: ChangelogEntry[] = [
     "version": "1.14.2",
     "date": "2026-09-25",
     "summary": "四条修复的一批：Demo 交互层批次（G8）实测出来的三处库语义缺口 + 一处画布交互卡死。对外 API 形状零变化，按「修复 +1 patch」定档。其中 default-checked-keys 一条改的是可观察行为（运行时重放的判据从按引用改成按内容），唯一会感知到差异的用法是「传一个等值新数组来强制清空勾选」——那等于依赖每次渲染回滚用户操作，故仍按 patch 走，但如果你确实这么写，请改用 setCheckedKeys()。姊妹包 react-okr-tree 同号跟随。"
-  },
-  {
-    "version": "1.14.1",
-    "date": "2026-09-24",
-    "summary": "对外 API 零变化的一批：修掉 7 个真实缺陷（组对齐宽度被首量钉死、contains 未递归左子树导致可成环、换绑 data 把整棵后代摘出注册表、zoomIn / zoomOut 锚点取错、平移后吞点击堆积监听、产物丢失三家打包器的 ignore 注释、connector=\"svg\" 稳态自持重排），另有 3 项性能收敛、10 条门禁补强与两站文档对齐。姊妹包 react-okr-tree 同号跟随。"
   }
 ]

@@ -31,7 +31,7 @@ body:
     attributes:
       label: 版本
       description: 库版本（`pnpm ls vue3-okr-tree` 或 package.json）与 Vue 版本。
-      placeholder: vue3-okr-tree 1.17.0 · vue 3.5.22
+      placeholder: vue3-okr-tree 1.17.1 · vue 3.5.22
     validations:
       required: true
   - type: dropdown
